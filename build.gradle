@@ -1,0 +1,121 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven { url = "https://files.minecraftforge.net/maven" }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'eclipse'
+
+version = project.mod_version
+group = project.mod_group
+archivesBaseName = project.mod_id
+
+sourceCompatibility = targetCompatibility = '1.8'
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
+}
+
+minecraft {
+    version = project.forge_version
+    runDir = "run"
+    mappings = project.mcp_mappings
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven { // kabeja
+        url = "http://logicaldoc.sourceforge.net/maven/"
+    }
+    maven { // cubicchunks, cubicworldgen, terraplusplus
+        name = "JitPack"
+        url = "https://jitpack.io/"
+    }
+    maven { // leveldb
+        name = "DaPorkchop_"
+        url = "https://maven.daporkchop.net/"
+    }
+    maven { // leveldb
+        name = "OpenCollab Snapshots"
+        url = "https://repo.opencollab.dev/snapshot/"
+    }
+    maven { // jankson
+        name = "elytradev"
+        url = "https://repo.elytradev.com/"
+    }
+    maven {
+        name = "Sonatype"
+        url = "https://oss.sonatype.org/content/repositories/public/"
+    }
+    maven {
+        name = "Sponge"
+        url = "https://repo.spongepowered.org/maven/"
+    }
+    maven { // worldedit
+    	name = "EngineHub"
+    	url = "https://maven.enginehub.org/repo/"
+    }
+}
+
+configurations {
+    shade
+    compile.extendsFrom shade
+}
+
+dependencies {
+    deobfProvided ('com.github.OpenCubicChunks.CubicChunks:cubicchunks:6e18a97abe31e1c7892ebcf8ed0f17a4ac379e10') {
+        transitive = false
+    }
+
+    deobfProvided ('com.github.OpenCubicChunks:CubicWorldGen:27de56d2f792513873584b2f8fd9f3082fb259ec') {
+        transitive = false
+    }
+
+    deobfProvided ('com.github.BuildTheEarth:terraplusplus:master-SNAPSHOT') {
+        transitive = true
+    }
+    
+    deobfProvided ('com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT') {
+  		transitive = false
+  	}
+    
+    deobfProvided ('com.sk89q.worldedit:worldedit-forge-mc1.12.1:7.0.0-SNAPSHOT') {
+  		transitive = false
+  	}
+
+    shade 'org.osgeo:proj4j:0.1.0'
+    shade 'org.kabeja:kabeja:0.4'
+    shade 'org.ejml:ejml-all:0.40'
+
+    runtime "org.apache.commons:commons-imaging:1.0-alpha2"
+    runtime("net.daporkchop:leveldb-mcpe-jni:0.0.10-SNAPSHOT")  {
+        exclude group: "io.netty"
+    }
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+                
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+        
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+jar {
+    configurations.shade.each { dep ->
+        from(project.zipTree(dep)){
+            exclude 'META-INF', 'META-INF/**'
+        }
+    }
+}
