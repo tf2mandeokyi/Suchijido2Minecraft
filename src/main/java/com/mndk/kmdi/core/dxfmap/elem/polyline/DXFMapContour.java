@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.kabeja.dxf.DXFLWPolyline;
 
-import com.mndk.kmdi.core.dxfmap.elem.interf.IHasElevationData;
+import com.mndk.kmdi.core.dxfmap.elem.IHasElevationData;
 import com.mndk.kmdi.core.math.VectorMath;
 import com.mndk.kmdi.core.projection.grs80.Grs80Projection;
 import com.sk89q.worldedit.Vector;
@@ -35,20 +35,20 @@ public class DXFMapContour extends DXFMapPolyline implements IHasElevationData {
 	/**
 	 * @return The list of the entry, where the key is the intersection point and the value is the squared distance from the ray starting point.
 	 * */
-	public List<Map.Entry<Vector, Double>> getRayIntersections(Vector2D rayStart, Vector2D rayDelta) {
+	public List<Map.Entry<Vector, Double>> getStraightLineIntersections(Vector2D sLineP0, Vector2D sLinePDelta) {
 		
 		List<Map.Entry<Vector, Double>> result = new ArrayList<>();
 		
 		for(int i=0;i<this.getVertexCount()-1;i++) {
-			Vector2D intersectionPoint = VectorMath.getLineRayIntersection(
-					rayStart, rayDelta, 
+			Vector2D intersectionPoint = VectorMath.getLineStraightIntersection(
+					sLineP0, sLinePDelta, 
 					this.getVertex(i), this.getVertex(i+1)
 			);
 			
 			if(intersectionPoint != null) {
 				result.add(new AbstractMap.SimpleEntry<>(
 						intersectionPoint.toVector(this.getElevation()), 
-						rayStart.distanceSq(intersectionPoint)
+						sLineP0.distanceSq(intersectionPoint)
 				));
 			}
 		}

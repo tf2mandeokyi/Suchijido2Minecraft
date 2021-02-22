@@ -2,6 +2,7 @@ package com.mndk.kmdi.core.math;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -11,11 +12,11 @@ import com.sk89q.worldedit.Vector2D;
 
 public class ContourMath {
 	
-	static Map.Entry<DXFMapContour, Vector2D> getClosestContour(Vector2D p, List<DXFMapContour> contourList) {
+	static Map.Entry<DXFMapContour, Vector> getClosestContour(Vector2D p, List<DXFMapContour> contourList) {
 		
 		double closestDistance = Double.MAX_VALUE;
 		DXFMapContour closestContour = null;
-		Vector2D closestPoint = null;
+		Vector closestPoint = null;
 		Map.Entry<Vector2D, Double> tempEntry;
 		
 		for(DXFMapContour contour : contourList) {
@@ -23,46 +24,43 @@ public class ContourMath {
 			if(closestDistance > tempEntry.getValue()) {
 				closestDistance = tempEntry.getValue();
 				closestContour = contour;
-				closestPoint = tempEntry.getKey();
+				closestPoint = tempEntry.getKey().toVector(contour.getElevation());
 			}
 		}
 		return new AbstractMap.SimpleEntry<>(closestContour, closestPoint);
 	}
 	
 	
-	static Vector[] get2IntersectionPointsFromContourList(Vector2D rayStart, Vector2D rayDelta, List<DXFMapContour> contourList) {
+	
+	static List<Vector> get4LineIntersectionPoints(List<DXFMapContour> contourList, Vector2D sLineP0, Vector2D sLinePDelta) {
+		
 		List<Map.Entry<Vector, Double>> intersections = new ArrayList<>();
+		List<Vector> result = new ArrayList<>();
+		
 		for(DXFMapContour contour : contourList) {
-			intersections.addAll(contour.getRayIntersections(rayStart, rayDelta));
+			intersections.addAll(contour.getStraightLineIntersections(sLineP0, sLinePDelta));
 		}
-		Vector closest = null, secondClosest = null;
-		double closestDistance = Double.MAX_VALUE, secondClosestDistance = Double.MAX_VALUE;
-		for(Map.Entry<Vector, Double> entry : intersections) {
-			double distance = entry.getValue();
-			if(distance < closestDistance) {
-				secondClosest = closest;
-				secondClosestDistance = closestDistance;
-				closest = entry.getKey();
-				closestDistance = distance;
-			}
-			else if(distance < secondClosestDistance) {
-				secondClosest = entry.getKey();
-				secondClosestDistance = entry.getValue();
-			}
+		
+		if(intersections.size() > 4) {
+			intersections.sort((e1, e2) -> Double.compare(e1.getValue(), e2.getValue()));
+			intersections = intersections.subList(0, 4);
 		}
-		return new Vector[] {
-			closest, secondClosest
-		};
+		
+		intersections.forEach(entry -> {
+			result.add(entry.getKey());
+		});
+		
+		return result;
 	}
 	
 	
 	
-	
 	public static double getPointHeightFromContourList(Vector2D point, List<DXFMapContour> contourList) {
-		double totalSum = 0; int successfulCalculationCount = 0;
 		
-		Vector2D closestPoint = getClosestContour(point, contourList).getValue();
-		Vector2D d = closestPoint.subtract(point);
+		Vector closestPoint = getClosestContour(point, contourList).getValue();
+		Vector2D closestPoint2D = closestPoint.toVector2D(), d = closestPoint2D.subtract(point);
+		
+		if(d.length() < 0.001) return closestPoint.getY();
 		
 		Vector2D[] rayDeltaPoints = new Vector2D[] {
 				d,
@@ -71,84 +69,29 @@ public class ContourMath {
 				new Vector2D(d.getZ()-d.getX(), -d.getX()-d.getZ())
 		};
 		
+		List<Vector> contourPoints = new ArrayList<Vector>();
+		
 		for(Vector2D rayDelta : rayDeltaPoints) {
-			// System.out.println(point + " -> " + rayDelta);
-			Vector[] forwards = get2IntersectionPointsFromContourList(point, rayDelta, contourList);
-			Vector[] backwards = get2IntersectionPointsFromContourList(point, Vector2D.ZERO.subtract(rayDelta), contourList);
-			
-			if(forwards[0] == null) {
-				// No intersection
-				continue;
-			}
-			else if(forwards[1] == null) {
-				if(backwards[0] == null) return forwards[0].getY();
-				forwards[1] = new Vector(Double.MAX_VALUE, forwards[0].getY(), Double.MAX_VALUE);
-			}
-			
-			if(backwards[0] == null) {
-				// Intersection found, but is not enough to calculate
-				continue;
-				// backwards[0] = backwards[1] = forwards[0];
-			}
-			else if(backwards[1] == null) {
-				backwards[1] = new Vector(Double.MAX_VALUE, backwards[0].getY(), Double.MAX_VALUE);
-			}
-			
-			double heightResult = SplineMath.getHeight(0, 
-					new Vector2D(-Math.sqrt((point.getX()-backwards[1].getX())*(point.getX()-backwards[1].getX()) + (point.getZ()-backwards[1].getZ())*(point.getZ()-backwards[1].getZ())), backwards[1].getY()),
-					new Vector2D(-Math.sqrt((point.getX()-backwards[0].getX())*(point.getX()-backwards[0].getX()) + (point.getZ()-backwards[0].getZ())*(point.getZ()-backwards[0].getZ())), backwards[0].getY()),
-					new Vector2D(Math.sqrt((point.getX()-forwards[0].getX())*(point.getX()-forwards[0].getX()) + (point.getZ()-forwards[0].getZ())*(point.getZ()-forwards[0].getZ())), forwards[0].getY()),
-					new Vector2D(Math.sqrt((point.getX()-forwards[1].getX())*(point.getX()-forwards[1].getX()) + (point.getZ()-forwards[1].getZ())*(point.getZ()-forwards[1].getZ())), forwards[1].getY())
-			);
-			/*System.out.println(" - " + new Vector2D(-Math.sqrt((point.getX()-backwards[1].getX())*(point.getX()-backwards[1].getX()) + (point.getZ()-backwards[1].getZ())*(point.getZ()-backwards[1].getZ())), backwards[1].getY()) + ", " +
-					new Vector2D(-Math.sqrt((point.getX()-backwards[0].getX())*(point.getX()-backwards[0].getX()) + (point.getZ()-backwards[0].getZ())*(point.getZ()-backwards[0].getZ())), backwards[0].getY()) + ", " +
-					new Vector2D(Math.sqrt((point.getX()-forwards[0].getX())*(point.getX()-forwards[0].getX()) + (point.getZ()-forwards[0].getZ())*(point.getZ()-forwards[0].getZ())), forwards[0].getY()) + ", " +
-					new Vector2D(Math.sqrt((point.getX()-forwards[1].getX())*(point.getX()-forwards[1].getX()) + (point.getZ()-forwards[1].getZ())*(point.getZ()-forwards[1].getZ())), forwards[1].getY()));
-			System.out.println("   - " + heightResult);*/
-			
-			if(heightResult != heightResult) continue;
-			
-			totalSum += heightResult;
-			successfulCalculationCount++;
-			/* 
-			 * this method is spline-average algorithm -- which averages all of the spline function results -- 
-			 * might not be as accurate as the method written in this site:
-			 * http://www.scielo.org.co/scielo.php?script=sci_arttext&pid=S1794-61902016000200008#f5
-			 * TODO: change this method
-			*/
+			List<Vector> tmpList = get4LineIntersectionPoints(contourList, point, rayDelta);
+			contourPoints.addAll(tmpList);
 		}
-		return totalSum / (double) successfulCalculationCount;
+		
+		return SplineMath.getHeight(closestPoint2D, contourPoints.toArray(new Vector[0]));
 	}
 	
-	
-	/*public static void main(String[] args) {
-		
-		DXFMapContour[] contours = new DXFMapContour[] {
-				new DXFMapContour(new Vector2D[] {
-						new Vector2D(3, -3),
-						new Vector2D(3, 3),
-						new Vector2D(6, 3),
-						new Vector2D(6, -3),
-						new Vector2D(3, -3)
-				}, 5),
-				new DXFMapContour(new Vector2D[] {
-						new Vector2D(2, -4),
-						new Vector2D(2, 4),
-						new Vector2D(7, 4),
-						new Vector2D(7, -4),
-						new Vector2D(2, -4)
-				}, 3)
-		};
-		
-		Vector2D rayStart = new Vector2D(2.5, 0), rayDelta = new Vector2D(2, 1);
-		
-		List<Entry<Vector3D, Double>> intersections;
-		intersections = contours[0].getRayIntersections(rayStart, rayDelta);
-		System.out.println(intersections);
-		intersections = contours[1].getRayIntersections(rayStart, rayDelta);
-		System.out.println(intersections);
-		double height = getPointHeightFromContourList(rayStart, Arrays.asList(contours));
-		System.out.println(height);
-		
-	}*/
+	public static void main(String[] args) {
+		List<DXFMapContour> list = Arrays.asList(new DXFMapContour[] {
+				new DXFMapContour(new Vector2D[] {new Vector2D(3, 3), new Vector2D(3, -3), new Vector2D(-3, -3), new Vector2D(-3, 3), new Vector2D(3, 3)}, 10),
+				new DXFMapContour(new Vector2D[] {new Vector2D(6, 6), new Vector2D(6, -6), new Vector2D(-6, -6), new Vector2D(-6, 6), new Vector2D(6, 6)}, 7),
+				new DXFMapContour(new Vector2D[] {new Vector2D(9, 9), new Vector2D(9, -9), new Vector2D(-9, -9), new Vector2D(-9, 9), new Vector2D(9, 9)}, 2)
+		});
+		for(int i=30;i<=100;i++) {
+			System.out.printf("%6.1f | ", i/10.);
+			double height = getPointHeightFromContourList(new Vector2D(0, (i/10.)), list);
+			for(int j=0;j<Math.round(height*10);j++) {
+				System.out.print(j%10==9?"@":"#");
+			}
+			System.out.println();
+		}
+	}
 }

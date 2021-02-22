@@ -2,7 +2,7 @@ package com.mndk.kmdi.core.dxfmap.elem.point;
 
 import org.kabeja.dxf.DXFPoint;
 
-import com.mndk.kmdi.core.dxfmap.elem.interf.IHasElevationData;
+import com.mndk.kmdi.core.dxfmap.elem.IHasElevationData;
 import com.mndk.kmdi.core.projection.grs80.Grs80Projection;
 
 public class DXFMapElevationPoint extends DXFMapPointElement implements IHasElevationData {

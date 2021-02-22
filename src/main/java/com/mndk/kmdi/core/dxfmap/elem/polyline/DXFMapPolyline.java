@@ -38,7 +38,7 @@ public class DXFMapPolyline extends DXFMapElement<DXFLWPolyline> {
     	if(!this.closed) return false;
     	int count = 0;
     	for(int i=0;i<vertexList.length-1;i++) {
-    		if(VectorMath.getLineRayIntersection(point, Vector2D.UNIT_X, vertexList[i], vertexList[i+1]) != null) {
+    		if(VectorMath.getLineStraightIntersection(point, Vector2D.UNIT_X, vertexList[i], vertexList[i+1]) != null) {
     			count++;
     		}
     	}
@@ -61,7 +61,7 @@ public class DXFMapPolyline extends DXFMapElement<DXFLWPolyline> {
 	public boolean checkLineIntersection(Vector2D p0, Vector2D p1) {
 		Vector2D dp = p1.subtract(p0);
 		for(int i=0;i<vertexList.length-1;i++) {
-    		if(VectorMath.getLineRayIntersection(p0, dp, vertexList[i], vertexList[i+1].subtract(vertexList[i])) != null) {
+    		if(VectorMath.getLineStraightIntersection(p0, dp, vertexList[i], vertexList[i+1].subtract(vertexList[i])) != null) {
     			return true;
     		}
     	}
