@@ -20,7 +20,6 @@ public class SplineMath {
 	// Matrix is hard :(
 	public static double getHeight(Vector2D point, Vector... vectors) {
 		int n = vectors.length;
-		double K_j = 300;
 		double epsilon = 1e-1;
 		
 		SimpleMatrix C = new SimpleMatrix(n, n+3);
@@ -34,10 +33,12 @@ public class SplineMath {
 				if(i != j) {
 					double r2 = Math.pow((vectors[j].getX() - vectors[i].getX()), 2) + Math.pow((vectors[j].getZ() - vectors[i].getZ()), 2);
 					C.set(j, i+3, r2 * Math.log(r2 + epsilon));
-				} else {
+				} /*else {
 					// TODO uh
+					// C.set(j, i+3, 16 * Math.PI * D / Math.pow(vectors[j].getY(), 0.5));
+					double K_j = 1;
 					C.set(j, i+3, 16 * Math.PI * D / K_j);
-				}
+				}*/
 			}
 			
 			W.set(j, 0, vectors[j].getY());

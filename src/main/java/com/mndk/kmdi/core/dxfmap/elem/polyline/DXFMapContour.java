@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.kabeja.dxf.DXFLWPolyline;
 
+import com.mndk.kmdi.core.dxfmap.DXFMapObjectType;
 import com.mndk.kmdi.core.dxfmap.elem.IHasElevationData;
 import com.mndk.kmdi.core.math.VectorMath;
 import com.mndk.kmdi.core.projection.grs80.Grs80Projection;
@@ -18,7 +19,7 @@ public class DXFMapContour extends DXFMapPolyline implements IHasElevationData {
     private final int elevation;
 
     public DXFMapContour(DXFLWPolyline polyline, Grs80Projection projection) {
-        super(polyline, projection);
+        super(polyline, projection, DXFMapObjectType.등고선);
         this.elevation = (int) polyline.getElevation();
     }
 
@@ -53,21 +54,5 @@ public class DXFMapContour extends DXFMapPolyline implements IHasElevationData {
 			}
 		}
 		return result;
-	}
-
-	public Map.Entry<Vector2D, Double> getClosestPointToPoint(Vector2D p) {
-		
-		double shortestLength = Double.POSITIVE_INFINITY, tempLength;
-		Vector2D closestPoint = null, tempPoint;
-		
-		for(int i=0;i<this.getVertexCount()-1;i++) {
-			tempPoint = VectorMath.getClosestPointToLine(p, this.getVertex(i), this.getVertex(i+1));
-			tempLength = p.distanceSq(tempPoint);
-			if(shortestLength > tempLength) {
-				closestPoint = tempPoint;
-				shortestLength = tempLength;
-			}
-		}
-		return new AbstractMap.SimpleEntry<>(closestPoint, shortestLength);
 	}
 }

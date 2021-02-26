@@ -85,11 +85,13 @@ public class ContourMath {
 				new DXFMapContour(new Vector2D[] {new Vector2D(6, 6), new Vector2D(6, -6), new Vector2D(-6, -6), new Vector2D(-6, 6), new Vector2D(6, 6)}, 7),
 				new DXFMapContour(new Vector2D[] {new Vector2D(9, 9), new Vector2D(9, -9), new Vector2D(-9, -9), new Vector2D(-9, 9), new Vector2D(9, 9)}, 2)
 		});
-		for(int i=30;i<=100;i++) {
-			System.out.printf("%6.1f | ", i/10.);
-			double height = getPointHeightFromContourList(new Vector2D(0, (i/10.)), list);
-			for(int j=0;j<Math.round(height*10);j++) {
-				System.out.print(j%10==9?"@":"#");
+		int yZoom = 10;
+		System.out.println("     x | y");
+		for(int i=15;i<=50;i++) {
+			System.out.printf("%6.1f | ", i/5.);
+			double height = getPointHeightFromContourList(new Vector2D(0, (i/5.)), list);
+			for(int j=0;j<Math.round(height*yZoom);j++) {
+				System.out.print(j%yZoom==(yZoom-1)?"@":"#");
 			}
 			System.out.println();
 		}

@@ -1,15 +1,15 @@
 package com.mndk.kmdi.mod;
 
+import java.io.File;
+
+import org.apache.logging.log4j.Logger;
+
 import com.mndk.kmdi.mod.commands.GenerateDXFMapCommand;
 
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-
-import java.io.File;
-
-import org.apache.logging.log4j.Logger;
 
 @Mod(modid = KmdiMod.MODID, version = KmdiMod.VERSION, acceptableRemoteVersions = "*")
 public class KmdiMod {

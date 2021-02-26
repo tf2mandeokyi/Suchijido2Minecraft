@@ -11,7 +11,7 @@ public class BoundingBox {
 	}
 	public BoundingBox(CuboidRegion region) {
 		this.x = region.getMinimumPoint().getX(); this.z = region.getMinimumPoint().getZ();
-		this.w = region.getWidth(); this.h = region.getHeight();
+		this.w = region.getWidth(); this.h = region.getLength();
 	}
 	public boolean containsPoint(Vector2D point) {
 		return x <= point.getX() && point.getX() <= (x+w) &&
@@ -24,9 +24,7 @@ public class BoundingBox {
 			   VectorMath.getLineIntersection(p0, dp, new Vector2D(x, z+h), new Vector2D(w, 0)) != null ||
 			   VectorMath.getLineIntersection(p0, dp, new Vector2D(x+w, z), new Vector2D(0, h)) != null;
 	}
-	/*public static void main(String[] args) {
-		System.out.println(
-				new BoundingBox(-3, -3, 6, 6).checkLineIntersection(new Vector2D(0, 0), new Vector2D(3, 4))
-		);
-	}*/
+	public boolean checkLineInside(Vector2D p0, Vector2D p1) {
+		return this.containsPoint(p0) || this.containsPoint(p1) || checkLineIntersection(p0, p1);
+	}
 }

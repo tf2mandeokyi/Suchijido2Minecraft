@@ -20,6 +20,7 @@ import com.mndk.kmdi.core.dxfmap.elem.DXFMapElement;
 import com.mndk.kmdi.core.dxfmap.elem.point.DXFMapPointElement;
 import com.mndk.kmdi.core.dxfmap.elem.polyline.DXFMapContour;
 import com.mndk.kmdi.core.dxfmap.elem.polyline.DXFMapPolyline;
+import com.mndk.kmdi.core.projection.Projections;
 import com.mndk.kmdi.core.projection.grs80.Grs80Projection;
 
 public class DXFMapParser {
@@ -31,7 +32,7 @@ public class DXFMapParser {
 
     	String fileName = mapFile.getName();
     	if(!fileName.endsWith(".dxf")) return null;
-        Grs80Projection projection = DXFMapProperties.getProjectionFromMapId(fileName.substring(0, fileName.length() - 4));
+        Grs80Projection projection = DXFMapParser.getProjectionFromMapId(fileName.substring(0, fileName.length() - 4));
         Parser parser = ParserBuilder.createDefaultParser();
         parser.parse(
                 new FileInputStream(mapFile),
@@ -60,6 +61,42 @@ public class DXFMapParser {
 
     }
 
+    
+    
+	static Grs80Projection getProjectionFromMapId(String fileName) {
+	    char number = fileName.charAt(2);
+	    if(number == '5') {
+	        return Projections.GRS80_WEST;
+	    } else if(number == '6' || number == '7') {
+	        return Projections.GRS80_MIDDLE;
+	    } else if(number == '8' || number == '9') {
+	        return Projections.GRS80_EAST;
+	    }
+	    return null;
+	}
+
+	
+	
+	public static int getScaleFromMapId(String id) {
+	    switch(id.length()) {
+	        case 3: return 250000;
+	        case 5: return 50000;
+	        case 6: return 25000;
+	        case 7: return 10000;
+	        case 8:
+	            char last = id.charAt(7);
+	            if(last >= '0' && last <= '9') // If the last character is a number:
+	                return 5000;
+	            else // Or else if it's an alphabet
+	                return 2500;
+	        case 9: return 1000;
+	        case 10: return 500;
+	    }
+	    return -1;
+	}
+	
+	
+
     public static class Result {
     	public DXFMapPolyline boundary;
     	public List<DXFMapPolyline> polylineList;
@@ -83,115 +120,5 @@ public class DXFMapParser {
     		return contourList;
     	}
     }
-    
-    /*
-     *  === LAYER IDS ===
-     * (A) - Area // Seems that it's a line but closed version
-     * (L) - Line
-     * (P) - Point
-     * 
-     * TODO implement these all... I guess?
-     * A - Traffic
-     * A001 - (A/L) Road boundary
-     * A002 - (L) Road center line
-     * A003 - (L) Pedestrian road
-     * A004 - (A) Crosswalk
-     * A005 - (A) Safe zone
-     * A006 - (A) Pedestrian Overpass
-     * A007 - (A) Bridge
-     * A008 - (A) Crossroad
-     * A009 - (A) Multi-level Crossing
-     * A010 - (A) Interchange // Why is this a thing lmao
-     * A011 - (A) Tunnel
-     * A012 - (L) Tunnel Entrance
-     * A013 - (P) Train Station
-     * A014 - (P) Bus station?
-     * A015 - (L) Railways
-     * A016 - (A) Railway boundaries?
-     * A017 - (L) Railway center line
-     * A018 - (P) Railway tram stand?
-     * A019 - (A) Platform
-     * A020 - (A) Platform Roof
-     * A021 - (P) Port?
-     * A022 - (L) Ferry routes?
-     * 
-     * B - Buildings
-     * B001 - (A) Building
-     * B002 - (L) Wall
-     * 
-     * C - Facility
-     * C001 - (A) Dam
-     * C002 - (A) Wharf
-     * C003 - (A) Dock
-     * C004 - (A) Dock?
-     * C005 - (L) Embankment
-     * C006 - (L) Sluice gate
-     * C007 - (L) Culvert?
-     * C008 - (L) 
-     * C009 - (P) 
-     * C010 - (P) 
-     * C011 - (P) 
-     * C012 - (P) 
-     * C013 - (P) 
-     * C014 - (P) 
-     * C015 - (P) 
-     * C016 - (P) 
-     * C017 - (A) 
-     * C018 - (A) 
-     * C019 - (P) 
-     * C020 - (P) 
-     * C021 - (P) 
-     * C022 - (P) 
-     * C023 - (P) 
-     * C024 - (P) 
-     * C025 - (P) 
-     * C026 - (P) 
-     * C027 - (A) 
-     * C028 - (P) 
-     * C029 - (A) 
-     * C030 - (A) 
-     * C031 - (P) 
-     * C032 - (L) 
-     * C033 - (P) 
-     * C034 - (P) 
-     * C035 - (P) 
-     * C036 - (P) 
-     * C037 - (P) 
-     * C038 - (P) 
-     * C039 - (A) 
-     * C040 - (P) 
-     * C041 - (P) 
-     * C042 - (A) 
-     * C043 - (A) 
-     * C044 - (A) 
-     * C045 - (A) 
-     * C046 - (L) 
-     * C047 - (A) 
-     * C048 - (P) 
-     * C049 - (P) 
-     * C050 - (P) 
-     * C051 - (P) 
-     * C052 - (L) 
-     * C053 - (L) 
-     * C054 - (P) 
-     * C055 - (P) 
-     * 
-     * D - Vegetation
-     * D001 ~ D004
-     * 
-     * E - Water system?
-     * E001 ~ E008
-     * 
-     * F - Terrain
-     * F001 ~ F005
-     * 
-     * G - Boundaries
-     * G001 ~ G003, G010 ~ G011
-     * 
-     * H - Misc.
-     * H001 - DXF Boundary
-     * H002 - Center
-     * ... H005
-     * */
     
 }

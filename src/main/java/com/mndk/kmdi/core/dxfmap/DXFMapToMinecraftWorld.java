@@ -9,8 +9,6 @@ import org.kabeja.parser.ParseException;
 import com.mndk.kmdi.core.dxfmap.elem.polyline.DXFMapContour;
 import com.mndk.kmdi.core.dxfmap.elem.polyline.DXFMapPolyline;
 import com.mndk.kmdi.core.math.ContourMath;
-import com.mndk.kmdi.core.math.shape.BoundingBox;
-import com.mndk.kmdi.core.we.LineGenerator;
 import com.mndk.kmdi.mod.KmdiMod;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
@@ -99,13 +97,13 @@ public class DXFMapToMinecraftWorld {
         	for(int z = z_0; z <= z_max; z++) {
     			for(int x = x_0; x <= x_max; x++) {
     				point = new Vector2D(x, z);
-    				
+
     				if(!boundary.containsPoint(point)) continue;
     				
     				double height = ContourMath.getPointHeightFromContourList(point, contourList);
     				if(height != height) continue;
     				
-    				Vector vector = point.toVector(height);
+    				Vector vector = point.toVector(Math.round(height));
     				BlockPos pos = new BlockPos(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
     				
     				world.setBlockState(pos, CONTOUR_AREA_BLOCK);
@@ -125,7 +123,7 @@ public class DXFMapToMinecraftWorld {
     				double height = ContourMath.getPointHeightFromContourList(point, contourList);
     				if(height != height) continue;
     				
-    				Vector vector = point.toVector(height);
+    				Vector vector = point.toVector(Math.round(height));
     				BlockPos pos = new BlockPos(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
 
     				world.setBlockState(pos, CONTOUR_AREA_BLOCK);
@@ -134,44 +132,19 @@ public class DXFMapToMinecraftWorld {
         }
 			
 		KmdiMod.logger.info("Generating contour lines...");
-		if(worldEditRegion instanceof CuboidRegion) {
-			BoundingBox box = new BoundingBox((CuboidRegion) worldEditRegion);
-			KmdiMod.logger.info("Cuboid bounding box, " + result.getContourList().size() + " contours total");
-			
-	        for(DXFMapContour contour : result.getContourList()) {
-	        	for(int i=0;i<contour.getVertexCount()-1;i++) {
-	        		if(!box.checkLineIntersection(contour.getVertex(i), contour.getVertex(i+1).subtract(contour.getVertex(i)))) {
-	        			continue;
-	        		}
-	                LineGenerator.generateFlatLine(contour.getVertex(i), contour.getVertex(i+1), v -> {
-	                	if(boundary.containsPoint(v) && box.containsPoint(v)) {
-		    				BlockPos pos = new BlockPos(v.getBlockX(), contour.getElevation(), v.getBlockZ());
-		    				world.setBlockState(pos, CONTOUR_BLOCK);
-	                	}
-	                });
-	            }
-	        }
+		
+		for(DXFMapContour contour : contourList) {
+			contour.generateFlatPolygon(worldEditRegion, world, contour.getElevation(), CONTOUR_BLOCK);
 		}
-		else if(worldEditRegion instanceof Polygonal2DRegion) {
-        	DXFMapPolyline polySelection = new DXFMapPolyline((Polygonal2DRegion) worldEditRegion);
-			KmdiMod.logger.info("Polygonal bounding box, " + result.getContourList() + " contours total");
-        	
-			for(DXFMapContour contour : result.getContourList()) {
-	        	for(int i=0;i<contour.getVertexCount()-1;i++) {
-	        		if(!polySelection.checkLineIntersection(contour.getVertex(i), contour.getVertex(i+1).subtract(contour.getVertex(i)))) {
-	        			continue;
-	        		}
-	                LineGenerator.generateFlatLine(contour.getVertex(i), contour.getVertex(i+1), v -> {
-	                	if(boundary.containsPoint(v) && polySelection.containsPoint(v)) {
-		    				BlockPos pos = new BlockPos(v.getBlockX(), contour.getElevation(), v.getBlockZ());
-		    				world.setBlockState(pos, CONTOUR_BLOCK);
-	                	}
-	                });
-	            }
-	        }
+		
+		KmdiMod.logger.info("Generating lines...");
+		
+		for(DXFMapPolyline polyline : result.getPolylines()) {
+			polyline.generatePolygonOnTerrain(worldEditRegion, world, polyline.getType().getBlockState(), contourList);
 		}
         
     }
+    
 
     @SuppressWarnings("serial")
 	public static class GeneratorException extends Exception {
