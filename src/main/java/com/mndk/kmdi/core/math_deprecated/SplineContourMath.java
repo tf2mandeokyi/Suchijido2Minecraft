@@ -1,4 +1,4 @@
-package com.mndk.kmdi.core.math;
+package com.mndk.kmdi.core.math_deprecated;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -10,7 +10,8 @@ import com.mndk.kmdi.core.dxfmap.elem.polyline.DXFMapContour;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.Vector2D;
 
-public class ContourMath {
+@Deprecated
+public class SplineContourMath {
 	
 	static Map.Entry<DXFMapContour, Vector> getClosestContour(Vector2D p, List<DXFMapContour> contourList) {
 		
@@ -55,7 +56,7 @@ public class ContourMath {
 	
 	
 	
-	public static double getPointHeightFromContourList(Vector2D point, List<DXFMapContour> contourList) {
+	public static double getPointHeightFromContourList(Vector2D point, boolean debug, List<DXFMapContour> contourList) {
 		
 		Vector closestPoint = getClosestContour(point, contourList).getValue();
 		Vector2D closestPoint2D = closestPoint.toVector2D(), d = closestPoint2D.subtract(point);
@@ -76,7 +77,11 @@ public class ContourMath {
 			contourPoints.addAll(tmpList);
 		}
 		
-		return SplineMath.getHeight(closestPoint2D, contourPoints.toArray(new Vector[0]));
+		return SplineMath.getHeight(closestPoint2D, debug, contourPoints.toArray(new Vector[0])); // TODO remove "true"
+	}
+	
+	public static double getPointHeightFromContourList(Vector2D point, List<DXFMapContour> contourList) {
+		return getPointHeightFromContourList(point, false, contourList);
 	}
 	
 	public static void main(String[] args) {

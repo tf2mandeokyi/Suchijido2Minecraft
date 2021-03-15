@@ -1,6 +1,6 @@
-package com.mndk.kmdi.core.math.shape;
+package com.mndk.kmdi.core.util.shape;
 
-import com.mndk.kmdi.core.math.VectorMath;
+import com.mndk.kmdi.core.util.math.VectorMath;
 import com.sk89q.worldedit.Vector2D;
 import com.sk89q.worldedit.regions.CuboidRegion;
 

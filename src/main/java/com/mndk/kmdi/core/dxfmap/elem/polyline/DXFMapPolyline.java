@@ -9,11 +9,11 @@ import org.kabeja.dxf.DXFVertex;
 
 import com.mndk.kmdi.core.dxfmap.DXFMapObjectType;
 import com.mndk.kmdi.core.dxfmap.elem.DXFMapElement;
-import com.mndk.kmdi.core.math.ContourMath;
-import com.mndk.kmdi.core.math.VectorMath;
-import com.mndk.kmdi.core.math.shape.BoundingBox;
+import com.mndk.kmdi.core.math_deprecated.SplineContourMath;
 import com.mndk.kmdi.core.projection.grs80.Grs80Projection;
-import com.mndk.kmdi.core.we.LineGenerator;
+import com.mndk.kmdi.core.util.LineGenerator;
+import com.mndk.kmdi.core.util.math.VectorMath;
+import com.mndk.kmdi.core.util.shape.BoundingBox;
 import com.sk89q.worldedit.Vector2D;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Polygonal2DRegion;
@@ -126,7 +126,7 @@ public class DXFMapPolyline extends DXFMapElement<DXFLWPolyline> {
 		LineGenerator.world = w;
 		LineGenerator.state = state;
 		LineGenerator.getYFunction = v -> {
-			double height = ContourMath.getPointHeightFromContourList(v, contourList);
+			double height = SplineContourMath.getPointHeightFromContourList(v, contourList);
 			return (int) (height == height ? Math.round(height) : 0);
 		};
 		

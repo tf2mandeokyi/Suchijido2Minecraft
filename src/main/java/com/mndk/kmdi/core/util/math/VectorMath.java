@@ -1,7 +1,8 @@
-package com.mndk.kmdi.core.math;
+package com.mndk.kmdi.core.util.math;
 
 import javax.annotation.Nullable;
 
+import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.Vector2D;
 
 public class VectorMath {
@@ -44,6 +45,14 @@ public class VectorMath {
 	public static double cross(Vector2D v1, Vector2D v2) {
     	return v1.getX()*v2.getZ() - v2.getX()*v1.getZ();
     }
+	
+	public static double cross2d(Vector v1, Vector v2) {
+    	return v1.getX()*v2.getZ() - v2.getX()*v1.getZ();
+    }
+	
+	public static double mag2d(Vector v) {
+		return Math.sqrt(v.getX() * v.getX() + v.getZ() * v.getZ());
+	}
 	
 	public static Vector2D getClosestPointToLine(Vector2D p, Vector2D l0, Vector2D l1) {
 		

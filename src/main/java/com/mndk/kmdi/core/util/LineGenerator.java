@@ -1,4 +1,4 @@
-package com.mndk.kmdi.core.we;
+package com.mndk.kmdi.core.util;
 
 import java.util.function.Function;
 

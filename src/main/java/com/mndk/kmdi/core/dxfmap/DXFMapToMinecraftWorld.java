@@ -8,7 +8,7 @@ import org.kabeja.parser.ParseException;
 
 import com.mndk.kmdi.core.dxfmap.elem.polyline.DXFMapContour;
 import com.mndk.kmdi.core.dxfmap.elem.polyline.DXFMapPolyline;
-import com.mndk.kmdi.core.math.ContourMath;
+import com.mndk.kmdi.core.math_deprecated.SplineContourMath;
 import com.mndk.kmdi.mod.KmdiMod;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
@@ -100,7 +100,7 @@ public class DXFMapToMinecraftWorld {
 
     				if(!boundary.containsPoint(point)) continue;
     				
-    				double height = ContourMath.getPointHeightFromContourList(point, contourList);
+    				double height = SplineContourMath.getPointHeightFromContourList(point, contourList);
     				if(height != height) continue;
     				
     				Vector vector = point.toVector(Math.round(height));
@@ -120,7 +120,7 @@ public class DXFMapToMinecraftWorld {
     					continue;
     				}
     					
-    				double height = ContourMath.getPointHeightFromContourList(point, contourList);
+    				double height = SplineContourMath.getPointHeightFromContourList(point, contourList);
     				if(height != height) continue;
     				
     				Vector vector = point.toVector(Math.round(height));

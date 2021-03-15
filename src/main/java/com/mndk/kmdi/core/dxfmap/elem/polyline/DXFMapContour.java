@@ -9,8 +9,8 @@ import org.kabeja.dxf.DXFLWPolyline;
 
 import com.mndk.kmdi.core.dxfmap.DXFMapObjectType;
 import com.mndk.kmdi.core.dxfmap.elem.IHasElevationData;
-import com.mndk.kmdi.core.math.VectorMath;
 import com.mndk.kmdi.core.projection.grs80.Grs80Projection;
+import com.mndk.kmdi.core.util.math.VectorMath;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.Vector2D;
 
