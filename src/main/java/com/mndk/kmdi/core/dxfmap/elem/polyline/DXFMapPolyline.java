@@ -1,7 +1,6 @@
 package com.mndk.kmdi.core.dxfmap.elem.polyline;
 
 import java.util.AbstractMap;
-import java.util.List;
 import java.util.Map;
 
 import org.kabeja.dxf.DXFLWPolyline;
@@ -9,11 +8,11 @@ import org.kabeja.dxf.DXFVertex;
 
 import com.mndk.kmdi.core.dxfmap.DXFMapObjectType;
 import com.mndk.kmdi.core.dxfmap.elem.DXFMapElement;
-import com.mndk.kmdi.core.math_deprecated.SplineContourMath;
 import com.mndk.kmdi.core.projection.grs80.Grs80Projection;
 import com.mndk.kmdi.core.util.LineGenerator;
 import com.mndk.kmdi.core.util.math.VectorMath;
 import com.mndk.kmdi.core.util.shape.BoundingBox;
+import com.mndk.kmdi.core.util.shape.TriangleList;
 import com.sk89q.worldedit.Vector2D;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Polygonal2DRegion;
@@ -120,13 +119,13 @@ public class DXFMapPolyline extends DXFMapElement<DXFLWPolyline> {
 	
 	
 	
-	public void generatePolygonOnTerrain(Region region, World w, IBlockState state, List<DXFMapContour> contourList) {
+	public void generatePolygonOnTerrain(Region region, World w, IBlockState state, TriangleList triangleList) {
 		
 		LineGenerator.region = region;
 		LineGenerator.world = w;
 		LineGenerator.state = state;
 		LineGenerator.getYFunction = v -> {
-			double height = SplineContourMath.getPointHeightFromContourList(v, contourList);
+			double height = triangleList.interpolateY(v);
 			return (int) (height == height ? Math.round(height) : 0);
 		};
 		

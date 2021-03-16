@@ -43,13 +43,17 @@ public abstract class DXFMapElement<T extends DXFEntity> {
 	    String layerName = layer.getName();
 	    DXFMapObjectType type = DXFMapObjectType.getTypeFromLayerName(layerName);
 	    if(type == DXFMapObjectType.등고선) {
-	    	result.contourList.add(new DXFMapContour(polyline, projection));
+	    	DXFMapContour contour = new DXFMapContour(polyline, projection);
+	    	for(Vector2D v : contour.getVertexList()) {
+	    		result.getElevationPoints().add(v.toVector(contour.getElevation()));
+	    	}
+	    	// result.contourList.add(new DXFMapContour(polyline, projection));
 	    }
 	    else if(type == DXFMapObjectType.도곽선) {
-	    	result.boundary = new DXFMapPolyline(polyline, projection, DXFMapObjectType.도곽선);
+	    	result.setBoundary(new DXFMapPolyline(polyline, projection, DXFMapObjectType.도곽선));
 	    }
 	    else {
-	    	result.polylineList.add(new DXFMapPolyline(polyline, projection, type));
+	    	result.getPolylines().add(new DXFMapPolyline(polyline, projection, type));
 	    }
 	}
 
@@ -58,10 +62,10 @@ public abstract class DXFMapElement<T extends DXFEntity> {
 		String layerName = layer.getName();
 	    DXFMapObjectType type = DXFMapObjectType.getTypeFromLayerName(layerName);
 		if(type == DXFMapObjectType.표고점) {
-			result.pointList.add(new DXFMapElevationPoint(point, projection));
+			result.getElevationPoints().add(new DXFMapElevationPoint(point, projection).toVector());
 		}
 		else {
-		    result.pointList.add(new DXFMapPointElement(point, projection, type));
+		    result.getPoints().add(new DXFMapPointElement(point, projection, type));
 		}
 	}
 	

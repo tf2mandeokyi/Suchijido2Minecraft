@@ -5,6 +5,7 @@ import org.kabeja.dxf.DXFPoint;
 import com.mndk.kmdi.core.dxfmap.DXFMapObjectType;
 import com.mndk.kmdi.core.dxfmap.elem.IHasElevationData;
 import com.mndk.kmdi.core.projection.grs80.Grs80Projection;
+import com.sk89q.worldedit.Vector;
 
 public class DXFMapElevationPoint extends DXFMapPointElement implements IHasElevationData {
 
@@ -18,6 +19,10 @@ public class DXFMapElevationPoint extends DXFMapPointElement implements IHasElev
 	@Override
 	public int getElevation() {
 		return this.elevation;
+	}
+	
+	public Vector toVector() {
+		return this.getVector2D().toVector(elevation);
 	}
 
 }

@@ -6,9 +6,9 @@ import java.util.List;
 
 import org.kabeja.parser.ParseException;
 
-import com.mndk.kmdi.core.dxfmap.elem.polyline.DXFMapContour;
 import com.mndk.kmdi.core.dxfmap.elem.polyline.DXFMapPolyline;
-import com.mndk.kmdi.core.math_deprecated.SplineContourMath;
+import com.mndk.kmdi.core.util.delaunator.FastDelaunayTriangulator;
+import com.mndk.kmdi.core.util.shape.TriangleList;
 import com.mndk.kmdi.mod.KmdiMod;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
@@ -33,8 +33,11 @@ import net.minecraft.world.chunk.IChunkProvider;
 
 public class DXFMapToMinecraftWorld {
 
-	private static IBlockState CONTOUR_BLOCK = Blocks.GOLD_BLOCK.getDefaultState();
+	
+	
 	private static IBlockState CONTOUR_AREA_BLOCK = Blocks.EMERALD_BLOCK.getDefaultState();
+	
+	
 	
     public static void generate(MinecraftServer server, EntityPlayerMP player, File mapFile) throws GeneratorException {
 
@@ -71,16 +74,21 @@ public class DXFMapToMinecraftWorld {
         	throw new GeneratorException("File not found!");
         }
         
-        KmdiMod.logger.info("Successfully parsed .dxf map: " + mapFile.getName() + " (Next: generating blocks");
+        KmdiMod.logger.info("Successfully parsed .dxf map: " + mapFile.getName() + " (Next: generating blocks)");
         generateBlocksBasedOnDXFMapParsedResult(result, worldEditRegion, world);
         
         KmdiMod.logger.info("Successfully placed all blocks in the entry list.");
         
     }
     
+    
+    
     public static void generateBlocksBasedOnDXFMapParsedResult(DXFMapParser.Result result, Region worldEditRegion, World world) {
     	
-    	List<DXFMapContour> contourList = result.getContourList();
+    	List<Vector> elevationPointList = result.getElevationPoints();
+    	
+    	TriangleList triangleList = FastDelaunayTriangulator.from(elevationPointList).getTriangleList();
+    	
     	DXFMapPolyline boundary = result.getBoundary();
 
     	Vector2D min = worldEditRegion.getMinimumPoint().toVector2D();
@@ -100,7 +108,7 @@ public class DXFMapToMinecraftWorld {
 
     				if(!boundary.containsPoint(point)) continue;
     				
-    				double height = SplineContourMath.getPointHeightFromContourList(point, contourList);
+    				double height = triangleList.interpolateY(point);
     				if(height != height) continue;
     				
     				Vector vector = point.toVector(Math.round(height));
@@ -119,8 +127,8 @@ public class DXFMapToMinecraftWorld {
     				if(!boundary.containsPoint(point) || !polySelection.containsPoint(point)) {
     					continue;
     				}
-    					
-    				double height = SplineContourMath.getPointHeightFromContourList(point, contourList);
+
+    				double height = triangleList.interpolateY(point);
     				if(height != height) continue;
     				
     				Vector vector = point.toVector(Math.round(height));
@@ -130,20 +138,15 @@ public class DXFMapToMinecraftWorld {
     			}
     		}
         }
-			
-		KmdiMod.logger.info("Generating contour lines...");
-		
-		for(DXFMapContour contour : contourList) {
-			contour.generateFlatPolygon(worldEditRegion, world, contour.getElevation(), CONTOUR_BLOCK);
-		}
 		
 		KmdiMod.logger.info("Generating lines...");
 		
 		for(DXFMapPolyline polyline : result.getPolylines()) {
-			polyline.generatePolygonOnTerrain(worldEditRegion, world, polyline.getType().getBlockState(), contourList);
+			polyline.generatePolygonOnTerrain(worldEditRegion, world, polyline.getType().getBlockState(), triangleList);
 		}
         
     }
+    
     
 
     @SuppressWarnings("serial")

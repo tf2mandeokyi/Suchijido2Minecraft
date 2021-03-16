@@ -18,10 +18,10 @@ import org.kabeja.parser.ParserBuilder;
 
 import com.mndk.kmdi.core.dxfmap.elem.DXFMapElement;
 import com.mndk.kmdi.core.dxfmap.elem.point.DXFMapPointElement;
-import com.mndk.kmdi.core.dxfmap.elem.polyline.DXFMapContour;
 import com.mndk.kmdi.core.dxfmap.elem.polyline.DXFMapPolyline;
 import com.mndk.kmdi.core.projection.Projections;
 import com.mndk.kmdi.core.projection.grs80.Grs80Projection;
+import com.sk89q.worldedit.Vector;
 
 public class DXFMapParser {
 
@@ -85,7 +85,7 @@ public class DXFMapParser {
 	        case 7: return 10000;
 	        case 8:
 	            char last = id.charAt(7);
-	            if(last >= '0' && last <= '9') // If the last character is a number:
+	            if(last >= '0' && last <= '9') // If the last character is v1 number:
 	                return 5000;
 	            else // Or else if it's an alphabet
 	                return 2500;
@@ -98,17 +98,20 @@ public class DXFMapParser {
 	
 
     public static class Result {
-    	public DXFMapPolyline boundary;
-    	public List<DXFMapPolyline> polylineList;
-    	public List<DXFMapPointElement> pointList;
-    	public List<DXFMapContour> contourList;
+    	private DXFMapPolyline boundary;
+    	private List<DXFMapPolyline> polylineList;
+    	private List<DXFMapPointElement> pointList;
+    	private List<Vector> elevationPointList;
     	private Result() {
     		this.polylineList = new ArrayList<>();
     		this.pointList = new ArrayList<>();
-    		this.contourList = new ArrayList<>();
+    		this.elevationPointList = new ArrayList<>();
     	}
     	public DXFMapPolyline getBoundary() {
     		return boundary;
+    	}
+    	public void setBoundary(DXFMapPolyline boundary) {
+    		this.boundary = boundary;
     	}
     	public List<DXFMapPolyline> getPolylines() {
     		return polylineList;
@@ -116,8 +119,8 @@ public class DXFMapParser {
     	public List<DXFMapPointElement> getPoints() {
     		return pointList;
     	}
-    	public List<DXFMapContour> getContourList() {
-    		return contourList;
+    	public List<Vector> getElevationPoints() {
+    		return elevationPointList;
     	}
     }
     

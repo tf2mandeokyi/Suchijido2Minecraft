@@ -1,57 +1,94 @@
 package com.mndk.kmdi.core.util.shape;
 
-import java.util.Arrays;
-
-import com.mndk.kmdi.core.util.math.VectorMath;
-import com.mndk.kmdi.core.util.triangulation.Edge;
-import com.mndk.kmdi.core.util.triangulation.EdgeWithDistance;
+import com.mndk.kmdi.core.util.math.Vector2dH;
 import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.Vector2D;
 
 public class Triangle {
 	
 	
 	
-	public final Vector a, b, c;
+	public final Vector2dH v1, v2, v3;
 
 	
 	
-	public Triangle(Vector a, Vector b, Vector c) {
-		this.a = a; this.b = b; this.c = c;
+	public Triangle(Vector2dH a, Vector2dH b, Vector2dH c) {
+		this.v1 = a; this.v2 = b; this.v3 = c;
 	}
 	
 	
 	
-	public boolean contains(Vector point) {
-        double pab = VectorMath.cross2d(point.subtract(a), b.subtract(a));
-        double pbc = VectorMath.cross2d(point.subtract(b), c.subtract(b));
-
-        if (!hasSameSign(pab, pbc)) {
-            return false;
-        }
-
-        double pca = VectorMath.cross2d(point.subtract(c), a.subtract(c));
-
-        if (!hasSameSign(pab, pca)) {
-            return false;
-        }
-
-        return true;
+	public Vector contains(Vector2D point) {
+        return contains(point.toVector());
     }
+	
+	public Vector contains(Vector p) {
+		/* Bounding box test first, for quick rejections. */
+		if ((p.getX() < v1.x && p.getX() < v2.x && p.getX() < v3.x) ||
+			(p.getX() > v1.x && p.getX() > v2.x && p.getX() > v3.x) ||
+			(p.getZ() < v1.z && p.getZ() < v2.z && p.getZ() < v3.z) ||
+			(p.getZ() > v1.z && p.getZ() > v2.z && p.getZ() > v3.z))
+			
+			return null;
+
+		double a = v2.x - v1.x,
+			   b = v3.x - v1.x,
+			   c = v2.z - v1.z,
+			   d = v3.z - v1.z,
+			   i = a * d - b * c;
+
+		/* Degenerate tri. */
+		if(i == 0.0)
+			return null;
+
+		double u = (d * (p.getX() - v1.x) - b * (p.getZ() - v1.z)) / i,
+			   v = (a * (p.getZ() - v1.z) - c * (p.getX() - v1.x)) / i;
+
+		/* If we're outside the tri, fail. */
+		if(u < 0.0 || v < 0.0 || (u + v) > 1.0)
+			return null;
+
+		return new Vector(u, 0, v);
+	}
+	
+	
+	
+	public boolean contains_line(Vector2D point) {
+        return contains_line(point.toVector());
+	}
+	
+	public boolean contains_line(Vector point) {
+		double d1, d2, d3;
+		boolean has_neg, has_pos;
+		
+		d1 = sign(point, v1, v2);
+		d2 = sign(point, v2, v3);
+		d3 = sign(point, v3, v1);
+		
+		has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+	    has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+	    return !(has_neg && has_pos);
+    }
+	
+	private static double sign(Vector p1, Vector2dH p2, Vector2dH p3) {
+		return (p1.getX() - p3.x) * (p2.z - p3.z) - (p2.x - p3.x) * (p1.getZ() - p3.z);
+	}
 	
 	
 	
 	public boolean isPointInCircumcircle(Vector point) {
-		double a11 = a.getX() - point.getX();
-        double a21 = b.getX() - point.getX();
-        double a31 = c.getX() - point.getX();
+		double a11 = v1.x - point.getX();
+        double a21 = v2.x - point.getX();
+        double a31 = v3.x - point.getX();
 
-        double a12 = a.getZ() - point.getZ();
-        double a22 = b.getZ() - point.getZ();
-        double a32 = c.getZ() - point.getZ();
+        double a12 = v1.z - point.getZ();
+        double a22 = v2.z - point.getZ();
+        double a32 = v3.z - point.getZ();
 
-        double a13 = (a.getX() - point.getX()) * (a.getX() - point.getX()) + (a.getZ() - point.getZ()) * (a.getZ() - point.getZ());
-        double a23 = (b.getX() - point.getX()) * (b.getX() - point.getX()) + (b.getZ() - point.getZ()) * (b.getZ() - point.getZ());
-        double a33 = (c.getX() - point.getX()) * (c.getX() - point.getX()) + (c.getZ() - point.getZ()) * (c.getZ() - point.getZ());
+        double a13 = (v1.x - point.getX()) * (v1.x - point.getX()) + (v1.z - point.getZ()) * (v1.z - point.getZ());
+        double a23 = (v2.x - point.getX()) * (v2.x - point.getX()) + (v2.z - point.getZ()) * (v2.z - point.getZ());
+        double a33 = (v3.x - point.getX()) * (v3.x - point.getX()) + (v3.z - point.getZ()) * (v3.z - point.getZ());
 
         double det = a11 * a22 * a33 + a12 * a23 * a31 + a13 * a21 * a32 - a13 * a22 * a31 - a12 * a21 * a33 - a11 * a23 * a32;
         
@@ -61,11 +98,11 @@ public class Triangle {
 	
 	
 	public boolean isOrientedCCW() {
-        double a11 = a.getX() - c.getX();
-        double a21 = b.getX() - c.getX();
+        double a11 = v1.x - v3.x;
+        double a21 = v2.x - v3.x;
 
-        double a12 = a.getZ() - c.getZ();
-        double a22 = b.getZ() - c.getZ();
+        double a12 = v1.z - v3.z;
+        double a22 = v2.z - v3.z;
 
         double det = a11 * a22 - a12 * a21;
 
@@ -74,65 +111,24 @@ public class Triangle {
 	
 	
 	
-	public boolean isNeighbour(Edge edge) {
-        return (a == edge.a || b == edge.a || c == edge.a) && (a == edge.b || b == edge.b || c == edge.b);
-    }
-	
-	
-	
-	public Vector getNoneEdgeVertex(Edge edge) {
-        if (a != edge.a && a != edge.b) return a;
-        if (b != edge.a && b != edge.b) return b;
-        if (c != edge.a && c != edge.b) return c;
-
-        return null;
-    }
-	
-	
-	
-	public boolean hasVertex(Vector vertex) {
-        return a == vertex || b == vertex || c == vertex;
-    }
-	
-	
-	
-	public EdgeWithDistance findNearestEdge(Vector point) {
-		EdgeWithDistance[] edges = new EdgeWithDistance[3];
-
-        edges[0] = new EdgeWithDistance(new Edge(a, b), VectorMath.mag2d(computeClosestPoint(new Edge(a, b), point).subtract(point)));
-        edges[1] = new EdgeWithDistance(new Edge(b, c), VectorMath.mag2d(computeClosestPoint(new Edge(b, c), point).subtract(point)));
-        edges[2] = new EdgeWithDistance(new Edge(c, a), VectorMath.mag2d(computeClosestPoint(new Edge(c, a), point).subtract(point)));
-
-        Arrays.sort(edges);
-        return edges[0];
-    }
-	
-	
-	
-	private static Vector computeClosestPoint(Edge edge, Vector point) {
-        Vector ab = edge.b.subtract(edge.a);
-        double t = point.subtract(edge.a).dot(ab) / ab.dot(ab);
-
-        if (t < 0.0d) {
-            t = 0.0d;
-        } else if (t > 1.0d) {
-            t = 1.0d;
-        }
-
-        return edge.a.add(ab.multiply(t));
-    }
-	
-	
-	
-	private static boolean hasSameSign(double a, double b) {
-        return Math.signum(a) == Math.signum(b);
-    }
+	public double interpolateY(Vector2D point) {
+		double x_1 = v1.x, x_2 = v2.x, x_3 = v3.x;
+		double y_1 = v1.z, y_2 = v2.z, y_3 = v3.z;
+		double p_x = point.getX(), p_y = point.getZ();
+		
+		double denom = (y_2 - y_3) * (x_1 - x_3) + (x_3 - x_2) * (y_1 - y_3);
+		double w_1 = ( (y_2 - y_3) * (p_x - x_3) + (x_3 - x_2) * (p_y - y_3) ) / denom;
+		double w_2 = ( (y_3 - y_1) * (p_x - x_3) + (x_1 - x_3) * (p_y - y_3) ) / denom;
+		double w_3 = 1 - w_1 - w_2;
+		
+		return v1.height * w_1 + v2.height * w_2 + v3.height * w_3;
+	}
 	
 	
 	
 	@Override
     public String toString() {
-        return "Triangle[" + a + ", " + b + ", " + c + "]";
+        return "Triangle[" + v1 + ", " + v2 + ", " + v3 + "]";
     }
 	
 }

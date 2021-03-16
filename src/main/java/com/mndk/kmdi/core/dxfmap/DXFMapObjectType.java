@@ -9,17 +9,17 @@ import net.minecraft.item.EnumDyeColor;
 public enum DXFMapObjectType {
 	
 	// A타입 - 교통
-	도로경계("A001", Category.교통, Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.GRAY)),
-	도로중심선("A002", Category.교통, Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.YELLOW)),
-	보도("A003", Category.교통, Blocks.DOUBLE_STONE_SLAB.getDefaultState()),
-	횡단보도("A004", Category.교통, Blocks.CONCRETE.getDefaultState()),
+	도로경계("A001", Category.교통),
+	도로중심선("A002", Category.교통),
+	보도("A003", Category.교통),
+	횡단보도("A004", Category.교통),
 	안전지대("A005", Category.교통),
-	육교("A006", Category.교통, Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.SILVER)),
+	육교("A006", Category.교통),
 	교량("A007", Category.교통),
 	교차로("A008", Category.교통),
 	입체교차부("A009", Category.교통),
 	인터체인지("A010", Category.교통),
-	터널("A011", Category.교통, Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.MAGENTA)),
+	터널("A011", Category.교통),
 	터널입구("A012", Category.교통),
 	정거장("A013", Category.교통),
 	정류장("A014", Category.교통),
@@ -33,7 +33,7 @@ public enum DXFMapObjectType {
 	나루노선("A022", Category.교통),
 	
 	// B타입 - 건물
-	건물("B001", Category.건물, Blocks.BRICK_BLOCK.getDefaultState()),
+	건물("B001", Category.건물),
 	담장("B002", Category.건물),
 	
 	// C타입 - 시설
@@ -100,15 +100,15 @@ public enum DXFMapObjectType {
 	목장("D004", Category.식생),
 	
 	// E타입 - 수계
-	하천경계("E001", Category.수계, Blocks.WATER.getDefaultState()),
-	하천중심선("E002", Category.수계, Blocks.LAPIS_BLOCK.getDefaultState()),
+	하천경계("E001", Category.수계),
+	하천중심선("E002", Category.수계),
 	실폭하천("E003", Category.수계),
 	유수방향("E004", Category.수계),
-	호수("E005", Category.수계, Blocks.WATER.getDefaultState()),
+	호수("E005", Category.수계),
 	용수로("E006", Category.수계),
 	폭포("E007", Category.수계),
-	해안선("E008", Category.수계, Blocks.WATER.getDefaultState()),
-	등심선("E009", Category.수계, Blocks.LAPIS_BLOCK.getDefaultState()),
+	해안선("E008", Category.수계),
+	등심선("E009", Category.수계),
 	
 	// F타입 - 지형
 	등고선("F001", Category.지형),
@@ -151,16 +151,10 @@ public enum DXFMapObjectType {
 	
 	private final String layerHeader;
 	private final Category category;
-	private final IBlockState blockState;
-	
-	private DXFMapObjectType(String layerHeader, Category category, IBlockState state) {
-		this.layerHeader = layerHeader;
-		this.category = category;
-		this.blockState = state;
-	}
 	
 	private DXFMapObjectType(String layerHeader, Category category) {
-		this(layerHeader, category, Blocks.DIAMOND_BLOCK.getDefaultState());
+		this.layerHeader = layerHeader;
+		this.category = category;
 	}
 	
 	public static DXFMapObjectType getTypeFromLayerName(String layerName) {
@@ -177,6 +171,30 @@ public enum DXFMapObjectType {
 	}
 	
 	public IBlockState getBlockState() {
-		return blockState;
+		switch(this) {
+			case 도로경계: 
+				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.GRAY);
+			case 도로중심선: 
+				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.YELLOW);
+			case 횡단보도: 
+				return Blocks.CONCRETE.getDefaultState();
+			case 육교: 
+				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.SILVER);
+			case 터널: 
+				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.MAGENTA);
+			case 보도: 
+				return Blocks.DOUBLE_STONE_SLAB.getDefaultState();
+			case 건물: 
+				return Blocks.BRICK_BLOCK.getDefaultState();
+			case 하천중심선:
+			case 등심선: 
+				return Blocks.LAPIS_BLOCK.getDefaultState();
+			case 하천경계:
+			case 호수:
+			case 해안선:
+				return Blocks.WATER.getDefaultState();
+			default:
+				return Blocks.DIAMOND_BLOCK.getDefaultState();
+		}
 	}
 }
