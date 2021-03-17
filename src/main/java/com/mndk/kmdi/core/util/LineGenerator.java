@@ -19,7 +19,7 @@ public class LineGenerator {
 	public static IBlockState state;
 	
 	/**
-	 * Initialize static members {@link y}, {@link world}, {@link region}, and {@link state} first to call this method.
+	 * Initialize static members {@link y}, {@link world}, {@link region}, and {@link state} first before calling this method.
 	 * */
     public static void generateFlatLine(Vector2D v1, Vector2D v2) {
 
@@ -64,7 +64,7 @@ public class LineGenerator {
     
     
     /**
-	 * Initialize static members {@link getYFunction}, {@link world}, {@link region}, and {@link state} first to call this method.
+	 * Initialize static members {@link getYFunction}, {@link world}, {@link region}, and {@link state} first before calling this method.
 	 * */
     public static void generateLineByFunction(Vector2D v1, Vector2D v2) {
 

@@ -69,13 +69,13 @@ public class DXFMapToMinecraftWorld {
         try {
             result = DXFMapParser.parse(mapFile);
         } catch(ParseException exception) {
-            throw new GeneratorException("There was an error while generating .dxf map.");
+            throw new GeneratorException("There was an error while parsing .dxf map.");
         } catch(FileNotFoundException exception) {
         	throw new GeneratorException("File not found!");
         }
         
         KmdiMod.logger.info("Successfully parsed .dxf map: " + mapFile.getName() + " (Next: generating blocks)");
-        generateBlocksBasedOnDXFMapParsedResult(result, worldEditRegion, world);
+        generateBlocksWithResult(result, worldEditRegion, world);
         
         KmdiMod.logger.info("Successfully placed all blocks in the entry list.");
         
@@ -83,7 +83,7 @@ public class DXFMapToMinecraftWorld {
     
     
     
-    public static void generateBlocksBasedOnDXFMapParsedResult(DXFMapParser.Result result, Region worldEditRegion, World world) {
+    public static void generateBlocksWithResult(DXFMapParser.Result result, Region worldEditRegion, World world) {
     	
     	List<Vector> elevationPointList = result.getElevationPoints();
     	

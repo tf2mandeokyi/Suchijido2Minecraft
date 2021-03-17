@@ -1,12 +1,12 @@
 package com.mndk.kmdi.core.util.delaunator;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -21,8 +21,6 @@ import com.mndk.kmdi.core.util.shape.Triangle;
 import com.mndk.kmdi.core.util.shape.TriangleList;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.Vector2D;
-
-import scala.actors.threadpool.Arrays;
 
 public class FastDelaunayTriangulator {
 	
@@ -616,7 +614,7 @@ public class FastDelaunayTriangulator {
 
 	
 	
-	public static void main(String[] args) throws FileNotFoundException, ParseException {
+	public static void main_(String[] args) throws FileNotFoundException, ParseException {
     	Result result = DXFMapParser.parse(new File("37612030.dxf"));
     	List<Vector> vertexes = result.getElevationPoints();
     	System.out.println(vertexes.size());
@@ -624,7 +622,7 @@ public class FastDelaunayTriangulator {
     	System.out.println(triangles.size());
 	}
 	
-	public static void main_(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {
     	int w = 400, h = 400;
 		BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
 		final int ERROR_COLOR = new Color(255, 0, 0).getRGB();
@@ -681,13 +679,13 @@ public class FastDelaunayTriangulator {
 			}
 		}
 		
-		Graphics2D g2d = (Graphics2D) image.getGraphics();
+		/*Graphics2D g2d = (Graphics2D) image.getGraphics();
 		g2d.setColor(Color.GREEN);
 		for(Triangle triangle : triangleList) {
 			g2d.drawLine((int) triangle.v1.x, (int) triangle.v1.z, (int) triangle.v2.x, (int) triangle.v2.z);
 			g2d.drawLine((int) triangle.v2.x, (int) triangle.v2.z, (int) triangle.v3.x, (int) triangle.v3.z);
 			g2d.drawLine((int) triangle.v3.x, (int) triangle.v3.z, (int) triangle.v1.x, (int) triangle.v1.z);
-		}
+		}*/
 		
 		
 		File file = new File("asdf1.png");

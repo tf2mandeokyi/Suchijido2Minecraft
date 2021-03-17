@@ -137,6 +137,11 @@ public class DXFMapPolyline extends DXFMapElement<DXFLWPolyline> {
 	                LineGenerator.generateLineByFunction(getVertex(i), getVertex(i+1));
         		}
             }
+        	if(this.isClosed()) {
+        		if(box.checkLineInside(this.getVertex(this.getVertexCount()-1), this.getVertex(0))) {
+	                LineGenerator.generateLineByFunction(getVertex(this.getVertexCount()-1), getVertex(0));
+        		}
+        	}
 		}
 		else if(region instanceof Polygonal2DRegion) {
         	DXFMapPolyline polySelection = new DXFMapPolyline((Polygonal2DRegion) region);
@@ -146,6 +151,11 @@ public class DXFMapPolyline extends DXFMapElement<DXFLWPolyline> {
 	                LineGenerator.generateLineByFunction(getVertex(i), getVertex(i+1));
         		}
             }
+        	if(this.isClosed()) {
+        		if(polySelection.checkLineIntersection(this.getVertex(this.getVertexCount()-1), this.getVertex(0))) {
+	                LineGenerator.generateLineByFunction(getVertex(this.getVertexCount()-1), getVertex(0));
+        		}
+        	}
 		}
 	}
 	
