@@ -1,0 +1,39 @@
+// Variable declaration:
+$VARIABLE
+number -> number | string -> "string"
+$END
+
+
+<LAYER_START>
+    $LAYER_ID : int
+    $LAYER_NAME : string
+    <HEADER>
+        $VERSION : int
+        $GEOMETRIC_METADATA : {
+            MASK(<mask_types=DATA_REPRESENTATIONS.reverse.foreach(type[REGION->POLYGON, LINE->LINESTRING, POINT, TEXT])>)
+            DIM(<dimension_size: int>)
+            BOUND(<x0: float>, <y0: float>, <x1: float>, <y1: float>)
+        }
+        @NULLABLE $POINT_REPRESENT : [ index: int(1, ...) ->
+            <index> SYMBOL(GM_0, <?: float>, <color: int>)
+        ]
+        @NULLABLE $LINE_REPRESENT : [ index: int(1, ...) ->
+            <index> LINEATTR(<line_type: [SOLID,]>, <?: int>, <color: int>)
+        ]
+        @NULLABLE $REGION_REPRESENT : [ index: int(1, ...) ->
+            <index> REGIONATTR(<line_type: [SOLID,]>, <?: int>, <line_color: int>, <fill_type: [SOLID100,]>, <color1: int>, <color2: int>)
+        ]
+        @NULLABLE $TEXT_REPRESENT : [ index: int(1, ...) ->
+            <index> FONT(<font_name: string?>, <font_size?: float>, <?: int>, <?: float>, <?: int>)
+        ]
+    <END>
+    <DATA>
+        [ index: global int(1, ...) ->
+            $RECORD <index>
+            <element_type: [POLYGON, LINESTRING, POINT, TEXT(<string>)]>
+            <size>
+            <data: vector<DIM>>
+            <element_type[POLYGON->REGION, LINESTRING->LINE, POINT->SYMBOL, TEXT>+"GATTR"(<REPRESENT_INDEX>)]>
+        ]
+    <END>
+<LAYER_END>

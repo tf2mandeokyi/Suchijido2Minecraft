@@ -1,0 +1,67 @@
+package com.mndk.kvm2m.core.util.math;
+
+public class Vector2DH {
+	
+	public static final Vector2DH UNIT_X = new Vector2DH(1, 0, 0);
+	
+	public double x, height, z;
+	
+	public Vector2DH(double x, double height, double z) {
+		this.x = x; this.height = height; this.z = z;
+	}
+	
+	public Vector2DH(double x, double z) {
+		this.x = x; this.height = 0; this.z = z;
+	}
+	
+	public Vector2DH(com.sk89q.worldedit.Vector v) {
+		this.x = v.getX(); this.height = v.getY(); this.z = v.getZ();
+	}
+	
+	public Vector2DH(com.sk89q.worldedit.Vector2D v) {
+		this.x = v.getX(); this.height = 0; this.z = v.getZ();
+	}
+	
+	public com.sk89q.worldedit.Vector toWorldEditVector() {
+		return new com.sk89q.worldedit.Vector(x, height, z);
+	}
+	
+	public Vector2DH add2d(Vector2DH v) {
+		return new Vector2DH(x + v.x, z + v.z);
+	}
+	
+	public Vector2DH sub2d(Vector2DH v) {
+		return new Vector2DH(x - v.x, z + v.z);
+	}
+	
+	public Vector2DH mult2d(double s) {
+		return new Vector2DH(x * s, height, z * s);
+	}
+	
+	public Vector2DH div2d(double s) {
+		return new Vector2DH(x / s, height, z / s);
+	}
+	
+	public double dot2d(Vector2DH v) {
+		return x * v.x + z * v.z;
+	}
+	
+	public double cross2d(Vector2DH v) {
+    	return x*v.z - v.x*z;
+    }
+	
+	public double distance2dSq(Vector2DH v) {
+		double dx = x - v.x, dz = z - v.z;
+		return dx * dx + dz * dz;
+	}
+	
+	public Vector2DH withHeight(double height_) {
+		return new Vector2DH(x, height_, z);
+	}
+	
+	@Override
+    public String toString() {
+        return "(" + x + ", " + height + ", " + z + ")";
+    }
+	
+}
