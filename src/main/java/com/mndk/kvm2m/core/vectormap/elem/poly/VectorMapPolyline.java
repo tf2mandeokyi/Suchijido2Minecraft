@@ -41,25 +41,25 @@ public class VectorMapPolyline extends VectorMapElement {
     
     public VectorMapPolyline(NgiPolygonElement polyline, Grs80Projection projection, VectorMapObjectType type) {
     	super(type);
+        this.closed = true;
     	int size = polyline.vertexData[0].getSize();
         this.vertexList = new Vector2DH[size];
         for(int i = 0; i < size; ++i) {
             NgiVertex vertex = polyline.vertexData[0].getVertex(i);
             this.vertexList[i] = projectGrs80CoordToBteCoord(projection, vertex.getAxis(0), vertex.getAxis(1));
         }
-        this.closed = vertexList[0].equals(vertexList[vertexList.length - 1]);
     }
 
     
     public VectorMapPolyline(NgiLineElement line, Grs80Projection projection, VectorMapObjectType type) {
     	super(type);
+        this.closed = false;
     	int size = line.lineData.getSize();
         this.vertexList = new Vector2DH[size];
         for(int i = 0; i < size; ++i) {
             NgiVertex vertex = line.lineData.getVertex(i);
             this.vertexList[i] = projectGrs80CoordToBteCoord(projection, vertex.getAxis(0), vertex.getAxis(1));
         }
-        this.closed = vertexList[0].equals(vertexList[vertexList.length - 1]);
     }
     
     
@@ -119,13 +119,16 @@ public class VectorMapPolyline extends VectorMapElement {
 	
 	
 	
-	public void generatePolygonOnTerrain(FlatRegion region, World w, IBlockState state, TriangleList triangleList) {
+	public void generatePolygonOnTerrain(FlatRegion region, World w, IBlockState state, TriangleList triangleList, int y) {
+		
+		if(state == null) return;
 		
 		LineGenerator.world = w;
 		LineGenerator.state = state;
+		LineGenerator.region = region;
 		LineGenerator.getYFunction = v -> {
 			double height = triangleList.interpolateHeight(v);
-			return (int) Math.round(height);
+			return (int) Math.round(height) + y;
 		};
 		
 		if(region instanceof CuboidRegion) {
@@ -133,12 +136,12 @@ public class VectorMapPolyline extends VectorMapElement {
 			
         	for(int i=0;i<this.getVertexCount()-1;i++) {
         		if(box.checkLineInside(this.getVertex(i), this.getVertex(i+1))) {
-	                LineGenerator.generateLine(getVertex(i), getVertex(i+1));
+	                LineGenerator.scanLine(getVertex(i), getVertex(i+1));
         		}
             }
         	if(this.isClosed()) {
         		if(box.checkLineInside(this.getVertex(this.getVertexCount()-1), this.getVertex(0))) {
-	                LineGenerator.generateLine(getVertex(this.getVertexCount()-1), getVertex(0));
+	                LineGenerator.scanLine(getVertex(this.getVertexCount()-1), getVertex(0));
         		}
         	}
 		}
@@ -147,12 +150,12 @@ public class VectorMapPolyline extends VectorMapElement {
         	
         	for(int i=0;i<this.getVertexCount()-1;i++) {
         		if(polySelection.checkLineIntersection(this.getVertex(i), this.getVertex(i+1))) {
-	                LineGenerator.generateLine(getVertex(i), getVertex(i+1));
+	                LineGenerator.scanLine(getVertex(i), getVertex(i+1));
         		}
             }
         	if(this.isClosed()) {
         		if(polySelection.checkLineIntersection(this.getVertex(this.getVertexCount()-1), this.getVertex(0))) {
-	                LineGenerator.generateLine(getVertex(this.getVertexCount()-1), getVertex(0));
+	                LineGenerator.scanLine(getVertex(this.getVertexCount()-1), getVertex(0));
         		}
         	}
 		}

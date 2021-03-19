@@ -171,21 +171,31 @@ public enum VectorMapObjectType {
 	}
 	
 	public IBlockState getBlockState() {
+		if(this.layerHeader.startsWith("G") || this.layerHeader.startsWith("H")) {
+			return null;
+		}
 		switch(this) {
+			// A types
 			case 도로경계: 
 				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.GRAY);
 			case 도로중심선: 
 				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.YELLOW);
+			case 보도: 
+				return Blocks.DOUBLE_STONE_SLAB.getDefaultState();
 			case 횡단보도: 
 				return Blocks.CONCRETE.getDefaultState();
 			case 육교: 
 				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.SILVER);
 			case 터널: 
 				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.MAGENTA);
-			case 보도: 
-				return Blocks.DOUBLE_STONE_SLAB.getDefaultState();
+			
+			// B types
 			case 건물: 
 				return Blocks.BRICK_BLOCK.getDefaultState();
+			case 담장:
+				return Blocks.OAK_FENCE.getDefaultState();
+			
+			// E types
 			case 하천중심선:
 			case 등심선: 
 				return Blocks.LAPIS_BLOCK.getDefaultState();
@@ -193,8 +203,24 @@ public enum VectorMapObjectType {
 			case 호수:
 			case 해안선:
 				return Blocks.WATER.getDefaultState();
+			
 			default:
-				return Blocks.DIAMOND_BLOCK.getDefaultState();
+				return null;
+		}
+	}
+	
+	public int getDefaultHeight() {
+		switch(this) {
+			case 담장:
+			case 터널입구:
+			case 철도: case 철도경계: case 철도중심선: case 철도전차대:
+				return 1;
+			case 육교:
+			case 입체교차부:
+				return 2;
+			
+			default:
+				return 0;
 		}
 	}
 }

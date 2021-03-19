@@ -80,6 +80,9 @@ public class NgiMapParser {
 	    		result.getElevationPoints().add(v.withHeight(contour.getElevation()));
 	    	}
 	    }
+		else if(type == VectorMapObjectType.도곽선) {
+	    	result.setBoundary(new VectorMapPolyline(line, projection, VectorMapObjectType.도곽선));
+	    }
 	    else {
 	    	result.getPolylines().add(new VectorMapPolyline(line, projection, type));
 	    }
@@ -103,6 +106,7 @@ public class NgiMapParser {
 	
 	
 	public static void main(String[] args) throws IOException {
-		NgiMapParser.parse(new File("376081986.ngi"));
+		VectorMapParserResult r = NgiMapParser.parse(new File("376081986.ngi"));
+		System.out.println(r.getBoundary());
 	}
 }

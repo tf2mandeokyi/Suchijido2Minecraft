@@ -1,13 +1,12 @@
 package com.mndk.kvm2m.core.vectormap;
 
 import com.mndk.kvm2m.core.util.delaunator.FastDelaunayTriangulator;
-import com.mndk.kvm2m.core.util.math.Vector2DH;
+import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VectorMapPolyline;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
-import com.sk89q.worldedit.Vector2D;
 import com.sk89q.worldedit.forge.ForgeWorld;
 import com.sk89q.worldedit.forge.ForgeWorldEdit;
 import com.sk89q.worldedit.regions.FlatRegion;
@@ -20,7 +19,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 
@@ -42,31 +40,27 @@ public class VectorMapToMinecraftWorld {
         // Validating world edit region
         FlatRegion worldEditRegion = validateWorldEditRegion(world, player);
         
-    	VectorMapPolyline boundary = result.getBoundary();
-        
-        // Generate triangles with delaunay triangulate algorithm
+        // Generate triangles based on contour lines with delaunay triangulate algorithm
     	TriangleList triangleList = FastDelaunayTriangulator.from(result.getElevationPoints()).getTriangleList();
 
         KVectorMap2MinecraftMod.logger.info("Generating surface...");
-    	
-        Iterable<Vector2D> vector2ds = worldEditRegion.asFlatRegion();
-        for(Vector2D v : vector2ds) {
-        	Vector2DH temp = new Vector2DH(v);
-			
-			if(!worldEditRegion.contains(temp.toWorldEditVector()) || !boundary.containsPoint(temp)) continue;
-
-			double height = triangleList.interpolateHeight(temp);
-			if(height != height) continue;
-			
-			BlockPos pos = new BlockPos((int) temp.x, Math.round(height), (int) temp.z);
-
-			world.setBlockState(pos, CONTOUR_AREA_BLOCK);
+        
+        for(Triangle triangle : triangleList) {
+        	triangle.rasterize(world, worldEditRegion, CONTOUR_AREA_BLOCK);
         }
 		
 		KVectorMap2MinecraftMod.logger.info("Generating lines...");
 		
 		for(VectorMapPolyline polyline : result.getPolylines()) {
-			polyline.generatePolygonOnTerrain(worldEditRegion, world, polyline.getType().getBlockState(), triangleList);
+			VectorMapObjectType type = polyline.getType();
+			
+			polyline.generatePolygonOnTerrain(
+					worldEditRegion, 
+					world, 
+					type.getBlockState(), 
+					triangleList,
+					type.getDefaultHeight()
+			);
 		}
         
         KVectorMap2MinecraftMod.logger.info("Successfully placed all blocks in the entry list.");
@@ -79,12 +73,12 @@ public class VectorMapToMinecraftWorld {
     	
     	IChunkProvider chunkProvider = world.getChunkProvider();
         if(!(chunkProvider instanceof CubeProviderServer)) {
-            throw new VectorMapParserException("You must be in cc map to generate .dxf map.");
+            throw new VectorMapParserException("You must be in a cubic chunks world to generate .dxf map.");
         }
 
         ICubeGenerator cubeGenerator = ((CubeProviderServer) chunkProvider).getCubeGenerator();
         if (!(cubeGenerator instanceof EarthGenerator)) {
-            throw new VectorMapParserException("You must be in terra map to generate .dxf map.");
+            throw new VectorMapParserException("You must be in a terra 1 to 1 world to generate .dxf map.");
         }
     	
     }

@@ -82,7 +82,6 @@ public abstract class VectorMapGeneratorCommand extends CommandBase {
     
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos targetPos) {
-    	System.out.println(Arrays.toString(args));
     	if(args.length == 0) {
     		return Arrays.asList(getFilesNDirectoriesInDir("./", getExtension()));
     	} else {

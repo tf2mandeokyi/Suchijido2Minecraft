@@ -8,7 +8,7 @@ import com.mndk.kvm2m.core.util.math.Vector2DH;
 public class TriangleList extends ArrayList<Triangle> {
 	public double interpolateHeight(Vector2DH point) {
 		for(Triangle triangle : this) {
-			if(triangle.contains_line(point)) {
+			if(triangle.contains(point) != null) {
 				return triangle.interpolateY(point);
 			}
 		}
