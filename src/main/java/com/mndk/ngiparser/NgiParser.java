@@ -2,67 +2,124 @@ package com.mndk.ngiparser;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FilenameUtils;
+
+import com.mndk.ngiparser.nda.NdaDataColumn;
 import com.mndk.ngiparser.ngi.NgiHeader;
 import com.mndk.ngiparser.ngi.NgiLayer;
 import com.mndk.ngiparser.ngi.NgiParseException;
+import com.mndk.ngiparser.ngi.NgiParseResult;
 import com.mndk.ngiparser.ngi.element.NgiElement;
 import com.mndk.ngiparser.ngi.element.NgiLineElement;
 import com.mndk.ngiparser.ngi.element.NgiPointElement;
 import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
+import com.mndk.ngiparser.ngi.element.NgiTextElement;
 
 public class NgiParser {
 
-    private BufferedReader reader;
+	
+	
+    private BufferedReader ngiReader, ndaReader;
+    private NgiParseResult result;
 
-    public List<NgiLayer> parse(File file) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        this.reader = reader;
-        return parse();
+    
+    
+    /**
+     * Parses ngi file, and if available, it also parses same-filename-having nda file.
+     * @param ngiFilePath The path of the .ngi file
+     * */
+    public static NgiParseResult parse(String ngiFilePath, String encoding) throws IOException {
+    	if(!FilenameUtils.getExtension(ngiFilePath).equals("ngi"))
+    		throw new NgiParseException();
+    	String ndaFilePath = replaceLast(ngiFilePath, ".ngi", ".nda");
+    	if(!new File(ndaFilePath).exists()) ndaFilePath = null;
+        return parse(ngiFilePath, ndaFilePath, encoding);
     }
 
-    public List<NgiLayer> parse(InputStream stream) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-        this.reader = reader;
-        return parse();
-    }
+    
 
-    private List<NgiLayer> parse() throws IOException {
-        List<NgiLayer> layers = new ArrayList<>();
-        while(reader.ready()) {
-            String line = reader.readLine();
+    /**
+     * Parses both ngi file and nda file, and then combines them.
+     * @param ngiFilePath The path of the .ngi file
+     * @param ndaFilePath The path of the .nda file
+     * */
+    public static NgiParseResult parse(String ngiFilePath, String ndaFilePath, String encoding) throws IOException {
+    	return new NgiParser().parse(
+        		new BufferedReader(new InputStreamReader(new FileInputStream(ngiFilePath), encoding)),
+        		ndaFilePath == null ? null : new BufferedReader(new InputStreamReader(new FileInputStream(ndaFilePath), encoding))
+        );
+    }
+    
+    
+    
+    /**
+     * Parses both ngi file and nda file, and then combines them.
+     * @param ngiFilePath The path of the .ngi file
+     * @param ndaFilePath The path of the .nda file
+     * */
+    public static NgiParseResult parse(InputStream ngiStream, InputStream ndaStream) throws IOException {
+    	return new NgiParser().parse(
+        		new BufferedReader(new InputStreamReader(ngiStream)),
+        		ndaStream == null ? null : new BufferedReader(new InputStreamReader(ndaStream))
+        );
+    }
+    
+    
+
+    private NgiParseResult parse(BufferedReader ngiReader, BufferedReader ndaReader) throws IOException {
+        this.ngiReader = ngiReader;
+    	this.ndaReader = ndaReader;
+    	result = new NgiParseResult(new HashMap<>(), new HashMap<>());
+    	
+    	String line;
+    	
+        while(ngiReader.ready()) {
+            line = ngiReader.readLine();
             if(line.equals("<LAYER_START>")) {
-                layers.add(readLayer());
+                readNgiLayer();
             }
         }
-        return layers;
+        
+        if(this.ndaReader != null) {
+        	while(ndaReader.ready()) {
+                line = ndaReader.readLine();
+                if(line.equals("<LAYER_START>")) {
+                    readNdaLayer();
+                }
+            }
+        }
+        
+        return result;
     }
 
-    private NgiLayer readLayer() throws IOException {
+
+
+	private void readNgiLayer() throws IOException {
         NgiLayer layer = new NgiLayer();
-        layerLoop: while(reader.ready()) {
-            String line = reader.readLine();
+        int id = 0;
+        layerLoop: while(ngiReader.ready()) {
+            String line = ngiReader.readLine();
             switch(line) {
                 case "$LAYER_ID":
-                    layer.id = this.readIntegerVariable();
+                    id = readIntegerVariable(ngiReader);
                     break;
                 case "$LAYER_NAME":
-                    layer.name = this.readStringVariable();
+                    layer.name = readStringVariable(ngiReader);
                     break;
                 case "<HEADER>":
-                    layer.header = this.readHeader();
+                    layer.header = this.readNgiHeader();
                     break;
                 case "<DATA>":
-                	this.readData(layer);
+                	this.readNgiData(layer);
                     break;
                 case "<LAYER_END>":
                     break layerLoop;
@@ -70,132 +127,63 @@ public class NgiParser {
                     throw new NgiParseException();
             }
         }
-        return layer;
+        result.addLayer(id, layer);
     }
+    
+    
 
-    private void readData(NgiLayer layer) throws IOException {
-    	Map<Integer, NgiElement<?>> result = new HashMap<>();
-    	while(reader.ready()) {
-            String line = reader.readLine();
-            if(line.startsWith("$RECORD")) {
-            	int index = Integer.parseInt(line.substring(line.indexOf(" ") + 1));
-            	NgiElement<?> element = readRecord(layer);
-            	result.put(index, element);
+    private void readNdaLayer() throws IOException {
+    	int layerId = 0;
+    	
+        layerLoop: while(ndaReader.ready()) {
+            String line = ndaReader.readLine();
+            switch(line) {
+                case "$LAYER_ID":
+                    layerId = readIntegerVariable(ndaReader);
+                    break;
+                case "$LAYER_NAME":
+                	readStringVariable(ndaReader);
+                    // I mean, the name should be already declared in .ngi file,
+                	// so why do you need to read this again?
+                    break;
+                case "<HEADER>":
+                    this.readNdaHeader(layerId);
+                    break;
+                case "<DATA>":
+                	this.readNdaData(layerId);
+                    break;
+                case "<LAYER_END>":
+                    break layerLoop;
+                default:
+                    throw new NgiParseException();
             }
-            else if(line.equals("<END>")) break;
         }
-    	layer.data = result;
 	}
 
-
-	private NgiElement<?> readRecord(NgiLayer layer) throws IOException {
-    	
-        String type = reader.readLine(), line;
-        int dimensions = layer.header.dimensions;
-        
-        if(type.startsWith("TEXT")) {
-        	// TODO implement this
-        	return null;
-        }
-        
-        int vertexCount, attributeIndex;
-        
-        switch(type) {
-        	case "POINT":
-        		NgiPointElement pointElement = new NgiPointElement();
-        		pointElement.position = new double[dimensions];
-
-            	String[] pointStringArr = reader.readLine().split(" ");
-        		for(int d = 0; d < dimensions; ++d) {
-        			pointElement.position[d] = Double.parseDouble(pointStringArr[d]);
-            	}
-                
-                line = reader.readLine();
-                if(!line.startsWith("SYMBOLGATTR")) throw new NgiParseException();
-                attributeIndex = Integer.parseInt(line.substring(line.indexOf("(") + 1, line.lastIndexOf(")")));
-                pointElement.attribute = layer.header.pointAttributes.get(attributeIndex);
-        		
-        		return pointElement;
-        		
-        	case "LINESTRING":
-        		NgiLineElement lineElement = new NgiLineElement();
-                vertexCount = Integer.parseInt(reader.readLine());
-                lineElement.lineData = new double[vertexCount][];
-                
-                for(int v = 0; v < vertexCount; ++v) {
-                	lineElement.lineData[v] = new double[dimensions];
-                	String[] vertexStringArr = reader.readLine().split(" ");
-                	
-                	for(int d = 0; d < dimensions; ++d) {
-                		lineElement.lineData[v][d] = Double.parseDouble(vertexStringArr[d]);
-                	}
-                }
-                
-                line = reader.readLine();
-                if(!line.startsWith("LINEGATTR")) throw new NgiParseException();
-                attributeIndex = Integer.parseInt(line.substring(line.indexOf("(") + 1, line.lastIndexOf(")")));
-                lineElement.attribute = layer.header.lineAttributes.get(attributeIndex);
-                
-        		return lineElement;
-        		
-        	case "POLYGON":
-        		NgiPolygonElement polygonElement = new NgiPolygonElement();
-        		
-        		line = reader.readLine();
-        		if(!line.startsWith("NUMPARTS")) throw new NgiParseException();
-                int numParts = Integer.parseInt(line.substring(9));
-                polygonElement.vertexData = new double[numParts][][];
-                
-                for(int p = 0; p < numParts; ++p) {
-                	vertexCount = Integer.parseInt(reader.readLine());
-                	polygonElement.vertexData[p] = new double[vertexCount][];
-                	
-                	for(int v = 0; v < vertexCount; ++v) {
-                		polygonElement.vertexData[p][v] = new double[dimensions];
-                    	String[] vertexStringArr = reader.readLine().split(" ");
-                    	
-                    	for(int d = 0; d < dimensions; ++d) {
-                    		polygonElement.vertexData[p][v][d] = Double.parseDouble(vertexStringArr[d]);
-                    	}
-                    }
-                }
-                
-                line = reader.readLine();
-                if(!line.startsWith("REGIONGATTR")) throw new NgiParseException();
-                attributeIndex = Integer.parseInt(line.substring(line.indexOf("(") + 1, line.lastIndexOf(")")));
-                polygonElement.attribute = layer.header.polygonAttributes.get(attributeIndex);
-                
-        		return polygonElement;
-        		
-        	default:
-        		throw new NgiParseException();
-        }
-        
-    }
-
-	private NgiHeader readHeader() throws IOException {
+	
+	
+	private NgiHeader readNgiHeader() throws IOException {
         NgiHeader result = new NgiHeader();
-        headerLoop: while(reader.ready()) {
-            String line = reader.readLine();
+        headerLoop: while(ngiReader.ready()) {
+            String line = ngiReader.readLine();
             switch(line) {
                 case "$VERSION":
-                    result.version = this.readIntegerVariable();
+                    result.version = readIntegerVariable(ngiReader);
                     break;
                 case "$GEOMETRIC_METADATA":
-                    this.readGeometricMetadata(result);
+                    this.readNgiGeometricMetadata(result);
                     break;
                 case "$POINT_REPRESENT":
-                    result.pointAttributes = this.readPointAttributes();
+                    result.pointAttributes = this.readNgiHeaderAttributes(new NgiPointElement.Attr());
                     break;
                 case "$LINE_REPRESENT":
-                    result.lineAttributes = this.readLineAttributes();
+                    result.lineAttributes = this.readNgiHeaderAttributes(new NgiLineElement.Attr());
                     break;
                 case "$REGION_REPRESENT":
-                    result.polygonAttributes = this.readPolygonAttributes();
+                    result.polygonAttributes = this.readNgiHeaderAttributes(new NgiPolygonElement.Attr());
                     break;
                 case "$TEXT_REPRESENT":
-                	// I'm not going to implement this, since it's not necessary for the generator.
-                	// But for the future (I guess), I'll just leave a TODO here.
+                	result.textAttributes = this.readNgiHeaderAttributes(new NgiTextElement.Attr());
                     break;
                 case "<END>":
                     break headerLoop;
@@ -203,79 +191,33 @@ public class NgiParser {
         }
         return result;
     }
+	
+	
 
-    private Map<Integer, NgiPointElement.Attr> readPointAttributes() throws IOException {
-        Map<Integer, NgiPointElement.Attr> attributes = new HashMap<>();
-        while(reader.ready()) {
-            String line = reader.readLine();
+    private <T extends NgiElement.Attr> Map<Integer, T> readNgiHeaderAttributes(T newAttrInstance) throws IOException {
+        Map<Integer, T> attributes = new HashMap<>();
+        while(ngiReader.ready()) {
+            String line = ngiReader.readLine();
             if(line.equals("$END")) break;
             
             int firstSpace = line.indexOf(' ');
             int index = Integer.parseInt(line.substring(0, firstSpace));
             String attr = line.substring(firstSpace + 1);
             
-            String[] parameters = attr.substring(attr.indexOf('('), attr.lastIndexOf(')')).split(",");
+            String[] parameters = attr.substring(attr.indexOf('('), attr.lastIndexOf(')')).split(",\\s*");
             
-            NgiPointElement.Attr attribute = new NgiPointElement.Attr();
-            attribute.type = parameters[0];
-            attribute.unknownFloat = Double.parseDouble(parameters[1].replace(" ", ""));
-            attribute.color = Integer.parseInt(parameters[2].replace(" ", ""));
+            newAttrInstance.from(parameters);
             
-            attributes.put(index, attribute);
+            attributes.put(index, newAttrInstance);
         }
         return attributes;
     }
 
-    private Map<Integer, NgiLineElement.Attr> readLineAttributes() throws IOException {
-        Map<Integer, NgiLineElement.Attr> attributes = new HashMap<>();
-        while(reader.ready()) {
-            String line = reader.readLine();
-            if(line.equals("$END")) break;
-            
-            int firstSpace = line.indexOf(' ');
-            int index = Integer.parseInt(line.substring(0, firstSpace));
-            String attr = line.substring(firstSpace + 1);
-            
-            String[] parameters = attr.substring(attr.indexOf('('), attr.lastIndexOf(')')).split(",");
-            
-            NgiLineElement.Attr attribute = new NgiLineElement.Attr();
-            attribute.type = parameters[0];
-            attribute.thickness = Integer.parseInt(parameters[1].replace(" ", ""));
-            attribute.color = Integer.parseInt(parameters[2].replace(" ", ""));
-            
-            attributes.put(index, attribute);
-        }
-        return attributes;
-    }
-
-    private Map<Integer, NgiPolygonElement.Attr> readPolygonAttributes() throws IOException {
-        Map<Integer, NgiPolygonElement.Attr> attributes = new HashMap<>();
-        while(reader.ready()) {
-            String line = reader.readLine();
-            if(line.equals("$END")) break;
-            
-            int firstSpace = line.indexOf(' ');
-            int index = Integer.parseInt(line.substring(0, firstSpace));
-            String attr = line.substring(firstSpace + 1);
-            
-            String[] parameters = attr.substring(attr.indexOf('('), attr.lastIndexOf(')')).split(",");
-            
-            NgiPolygonElement.Attr attribute = new NgiPolygonElement.Attr();
-            attribute.lineType = parameters[0];
-            attribute.thickness = Integer.parseInt(parameters[1].replace(" ", ""));
-            attribute.lineColor = Integer.parseInt(parameters[2].replace(" ", ""));
-            attribute.fillType = parameters[3].replace(" ", "");
-            attribute.color1 = Integer.parseInt(parameters[4].replace(" ", ""));
-            attribute.color2 = Integer.parseInt(parameters[5].replace(" ", ""));
-            
-            attributes.put(index, attribute);
-        }
-        return attributes;
-    }
-
-    private void readGeometricMetadata(NgiHeader header) throws IOException {
-        while(reader.ready()) {
-            String line = reader.readLine();
+    
+    
+    private void readNgiGeometricMetadata(NgiHeader header) throws IOException {
+        while(ngiReader.ready()) {
+            String line = ngiReader.readLine();
             if(line.startsWith("MASK(") && line.endsWith(")")) {
                 // TODO figure out how to deal with this
             	// or not, I mean why would this be necessary smh
@@ -296,7 +238,176 @@ public class NgiParser {
         }
     }
 
-    private int readIntegerVariable() throws IOException {
+	
+	
+	private void readNdaHeader(int layerId) throws IOException {
+        NdaDataColumn[] columnList = new NdaDataColumn[0];
+        headerLoop: while(ndaReader.ready()) {
+            String line = ndaReader.readLine();
+            switch(line) {
+                case "$VERSION":
+                    // Skip version declaration
+                    break;
+                case "$ASPATIAL_FIELD_DEF":
+                	columnList = this.readNdaHeaderColumns();
+                    break;
+                case "<END>":
+                    break headerLoop;
+            }
+        }
+        result.getLayer(layerId).header.columns = columnList;
+    }
+
+	
+	
+	private NdaDataColumn[] readNdaHeaderColumns() throws IOException {
+        List<NdaDataColumn> result = new ArrayList<>();
+        while(ndaReader.ready()) {
+            String line = ndaReader.readLine();
+            if(line.equals("$END")) break;
+            else if(line.startsWith("ATTRIB")) {
+            	String columnData = line.substring(line.indexOf("(") + 1, line.indexOf(")"));
+            	result.add(new NdaDataColumn(parseDataParametersToObject(columnData)));
+            }
+        }
+        return result.toArray(new NdaDataColumn[0]);
+    }
+    
+    
+
+    private void readNgiData(NgiLayer layer) throws IOException {
+    	Map<Integer, NgiElement<?>> result = new HashMap<>();
+    	while(ngiReader.ready()) {
+            String line = ngiReader.readLine();
+            if(line.startsWith("$RECORD")) {
+            	int recordIndex = Integer.parseInt(line.substring(line.indexOf(" ") + 1));
+            	NgiElement<?> element = readNgiRecord(layer);
+            	result.put(recordIndex, element);
+            	this.result.addElement(recordIndex, element);
+            }
+            else if(line.equals("<END>")) break;
+        }
+    	layer.data = result;
+	}
+    
+    
+
+    private void readNdaData(int layerId) throws IOException {
+    	while(ndaReader.ready()) {
+            String line = ndaReader.readLine();
+            if(line.startsWith("$RECORD")) {
+            	int recordIndex = Integer.parseInt(line.substring(line.indexOf(" ") + 1));
+            	NgiElement<?> element = result.getElement(recordIndex);
+            	String nextLine = ndaReader.readLine();
+            	Object[] row = parseDataParametersToObject(nextLine);
+            	element.rowData = row;
+            }
+            else if(line.equals("<END>")) break;
+        }
+	}
+
+    
+
+	private NgiElement<?> readNgiRecord(NgiLayer layer) throws IOException {
+    	
+        String type = ngiReader.readLine(), line;
+        int dimensions = layer.header.dimensions;
+        
+        int vertexCount, attributeIndex;
+        
+        if(type.startsWith("TEXT")) {
+    		NgiTextElement textElement = new NgiTextElement(layer);
+        	textElement.text = type.substring(6, type.length() - 2);
+        	textElement.position = new double[dimensions];
+
+        	String[] pointStringArr = ngiReader.readLine().split(" ");
+    		for(int d = 0; d < dimensions; ++d) {
+    			textElement.position[d] = Double.parseDouble(pointStringArr[d]);
+        	}
+            
+            line = ngiReader.readLine();
+            if(!line.startsWith("TEXTGATTR")) throw new NgiParseException();
+            attributeIndex = Integer.parseInt(line.substring(line.indexOf("(") + 1, line.lastIndexOf(")")));
+            textElement.attribute = layer.header.textAttributes.get(attributeIndex);
+        	return textElement;
+        }
+        
+        switch(type) {
+        	case "POINT":
+        		NgiPointElement pointElement = new NgiPointElement(layer);
+        		pointElement.position = new double[dimensions];
+
+            	String[] pointStringArr = ngiReader.readLine().split(" ");
+        		for(int d = 0; d < dimensions; ++d) {
+        			pointElement.position[d] = Double.parseDouble(pointStringArr[d]);
+            	}
+                
+                line = ngiReader.readLine();
+                if(!line.startsWith("SYMBOLGATTR")) throw new NgiParseException();
+                attributeIndex = Integer.parseInt(line.substring(line.indexOf("(") + 1, line.lastIndexOf(")")));
+                pointElement.attribute = layer.header.pointAttributes.get(attributeIndex);
+        		
+        		return pointElement;
+        		
+        	case "LINESTRING":
+        		NgiLineElement lineElement = new NgiLineElement(layer);
+                vertexCount = Integer.parseInt(ngiReader.readLine());
+                lineElement.lineData = new double[vertexCount][];
+                
+                for(int v = 0; v < vertexCount; ++v) {
+                	lineElement.lineData[v] = new double[dimensions];
+                	String[] vertexStringArr = ngiReader.readLine().split(" ");
+                	
+                	for(int d = 0; d < dimensions; ++d) {
+                		lineElement.lineData[v][d] = Double.parseDouble(vertexStringArr[d]);
+                	}
+                }
+                
+                line = ngiReader.readLine();
+                if(!line.startsWith("LINEGATTR")) throw new NgiParseException();
+                attributeIndex = Integer.parseInt(line.substring(line.indexOf("(") + 1, line.lastIndexOf(")")));
+                lineElement.attribute = layer.header.lineAttributes.get(attributeIndex);
+                
+        		return lineElement;
+        		
+        	case "POLYGON":
+        		NgiPolygonElement polygonElement = new NgiPolygonElement(layer);
+        		
+        		line = ngiReader.readLine();
+        		if(!line.startsWith("NUMPARTS")) throw new NgiParseException();
+                int numParts = Integer.parseInt(line.substring(9));
+                polygonElement.vertexData = new double[numParts][][];
+                
+                for(int p = 0; p < numParts; ++p) {
+                	vertexCount = Integer.parseInt(ngiReader.readLine());
+                	polygonElement.vertexData[p] = new double[vertexCount][];
+                	
+                	for(int v = 0; v < vertexCount; ++v) {
+                		polygonElement.vertexData[p][v] = new double[dimensions];
+                    	String[] vertexStringArr = ngiReader.readLine().split(" ");
+                    	
+                    	for(int d = 0; d < dimensions; ++d) {
+                    		polygonElement.vertexData[p][v][d] = Double.parseDouble(vertexStringArr[d]);
+                    	}
+                    }
+                }
+                
+                line = ngiReader.readLine();
+                if(!line.startsWith("REGIONGATTR")) throw new NgiParseException();
+                attributeIndex = Integer.parseInt(line.substring(line.indexOf("(") + 1, line.lastIndexOf(")")));
+                polygonElement.attribute = layer.header.polygonAttributes.get(attributeIndex);
+                
+        		return polygonElement;
+        		
+        	default:
+        		throw new NgiParseException();
+        }
+        
+    }
+
+    
+    
+    private static int readIntegerVariable(BufferedReader reader) throws IOException {
         String line = reader.readLine();
         int result = Integer.parseInt(line);
         line = reader.readLine();
@@ -304,7 +415,9 @@ public class NgiParser {
         return result;
     }
 
-    private String readStringVariable() throws IOException {
+    
+    
+    private static String readStringVariable(BufferedReader reader) throws IOException {
         String result = reader.readLine();
         if(!result.startsWith("\"") || !result.endsWith("\""))
             throw new NgiParseException();
@@ -314,21 +427,57 @@ public class NgiParser {
         return result;
     }
     
+    
+    
+    private static Object[] parseDataParametersToObject(String parametersString) {
+    	return parseDataParametersToObject(parametersString, "\\s*,\\s*");
+    }
+    
+    
+    
+    private static Object[] parseDataParametersToObject(String parametersString, String splitRegex) {
+    	String[] parameters = parametersString.split(splitRegex);
+    	Object[] result = new Object[parameters.length];
+    	for(int i = 0; i < parameters.length; ++i) {
+    		String temp = parameters[i];
+    		if(temp.startsWith("\"") && temp.endsWith("\"")) {
+    			result[i] = temp.substring(1, temp.length() - 1);
+    		}
+    		else if(temp.toLowerCase().equals("false") || temp.toLowerCase().equals("true")) {
+    			result[i] = Boolean.parseBoolean(temp);
+    		}
+    		else if(temp.matches("-?(\\d+)")) { // check integer
+    			result[i] = Integer.parseInt(temp);
+    		}
+    		else if(temp.matches("-?(\\d+\\.?|\\d*.\\d+)")) { // check float
+    			result[i] = Double.parseDouble(temp);
+    		}
+    		else {
+    			result[i] = temp;
+    		}
+    	}
+    	return result;
+    }
+
+    
+    
+    private static String replaceLast(String text, String regex, String replacement) {
+        return text.replaceFirst("(?s)"+regex+"(?!.*?"+regex+")", replacement);
+    }
+    
+    
+    
     public static void main(String[] args) throws IOException {
-		File file = new File("(B010)수치지도_376081986_2018_00000816502746.ngi");
-		List<NgiLayer> layers = new NgiParser().parse(file);
+		Map<Integer, NgiLayer> layers = NgiParser.parse("(B010)수치지도_376081986_2018_00000816502746.ngi", "MS949").getLayers();
 		System.out.println(layers.size());
-		for(NgiLayer layer : layers) {
-			if(layer.name.startsWith("B001")) continue;
+		for(Map.Entry<Integer, NgiLayer> entry : layers.entrySet()) {
+			NgiLayer layer = entry.getValue();
+			if(!layer.name.startsWith("F001")) continue;
 			System.out.println(layer.name);
-			for(Map.Entry<Integer, NgiElement<?>> entry : layer.data.entrySet()) {
-				NgiElement<?> value = entry.getValue();
-				if(value instanceof NgiPolygonElement) {
-					System.out.println(entry.getKey() + ": " + Arrays.deepToString(((NgiPolygonElement) value).vertexData));
-					System.out.println(" " + ((NgiPolygonElement.Attr) value.attribute).thickness);
-				}
+			for(Map.Entry<Integer, NgiElement<?>> entry1 : layer.data.entrySet()) {
+				NgiElement<?> value = entry1.getValue();
+				System.out.println(entry1.getKey() + ": " + value.getRowData("등고수치"));
 			}
 		}
 	}
-
 }
