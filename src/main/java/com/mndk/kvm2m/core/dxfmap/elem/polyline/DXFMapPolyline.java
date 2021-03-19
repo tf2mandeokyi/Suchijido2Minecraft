@@ -94,15 +94,9 @@ public class DXFMapPolyline extends DXFMapElement<DXFLWPolyline> {
 	
 	public void generatePolygonOnTerrain(FlatRegion region, World w, IBlockState state, TriangleList triangleList) {
 		
-		LineGenerator.region = region;
 		LineGenerator.world = w;
 		LineGenerator.state = state;
 		LineGenerator.getYFunction = v -> {
-			double height = triangleList.interpolateHeight(v);
-			return (int) Math.round(height);
-		};
-		
-		LineGenerator.containsFunction = v -> {
 			double height = triangleList.interpolateHeight(v);
 			return (int) Math.round(height);
 		};
@@ -112,12 +106,12 @@ public class DXFMapPolyline extends DXFMapElement<DXFLWPolyline> {
 			
         	for(int i=0;i<this.getVertexCount()-1;i++) {
         		if(box.checkLineInside(this.getVertex(i), this.getVertex(i+1))) {
-	                LineGenerator.generateLineByFunction(getVertex(i), getVertex(i+1));
+	                LineGenerator.generateLine(getVertex(i), getVertex(i+1));
         		}
             }
         	if(this.isClosed()) {
         		if(box.checkLineInside(this.getVertex(this.getVertexCount()-1), this.getVertex(0))) {
-	                LineGenerator.generateLineByFunction(getVertex(this.getVertexCount()-1), getVertex(0));
+	                LineGenerator.generateLine(getVertex(this.getVertexCount()-1), getVertex(0));
         		}
         	}
 		}
@@ -126,12 +120,12 @@ public class DXFMapPolyline extends DXFMapElement<DXFLWPolyline> {
         	
         	for(int i=0;i<this.getVertexCount()-1;i++) {
         		if(polySelection.checkLineIntersection(this.getVertex(i), this.getVertex(i+1))) {
-	                LineGenerator.generateLineByFunction(getVertex(i), getVertex(i+1));
+	                LineGenerator.generateLine(getVertex(i), getVertex(i+1));
         		}
             }
         	if(this.isClosed()) {
         		if(polySelection.checkLineIntersection(this.getVertex(this.getVertexCount()-1), this.getVertex(0))) {
-	                LineGenerator.generateLineByFunction(getVertex(this.getVertexCount()-1), getVertex(0));
+	                LineGenerator.generateLine(getVertex(this.getVertexCount()-1), getVertex(0));
         		}
         	}
 		}

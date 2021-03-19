@@ -14,7 +14,6 @@ public class LineGenerator {
 
 	public static int y;
 	public static Function<Vector2DH, Integer> getYFunction;
-	public static Function<Vector2DH, Boolean> containsFunction;
 	public static World world;
 	public static Region region;
 	public static IBlockState state;
@@ -24,7 +23,7 @@ public class LineGenerator {
     /**
 	 * Initialize static members {@link getYFunction}, {@link containsFunction}, {@link world}, {@link region}, and {@link state} first before calling this method.
 	 * */
-    public static void generateLineByFunction(Vector2DH v1, Vector2DH v2) {
+    public static void generateLine(Vector2DH v1, Vector2DH v2) {
 
         double dx = v2.x - v1.x, dz = v2.z - v1.z;
         double dxa = Math.abs(dx), dza = Math.abs(dz);
@@ -43,33 +42,33 @@ public class LineGenerator {
         if(dz > 0) { zs = v1.z; ze = v2.z; }
         else /*dz < 0*/ { zs = v2.z; ze = v1.z; }
         
-        Vector2DH temp;
         if(dxa == 0) {
         	x = v1.x;
             for(z = zs; z <= ze; z++) {
-            	temp = new Vector2DH(x, z);
-            	if(!containsFunction.apply(temp)) continue;
-            	y = getYFunction.apply(temp);
+            	y = getYFunction.apply(new Vector2DH(x, z));
+            	if(!region.contains(new Vector(x, y, z))) continue;
             	world.setBlockState(new BlockPos(x, y, z), state);
             }
         } else if(dza == 0) {
         	z = v1.z;
             for(x = xs; x <= xe; x++) {
-            	if(!region.contains(new Vector(x, y, z))) continue;
             	y = getYFunction.apply(new Vector2DH(x, z));
-            	if(region.contains(new Vector(x, y, z))) world.setBlockState(new BlockPos(x, y, z), state);
+            	if(!region.contains(new Vector(x, y, z))) continue;
+            	world.setBlockState(new BlockPos(x, y, z), state);
             }
         } else if(dxa > dza) {
             for(x = xs; x <= xe; x++) {
             	z = v1.z + dz * (x - v1.x) / dx;
             	y = getYFunction.apply(new Vector2DH(x, z));
-            	if(region.contains(new Vector(x, y, z))) world.setBlockState(new BlockPos(x, y, z), state);
+            	if(!region.contains(new Vector(x, y, z))) continue;
+            	world.setBlockState(new BlockPos(x, y, z), state);
             }
         } else {
             for(z = zs; z <= ze; z++) {
                 x = v1.x + dx * (z - v1.z) / dz;
             	y = getYFunction.apply(new Vector2DH(x, z));
-            	if(region.contains(new Vector(x, y, z))) world.setBlockState(new BlockPos(x, y, z), state);
+            	if(!region.contains(new Vector(x, y, z))) continue;
+            	world.setBlockState(new BlockPos(x, y, z), state);
             }
         }
     }

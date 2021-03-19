@@ -36,6 +36,7 @@ public class NgiParser {
     /**
      * Parses ngi file, and if available, it also parses same-filename-having nda file.
      * @param ngiFilePath The path of the .ngi file
+     * @param encoding The encoding type
      * */
     public static NgiParseResult parse(String ngiFilePath, String encoding) throws IOException {
     	if(!FilenameUtils.getExtension(ngiFilePath).equals("ngi"))
@@ -51,6 +52,7 @@ public class NgiParser {
      * Parses both ngi file and nda file, and then combines them.
      * @param ngiFilePath The path of the .ngi file
      * @param ndaFilePath The path of the .nda file
+     * @param encoding The encoding type
      * */
     public static NgiParseResult parse(String ngiFilePath, String ndaFilePath, String encoding) throws IOException {
     	return new NgiParser().parse(
@@ -65,11 +67,12 @@ public class NgiParser {
      * Parses both ngi file and nda file, and then combines them.
      * @param ngiFilePath The path of the .ngi file
      * @param ndaFilePath The path of the .nda file
+     * @param encoding The encoding type
      * */
-    public static NgiParseResult parse(InputStream ngiStream, InputStream ndaStream) throws IOException {
+    public static NgiParseResult parse(InputStream ngiStream, InputStream ndaStream, String encoding) throws IOException {
     	return new NgiParser().parse(
-        		new BufferedReader(new InputStreamReader(ngiStream)),
-        		ndaStream == null ? null : new BufferedReader(new InputStreamReader(ndaStream))
+        		new BufferedReader(new InputStreamReader(ngiStream, encoding)),
+        		ndaStream == null ? null : new BufferedReader(new InputStreamReader(ndaStream, encoding))
         );
     }
     
