@@ -1,16 +1,16 @@
-package com.mndk.kvm2m.core.dxfmap.elem.polyline;
+package com.mndk.kvm2m.core.vectormap.elem.poly;
 
 import org.kabeja.dxf.DXFLWPolyline;
 import org.kabeja.dxf.DXFVertex;
 
-import com.mndk.kvm2m.core.dxfmap.DXFMapObjectType;
-import com.mndk.kvm2m.core.dxfmap.elem.DXFMapElement;
 import com.mndk.kvm2m.core.projection.grs80.Grs80Projection;
 import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.math.VectorMath;
 import com.mndk.kvm2m.core.util.shape.BoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
+import com.mndk.kvm2m.core.vectormap.VectorMapObjectType;
+import com.mndk.kvm2m.core.vectormap.elem.VectorMapElement;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.FlatRegion;
 import com.sk89q.worldedit.regions.Polygonal2DRegion;
@@ -18,14 +18,14 @@ import com.sk89q.worldedit.regions.Polygonal2DRegion;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.World;
 
-public class DXFMapPolyline extends DXFMapElement<DXFLWPolyline> {
+public class VectorMapPolyline extends VectorMapElement {
 
 	
     private final Vector2DH[] vertexList;
     private final boolean closed;
 
     
-    public DXFMapPolyline(DXFLWPolyline polyline, Grs80Projection projection, DXFMapObjectType type) {
+    public VectorMapPolyline(DXFLWPolyline polyline, Grs80Projection projection, VectorMapObjectType type) {
     	super(type);
         this.vertexList = new Vector2DH[polyline.getVertexCount()];
         this.closed = polyline.isClosed();
@@ -36,14 +36,14 @@ public class DXFMapPolyline extends DXFMapElement<DXFLWPolyline> {
     }
     
     
-    public DXFMapPolyline(Vector2DH[] vertexes) {
+    public VectorMapPolyline(Vector2DH[] vertexes) {
     	super(null);
     	this.vertexList = vertexes;
     	this.closed = false;
     }
     
     
-    public DXFMapPolyline(Polygonal2DRegion region) {
+    public VectorMapPolyline(Polygonal2DRegion region) {
     	super(null);
     	int n = region.size();
     	this.vertexList = new Vector2DH[n];
@@ -116,7 +116,7 @@ public class DXFMapPolyline extends DXFMapElement<DXFLWPolyline> {
         	}
 		}
 		else if(region instanceof Polygonal2DRegion) {
-        	DXFMapPolyline polySelection = new DXFMapPolyline((Polygonal2DRegion) region);
+        	VectorMapPolyline polySelection = new VectorMapPolyline((Polygonal2DRegion) region);
         	
         	for(int i=0;i<this.getVertexCount()-1;i++) {
         		if(polySelection.checkLineIntersection(this.getVertex(i), this.getVertex(i+1))) {

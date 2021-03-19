@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.dxfmap;
+package com.mndk.kvm2m.core.vectormap;
 
 import net.minecraft.block.BlockColored;
 import net.minecraft.block.state.IBlockState;
@@ -6,7 +6,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumDyeColor;
 
 // TODO translate this
-public enum DXFMapObjectType {
+public enum VectorMapObjectType {
 	
 	// A타입 - 교통
 	도로경계("A001", Category.교통),
@@ -152,13 +152,13 @@ public enum DXFMapObjectType {
 	private final String layerHeader;
 	private final Category category;
 	
-	private DXFMapObjectType(String layerHeader, Category category) {
+	private VectorMapObjectType(String layerHeader, Category category) {
 		this.layerHeader = layerHeader;
 		this.category = category;
 	}
 	
-	public static DXFMapObjectType getTypeFromLayerName(String layerName) {
-		for(DXFMapObjectType t : values()) {
+	public static VectorMapObjectType getTypeFromLayerName(String layerName) {
+		for(VectorMapObjectType t : values()) {
 			if(layerName.startsWith(t.layerHeader)) {
 				return t;
 			}

@@ -1,14 +1,14 @@
-package com.mndk.kvm2m.core.dxfmap;
+package com.mndk.kvm2m.core.vectormap;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 
 import org.kabeja.parser.ParseException;
 
-import com.mndk.kvm2m.core.dxfmap.elem.polyline.DXFMapPolyline;
 import com.mndk.kvm2m.core.util.delaunator.FastDelaunayTriangulator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
+import com.mndk.kvm2m.core.vectormap.elem.poly.VectorMapPolyline;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
@@ -29,7 +29,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 
-public class DXFMapToMinecraftWorld {
+public class VectorMapToMinecraftWorld {
 
 	
 	
@@ -48,8 +48,8 @@ public class DXFMapToMinecraftWorld {
         FlatRegion worldEditRegion = validateWorldEditRegion(world, player);
         
         // Validating imported .dxf map
-        DXFMapParser.Result result = validateDxfMap(mapFile);
-    	DXFMapPolyline boundary = result.getBoundary();
+        DxfMapParser.Result result = validateDxfMap(mapFile);
+    	VectorMapPolyline boundary = result.getBoundary();
         
         KVectorMap2MinecraftMod.logger.info("Successfully parsed .dxf map: " + mapFile.getName());
         
@@ -74,7 +74,7 @@ public class DXFMapToMinecraftWorld {
 		
 		KVectorMap2MinecraftMod.logger.info("Generating lines...");
 		
-		for(DXFMapPolyline polyline : result.getPolylines()) {
+		for(VectorMapPolyline polyline : result.getPolylines()) {
 			polyline.generatePolygonOnTerrain(worldEditRegion, world, polyline.getType().getBlockState(), triangleList);
 		}
         
@@ -120,9 +120,9 @@ public class DXFMapToMinecraftWorld {
     
     
     
-    private static DXFMapParser.Result validateDxfMap(File file) throws GeneratorException {
+    private static DxfMapParser.Result validateDxfMap(File file) throws GeneratorException {
     	try {
-            return DXFMapParser.parse(file);
+            return DxfMapParser.parse(file);
         } catch(ParseException exception) {
             throw new GeneratorException("There was an error while parsing .dxf map.");
         } catch(FileNotFoundException exception) {

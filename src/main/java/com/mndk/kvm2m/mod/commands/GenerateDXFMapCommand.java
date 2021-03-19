@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.mndk.kvm2m.core.dxfmap.DXFMapToMinecraftWorld;
+import com.mndk.kvm2m.core.vectormap.VectorMapToMinecraftWorld;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 
 import net.minecraft.command.CommandBase;
@@ -57,9 +57,9 @@ public class GenerateDXFMapCommand extends CommandBase {
         	if(file.isDirectory()) throw new CommandException("File does not exist!");
         	if(!subDirectory.endsWith(".dxf")) throw new CommandException("File does not exist!");
         	
-            DXFMapToMinecraftWorld.generate(server, player, file);
+            VectorMapToMinecraftWorld.generate(server, player, file);
             
-        } catch(DXFMapToMinecraftWorld.GeneratorException exception) {
+        } catch(VectorMapToMinecraftWorld.GeneratorException exception) {
             KVectorMap2MinecraftMod.logger.error(exception);
             throw new CommandException(exception.getMessage());
         }

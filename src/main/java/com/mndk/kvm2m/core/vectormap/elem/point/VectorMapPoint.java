@@ -1,17 +1,17 @@
-package com.mndk.kvm2m.core.dxfmap.elem.point;
+package com.mndk.kvm2m.core.vectormap.elem.point;
 
 import org.kabeja.dxf.DXFPoint;
 
-import com.mndk.kvm2m.core.dxfmap.DXFMapObjectType;
-import com.mndk.kvm2m.core.dxfmap.elem.DXFMapElement;
 import com.mndk.kvm2m.core.projection.grs80.Grs80Projection;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
+import com.mndk.kvm2m.core.vectormap.VectorMapObjectType;
+import com.mndk.kvm2m.core.vectormap.elem.VectorMapElement;
 
-public class DXFMapPointElement extends DXFMapElement<DXFPoint> {
+public class VectorMapPoint extends VectorMapElement {
 
 	private final Vector2DH point;
 
-    public DXFMapPointElement(DXFPoint point, Grs80Projection projection, DXFMapObjectType type) {
+    public VectorMapPoint(DXFPoint point, Grs80Projection projection, VectorMapObjectType type) {
     	super(type);
         this.point = projectGrs80CoordToBteCoord(projection, point.getX(), point.getY());
     }
