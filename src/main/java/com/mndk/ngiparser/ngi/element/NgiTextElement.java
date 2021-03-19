@@ -1,6 +1,7 @@
 package com.mndk.ngiparser.ngi.element;
 
 import com.mndk.ngiparser.ngi.NgiLayer;
+import com.mndk.ngiparser.ngi.vertex.NgiVertex;
 
 public class NgiTextElement extends NgiElement<NgiTextElement.Attr> {
 	
@@ -9,7 +10,7 @@ public class NgiTextElement extends NgiElement<NgiTextElement.Attr> {
 	}
 	
 	public String text;
-	public double[] position;
+	public NgiVertex position;
 	
     public static class Attr implements NgiElement.Attr {
     	public String fontName;

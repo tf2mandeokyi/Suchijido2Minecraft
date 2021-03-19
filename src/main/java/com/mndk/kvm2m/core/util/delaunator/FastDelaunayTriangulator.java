@@ -17,7 +17,7 @@ import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vectormap.DxfMapParser;
-import com.mndk.kvm2m.core.vectormap.DxfMapParser.Result;
+import com.mndk.kvm2m.core.vectormap.VectorMapParserResult;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VectorMapContour;
 
 
@@ -611,7 +611,7 @@ public class FastDelaunayTriangulator {
 	
 	
 	public static void main_(String[] args) throws FileNotFoundException, ParseException {
-    	Result result = DxfMapParser.parse(new File("37612030.dxf"));
+    	VectorMapParserResult result = DxfMapParser.parse(new File("37612030.dxf"));
     	List<Vector2DH> vertexes = result.getElevationPoints();
     	System.out.println(vertexes.size());
     	List<Triangle> triangles = FastDelaunayTriangulator.from(vertexes).getTriangleList();

@@ -33,7 +33,7 @@ public class NgiHeader {
     public static class Boundary {
         public double[] min, max;
         public Boundary(double[] min, double[] max) {
-            if(min.length != max.length) throw new NgiParseException("Boundary min.dimension != max.dimension");
+            if(min.length != max.length) throw new NgiSyntaxErrorException("Boundary min.dimension != max.dimension");
             this.min = min; this.max = max;
         }
     }

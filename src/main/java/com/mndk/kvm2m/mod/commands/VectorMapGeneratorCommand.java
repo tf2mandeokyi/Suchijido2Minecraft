@@ -5,6 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FilenameUtils;
+
+import com.mndk.kvm2m.core.vectormap.VectorMapParserException;
+import com.mndk.kvm2m.core.vectormap.VectorMapParserResult;
 import com.mndk.kvm2m.core.vectormap.VectorMapToMinecraftWorld;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 
@@ -16,23 +20,32 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
-public class GenerateDXFMapCommand extends CommandBase {
+public abstract class VectorMapGeneratorCommand extends CommandBase {
+    
+    
+    
     @Override
-    public String getName() {
-        return "gendxfmap";
-    }
+    public abstract String getName();
+	public abstract VectorMapParserResult fileDataToParserResult(File file) throws CommandException;
+	public abstract String getExtension();
 
+
+	
     @Override
     public String getUsage(ICommandSender sender) {
-        return "gendxfmap <id>";
+        return this.getName() + " <id>";
     }
+    
+    
     
     @Override
     public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
     	return true;
     }
-
-    @Override
+	
+	
+	
+	@Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
     	
     	if(!(sender instanceof EntityPlayer)) {
@@ -53,29 +66,33 @@ public class GenerateDXFMapCommand extends CommandBase {
         	String subDirectory = args[0];
         	for(int i=1;i<args.length;i++) subDirectory += args[i];
         	File file = new File(KVectorMap2MinecraftMod.dxfFileDirectory + "/" + subDirectory);
-        	if(!file.exists()) throw new CommandException("File does not exist!");
-        	if(file.isDirectory()) throw new CommandException("File does not exist!");
-        	if(!subDirectory.endsWith(".dxf")) throw new CommandException("File does not exist!");
+        	if(!file.exists() ||  file.isDirectory() || !FilenameUtils.isExtension(subDirectory, this.getExtension())) 
+        		throw new CommandException("File does not exist!");
         	
-            VectorMapToMinecraftWorld.generate(server, player, file);
+        	VectorMapParserResult result = this.fileDataToParserResult(file);
+            VectorMapToMinecraftWorld.generate(server, player, result);
             
-        } catch(VectorMapToMinecraftWorld.GeneratorException exception) {
+        } catch(VectorMapParserException exception) {
             KVectorMap2MinecraftMod.logger.error(exception);
             throw new CommandException(exception.getMessage());
         }
     }
+	
+	
     
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos targetPos) {
     	System.out.println(Arrays.toString(args));
     	if(args.length == 0) {
-    		return Arrays.asList(getFilesNDirectoriesInDir("./", ".dxf"));
+    		return Arrays.asList(getFilesNDirectoriesInDir("./", getExtension()));
     	} else {
         	String subDirectory = args[0];
         	for(int i=1;i<args.length;i++) subDirectory += args[i];
-    		return Arrays.asList(getFilesNDirectoriesInDir(subDirectory, ".dxf"));
+    		return Arrays.asList(getFilesNDirectoriesInDir(subDirectory, getExtension()));
     	}
     }
+    
+    
     
     private static String[] getFilesNDirectoriesInDir(String dir, String extension) {
     	String filePath = KVectorMap2MinecraftMod.dxfFileDirectory + "/" + dir;
@@ -93,4 +110,6 @@ public class GenerateDXFMapCommand extends CommandBase {
     				.toArray(String[]::new);
     	}
     }
+    
+    
 }

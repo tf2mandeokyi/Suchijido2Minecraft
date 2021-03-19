@@ -1,6 +1,7 @@
 package com.mndk.ngiparser.ngi.element;
 
 import com.mndk.ngiparser.ngi.NgiLayer;
+import com.mndk.ngiparser.ngi.vertex.NgiVertexList;
 
 public class NgiLineElement extends NgiElement<NgiLineElement.Attr> {
 	
@@ -8,7 +9,7 @@ public class NgiLineElement extends NgiElement<NgiLineElement.Attr> {
 		super(parent);
 	}
 	
-	public double[][] lineData;
+	public NgiVertexList lineData;
 	
     public static class Attr implements NgiElement.Attr {
     	public String type;

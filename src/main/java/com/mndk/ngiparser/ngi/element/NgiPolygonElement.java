@@ -1,6 +1,7 @@
 package com.mndk.ngiparser.ngi.element;
 
 import com.mndk.ngiparser.ngi.NgiLayer;
+import com.mndk.ngiparser.ngi.vertex.NgiVertexList;
 
 public class NgiPolygonElement extends NgiElement<NgiPolygonElement.Attr> {
 	
@@ -8,7 +9,7 @@ public class NgiPolygonElement extends NgiElement<NgiPolygonElement.Attr> {
 		super(parent);
 	}
 	
-	public double[][][] vertexData;
+	public NgiVertexList[] vertexData;
 	
     public static class Attr implements NgiElement.Attr {
     	public String lineType;

@@ -1,10 +1,5 @@
 package com.mndk.kvm2m.core.vectormap;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-
-import org.kabeja.parser.ParseException;
-
 import com.mndk.kvm2m.core.util.delaunator.FastDelaunayTriangulator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
@@ -37,7 +32,7 @@ public class VectorMapToMinecraftWorld {
 	
 	
 	
-    public static void generate(MinecraftServer server, EntityPlayerMP player, File mapFile) throws GeneratorException {
+    public static void generate(MinecraftServer server, EntityPlayerMP player, VectorMapParserResult result) throws VectorMapParserException {
 
         World world = server.getEntityWorld();
         
@@ -47,11 +42,7 @@ public class VectorMapToMinecraftWorld {
         // Validating world edit region
         FlatRegion worldEditRegion = validateWorldEditRegion(world, player);
         
-        // Validating imported .dxf map
-        DxfMapParser.Result result = validateDxfMap(mapFile);
     	VectorMapPolyline boundary = result.getBoundary();
-        
-        KVectorMap2MinecraftMod.logger.info("Successfully parsed .dxf map: " + mapFile.getName());
         
         // Generate triangles with delaunay triangulate algorithm
     	TriangleList triangleList = FastDelaunayTriangulator.from(result.getElevationPoints()).getTriangleList();
@@ -84,23 +75,23 @@ public class VectorMapToMinecraftWorld {
     
     
     
-    private static void validateWorld(World world) throws GeneratorException {
+    private static void validateWorld(World world) throws VectorMapParserException {
     	
     	IChunkProvider chunkProvider = world.getChunkProvider();
         if(!(chunkProvider instanceof CubeProviderServer)) {
-            throw new GeneratorException("You must be in cc map to generate .dxf map.");
+            throw new VectorMapParserException("You must be in cc map to generate .dxf map.");
         }
 
         ICubeGenerator cubeGenerator = ((CubeProviderServer) chunkProvider).getCubeGenerator();
         if (!(cubeGenerator instanceof EarthGenerator)) {
-            throw new GeneratorException("You must be in terra map to generate .dxf map.");
+            throw new VectorMapParserException("You must be in terra map to generate .dxf map.");
         }
     	
     }
     
     
     
-    private static FlatRegion validateWorldEditRegion(World world, EntityPlayerMP player) throws GeneratorException {
+    private static FlatRegion validateWorldEditRegion(World world, EntityPlayerMP player) throws VectorMapParserException {
     	
     	ForgeWorld weWorld = ForgeWorldEdit.inst.getWorld(world);
     	LocalSession session = ForgeWorldEdit.inst.getSession(player);
@@ -108,35 +99,14 @@ public class VectorMapToMinecraftWorld {
     	try {
     		worldEditRegion = session.getSelection(weWorld);
     		if(!(worldEditRegion instanceof FlatRegion)) {
-    			throw new GeneratorException("Worldedit region should be either cuboid, cylinder, or polygon.");
+    			throw new VectorMapParserException("Worldedit region should be either cuboid, cylinder, or polygon.");
     		}
     	} catch(IncompleteRegionException exception) {
     		// No region is selected
-    		throw new GeneratorException("Please select the worldedit region first.");
+    		throw new VectorMapParserException("Please select the worldedit region first.");
     	}
     	return (FlatRegion) worldEditRegion;
     	
-    }
-    
-    
-    
-    private static DxfMapParser.Result validateDxfMap(File file) throws GeneratorException {
-    	try {
-            return DxfMapParser.parse(file);
-        } catch(ParseException exception) {
-            throw new GeneratorException("There was an error while parsing .dxf map.");
-        } catch(FileNotFoundException exception) {
-        	throw new GeneratorException("File not found!");
-        }
-    }
-    
-    
-
-    @SuppressWarnings("serial")
-	public static class GeneratorException extends Exception {
-        public GeneratorException(String message) {
-            super(message);
-        }
     }
 
 }

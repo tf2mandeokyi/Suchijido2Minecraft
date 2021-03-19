@@ -1,11 +1,11 @@
 package com.mndk.ngiparser.ngi;
 
 @SuppressWarnings("serial")
-public class NgiParseException extends RuntimeException {
-    public NgiParseException(String s) {
+public class NgiSyntaxErrorException extends RuntimeException {
+    public NgiSyntaxErrorException(String s) {
         super("Error on parsing .ngi file : " + s);
     }
-    public NgiParseException() {
+    public NgiSyntaxErrorException() {
         super("Error on parsing .ngi file");
     }
 }

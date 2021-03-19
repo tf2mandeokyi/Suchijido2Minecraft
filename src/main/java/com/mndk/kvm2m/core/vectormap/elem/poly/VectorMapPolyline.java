@@ -11,6 +11,9 @@ import com.mndk.kvm2m.core.util.shape.BoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vectormap.VectorMapObjectType;
 import com.mndk.kvm2m.core.vectormap.elem.VectorMapElement;
+import com.mndk.ngiparser.ngi.element.NgiLineElement;
+import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
+import com.mndk.ngiparser.ngi.vertex.NgiVertex;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.FlatRegion;
 import com.sk89q.worldedit.regions.Polygonal2DRegion;
@@ -33,6 +36,30 @@ public class VectorMapPolyline extends VectorMapElement {
             DXFVertex vertex = polyline.getVertex(i);
             this.vertexList[i] = projectGrs80CoordToBteCoord(projection, vertex.getX(), vertex.getY());
         }
+    }
+
+    
+    public VectorMapPolyline(NgiPolygonElement polyline, Grs80Projection projection, VectorMapObjectType type) {
+    	super(type);
+    	int size = polyline.vertexData[0].getSize();
+        this.vertexList = new Vector2DH[size];
+        for(int i = 0; i < size; ++i) {
+            NgiVertex vertex = polyline.vertexData[0].getVertex(i);
+            this.vertexList[i] = projectGrs80CoordToBteCoord(projection, vertex.getAxis(0), vertex.getAxis(1));
+        }
+        this.closed = vertexList[0].equals(vertexList[vertexList.length - 1]);
+    }
+
+    
+    public VectorMapPolyline(NgiLineElement line, Grs80Projection projection, VectorMapObjectType type) {
+    	super(type);
+    	int size = line.lineData.getSize();
+        this.vertexList = new Vector2DH[size];
+        for(int i = 0; i < size; ++i) {
+            NgiVertex vertex = line.lineData.getVertex(i);
+            this.vertexList[i] = projectGrs80CoordToBteCoord(projection, vertex.getAxis(0), vertex.getAxis(1));
+        }
+        this.closed = vertexList[0].equals(vertexList[vertexList.length - 1]);
     }
     
     

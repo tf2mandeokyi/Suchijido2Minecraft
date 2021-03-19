@@ -64,4 +64,11 @@ public class Vector2DH {
         return "(" + x + ", " + height + ", " + z + ")";
     }
 	
+	@Override
+	public boolean equals(Object obj) {
+		if(!(obj instanceof Vector2DH)) return false;
+		Vector2DH v = (Vector2DH) obj;
+		return x == v.x && height == v.height && z == v.z;
+	}
+	
 }
