@@ -26,6 +26,14 @@ public class Vector2DH {
 		return new com.sk89q.worldedit.Vector(x, height, z);
 	}
 	
+	public com.sk89q.worldedit.Vector toIntegerWorldEditVector() {
+		return new com.sk89q.worldedit.Vector((int) x, (int) height, (int) z);
+	}
+	
+	public com.sk89q.worldedit.Vector toWorldEditVector(double y) {
+		return new com.sk89q.worldedit.Vector(x, y, z);
+	}
+	
 	public Vector2DH add2d(Vector2DH v) {
 		return new Vector2DH(x + v.x, z + v.z);
 	}

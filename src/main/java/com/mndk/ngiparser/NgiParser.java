@@ -18,7 +18,7 @@ import com.mndk.ngiparser.nda.NdaDataColumn;
 import com.mndk.ngiparser.ngi.NgiHeader;
 import com.mndk.ngiparser.ngi.NgiLayer;
 import com.mndk.ngiparser.ngi.NgiSyntaxErrorException;
-import com.mndk.ngiparser.ngi.NgiParseResult;
+import com.mndk.ngiparser.ngi.NgiParserResult;
 import com.mndk.ngiparser.ngi.element.NgiElement;
 import com.mndk.ngiparser.ngi.element.NgiLineElement;
 import com.mndk.ngiparser.ngi.element.NgiPointElement;
@@ -32,7 +32,7 @@ public class NgiParser {
 	
 	
     private BufferedReader ngiReader, ndaReader;
-    private NgiParseResult result;
+    private NgiParserResult result;
 
     
     
@@ -41,7 +41,7 @@ public class NgiParser {
      * @param ngiFilePath The path of the .ngi file
      * @param encoding The encoding type
      * */
-    public static NgiParseResult parse(String ngiFilePath, String encoding, boolean requireNdaFile) throws IOException {
+    public static NgiParserResult parse(String ngiFilePath, String encoding, boolean requireNdaFile) throws IOException {
     	if(!FilenameUtils.getExtension(ngiFilePath).equals("ngi"))
     		throw new FileNotFoundException(ngiFilePath + " not found!");
     	
@@ -62,7 +62,7 @@ public class NgiParser {
      * @param ndaFilePath The path of the .nda file
      * @param encoding The encoding type
      * */
-    public static NgiParseResult parse(String ngiFilePath, String ndaFilePath, String encoding) throws IOException {
+    public static NgiParserResult parse(String ngiFilePath, String ndaFilePath, String encoding) throws IOException {
     	return new NgiParser().parse(
         		new BufferedReader(new InputStreamReader(new FileInputStream(ngiFilePath), encoding)),
         		ndaFilePath == null ? null : new BufferedReader(new InputStreamReader(new FileInputStream(ndaFilePath), encoding))
@@ -77,7 +77,7 @@ public class NgiParser {
      * @param ndaFilePath The path of the .nda file
      * @param encoding The encoding type
      * */
-    public static NgiParseResult parse(InputStream ngiStream, InputStream ndaStream, String encoding) throws IOException {
+    public static NgiParserResult parse(InputStream ngiStream, InputStream ndaStream, String encoding) throws IOException {
     	return new NgiParser().parse(
         		new BufferedReader(new InputStreamReader(ngiStream, encoding)),
         		ndaStream == null ? null : new BufferedReader(new InputStreamReader(ndaStream, encoding))
@@ -86,10 +86,10 @@ public class NgiParser {
     
     
 
-    private NgiParseResult parse(BufferedReader ngiReader, BufferedReader ndaReader) throws IOException {
+    private NgiParserResult parse(BufferedReader ngiReader, BufferedReader ndaReader) throws IOException {
         this.ngiReader = ngiReader;
     	this.ndaReader = ndaReader;
-    	result = new NgiParseResult(new HashMap<>(), new HashMap<>());
+    	result = new NgiParserResult(new HashMap<>(), new HashMap<>());
     	
     	String line;
     	

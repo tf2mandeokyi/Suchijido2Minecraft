@@ -14,7 +14,7 @@ public class VectorMapParserResult {
 	private List<VectorMapPoint> pointList;
 	private List<Vector2DH> elevationPointList;
 	
-	VectorMapParserResult() {
+	public VectorMapParserResult() {
 		this.polylineList = new ArrayList<>();
 		this.pointList = new ArrayList<>();
 		this.elevationPointList = new ArrayList<>();

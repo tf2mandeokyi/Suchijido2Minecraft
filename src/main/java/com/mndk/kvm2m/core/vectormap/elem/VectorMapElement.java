@@ -3,9 +3,12 @@ package com.mndk.kvm2m.core.vectormap.elem;
 import com.mndk.kvm2m.core.projection.Projections;
 import com.mndk.kvm2m.core.projection.grs80.Grs80Projection;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
+import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vectormap.VectorMapObjectType;
+import com.sk89q.worldedit.regions.FlatRegion;
 
 import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
+import net.minecraft.world.World;
 
 public abstract class VectorMapElement {
 
@@ -32,4 +35,7 @@ public abstract class VectorMapElement {
     public VectorMapObjectType getType() {
     	return type;
     }
+    
+    
+    public abstract void generateBlocks(FlatRegion region, World world, TriangleList triangles);
 }

@@ -23,7 +23,7 @@ public class LineGenerator {
     /**
 	 * Initialize static members {@link getYFunction}, {@link containsFunction}, {@link world}, {@link region}, and {@link state} first before calling this method.
 	 * */
-    public static void scanLine(Vector2DH v1, Vector2DH v2) {
+    public static void generateLine(Vector2DH v1, Vector2DH v2) {
 
         double dx = v2.x - v1.x, dz = v2.z - v1.z;
         double dxa = Math.abs(dx), dza = Math.abs(dz);

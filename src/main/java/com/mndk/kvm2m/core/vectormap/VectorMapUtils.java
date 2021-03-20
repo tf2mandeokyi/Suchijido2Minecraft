@@ -5,7 +5,7 @@ import com.mndk.kvm2m.core.projection.grs80.Grs80Projection;
 
 public class VectorMapUtils {
 
-	static Grs80Projection getProjectionFromMapId(String fileName) {
+	public static Grs80Projection getProjectionFromMapId(String fileName) {
 	    char number = fileName.charAt(2);
 	    if(number == '5') {
 	        return Projections.GRS80_WEST;

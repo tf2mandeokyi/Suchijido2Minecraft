@@ -5,8 +5,8 @@ import java.io.FileNotFoundException;
 
 import org.kabeja.parser.ParseException;
 
-import com.mndk.kvm2m.core.vectormap.DxfMapParser;
 import com.mndk.kvm2m.core.vectormap.VectorMapParserResult;
+import com.mndk.kvm2m.core.vectorparser.DxfMapParser;
 
 import net.minecraft.command.CommandException;
 

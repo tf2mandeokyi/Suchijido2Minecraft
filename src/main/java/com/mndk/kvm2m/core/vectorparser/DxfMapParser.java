@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.vectormap;
+package com.mndk.kvm2m.core.vectorparser;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,6 +18,9 @@ import org.kabeja.parser.ParserBuilder;
 
 import com.mndk.kvm2m.core.projection.grs80.Grs80Projection;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
+import com.mndk.kvm2m.core.vectormap.VectorMapObjectType;
+import com.mndk.kvm2m.core.vectormap.VectorMapParserResult;
+import com.mndk.kvm2m.core.vectormap.VectorMapUtils;
 import com.mndk.kvm2m.core.vectormap.elem.point.VectorMapElevationPoint;
 import com.mndk.kvm2m.core.vectormap.elem.point.VectorMapPoint;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VectorMapContour;
@@ -71,7 +74,7 @@ public class DxfMapParser {
 	    if(type == VectorMapObjectType.등고선) {
 	    	
 	    	VectorMapContour contour = new VectorMapContour(polyline, projection);
-	    	for(Vector2DH v : contour.getVertexList()) {
+	        for(Vector2DH[] va : contour.getVertexList()) for(Vector2DH v : va) {
 	    		result.getElevationPoints().add(v.withHeight(contour.getElevation()));
 	    	}
 	    	

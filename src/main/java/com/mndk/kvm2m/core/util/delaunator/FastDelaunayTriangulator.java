@@ -16,9 +16,9 @@ import org.kabeja.parser.ParseException;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.DxfMapParser;
 import com.mndk.kvm2m.core.vectormap.VectorMapParserResult;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VectorMapContour;
+import com.mndk.kvm2m.core.vectorparser.DxfMapParser;
 
 
 
@@ -650,8 +650,8 @@ public class FastDelaunayTriangulator {
 		};
 		List<Vector2DH> vertexList = new ArrayList<>();
 		for(VectorMapContour contour : contours) {
-			for(Vector2DH vertex : contour.getVertexList()) {
-				vertexList.add(vertex.withHeight(contour.getElevation()));
+			for(Vector2DH[] va : contour.getVertexList()) for(Vector2DH v : va) {
+				vertexList.add(v.withHeight(contour.getElevation()));
 			}
 		}
 		

@@ -52,15 +52,7 @@ public class VectorMapToMinecraftWorld {
 		KVectorMap2MinecraftMod.logger.info("Generating lines...");
 		
 		for(VectorMapPolyline polyline : result.getPolylines()) {
-			VectorMapObjectType type = polyline.getType();
-			
-			polyline.generatePolygonOnTerrain(
-					worldEditRegion, 
-					world, 
-					type.getBlockState(), 
-					triangleList,
-					type.getDefaultHeight()
-			);
+			polyline.generateBlocks(worldEditRegion, world, triangleList);
 		}
         
         KVectorMap2MinecraftMod.logger.info("Successfully placed all blocks in the entry list.");

@@ -4,12 +4,12 @@ import java.util.Map;
 
 import com.mndk.ngiparser.ngi.element.NgiElement;
 
-public class NgiParseResult {
+public class NgiParserResult {
 
 	private Map<Integer, NgiLayer> layers;
     private Map<Integer, NgiElement<?>> elements;
     
-    public NgiParseResult(Map<Integer, NgiLayer> layers, Map<Integer, NgiElement<?>> elements) {
+    public NgiParserResult(Map<Integer, NgiLayer> layers, Map<Integer, NgiElement<?>> elements) {
     	this.layers = layers; this.elements = elements;
     }
     

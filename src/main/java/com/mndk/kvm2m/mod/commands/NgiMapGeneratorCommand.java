@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import com.mndk.kvm2m.core.vectormap.NgiMapParser;
 import com.mndk.kvm2m.core.vectormap.VectorMapParserResult;
+import com.mndk.kvm2m.core.vectorparser.NgiMapParser;
 
 import net.minecraft.command.CommandException;
 
