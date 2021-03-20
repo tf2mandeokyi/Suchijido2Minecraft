@@ -83,7 +83,7 @@ public class DxfMapParser {
 	    	result.setBoundary(new VectorMapPolyline(polyline, projection, VectorMapObjectType.도곽선));
 	    }
 	    else {
-	    	result.getPolylines().add(new VectorMapPolyline(polyline, projection, type));
+	    	result.addElement(new VectorMapPolyline(polyline, projection, type));
 	    }
 	}
 
@@ -98,7 +98,7 @@ public class DxfMapParser {
 			result.getElevationPoints().add(new VectorMapElevationPoint(point, projection).toVector());
 		}
 		else {
-		    result.getPoints().add(new VectorMapPoint(point, projection, type));
+		    result.addElement(new VectorMapPoint(point, projection, type));
 		}
 	}
     

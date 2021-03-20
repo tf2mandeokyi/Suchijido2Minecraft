@@ -17,8 +17,8 @@ import org.apache.commons.io.FilenameUtils;
 import com.mndk.ngiparser.nda.NdaDataColumn;
 import com.mndk.ngiparser.ngi.NgiHeader;
 import com.mndk.ngiparser.ngi.NgiLayer;
-import com.mndk.ngiparser.ngi.NgiSyntaxErrorException;
 import com.mndk.ngiparser.ngi.NgiParserResult;
+import com.mndk.ngiparser.ngi.NgiSyntaxErrorException;
 import com.mndk.ngiparser.ngi.element.NgiElement;
 import com.mndk.ngiparser.ngi.element.NgiLineElement;
 import com.mndk.ngiparser.ngi.element.NgiPointElement;
@@ -450,34 +450,63 @@ public class NgiParser {
     
     
     
-    private static Object[] parseDataParametersToObject(String parametersString) {
-    	return parseDataParametersToObject(parametersString, "\\s*,\\s*");
+    private static Object[] parseDataParametersToObject(String str) {
+    	List<Object> result = new ArrayList<>();
+    	String temp = "";
+    	boolean valueMode = false, stringMode = false;
+    	int n = str.length();
+    	
+    	for(int i = 0; i < n; ++i) {
+    		char c = str.charAt(i);
+    		if(!valueMode) { 
+    			if(c == ' ') continue;
+    			else valueMode = true;
+    		}
+    		if(c == ',' && !stringMode) {
+    			result.add(checkType(temp));
+    			valueMode = stringMode = false;
+    			temp = "";
+    			continue;
+    		}
+    		if(c == '\\') {
+    			c = str.charAt(++i);
+    			if(c == '\\' || c == '\'' || c == '"') temp += c;
+    			else if(c == '\n') temp += '\n';
+    			else if(c == '\r') temp += '\r';
+    			else if(c == '\t') temp += '\t';
+    			else if(c == '\b') temp += '\b';
+    			else if(c == '\f') temp += '\f';
+    			else throw new NgiSyntaxErrorException("Invalid string escape \"" + c + "\"");
+    			continue;
+    		}
+    		if(c == '"') {
+    			stringMode = !stringMode;
+    		}
+    		
+    		temp += c;
+    	}
+    	result.add(checkType(temp));
+    	return result.toArray(new Object[0]);
     }
     
     
     
-    private static Object[] parseDataParametersToObject(String parametersString, String splitRegex) {
-    	String[] parameters = parametersString.split(splitRegex);
-    	Object[] result = new Object[parameters.length];
-    	for(int i = 0; i < parameters.length; ++i) {
-    		String temp = parameters[i];
-    		if(temp.startsWith("\"") && temp.endsWith("\"")) {
-    			result[i] = temp.substring(1, temp.length() - 1);
-    		}
-    		else if(temp.toLowerCase().equals("false") || temp.toLowerCase().equals("true")) {
-    			result[i] = Boolean.parseBoolean(temp);
-    		}
-    		else if(temp.matches("-?(\\d+)")) { // check integer
-    			result[i] = Integer.parseInt(temp);
-    		}
-    		else if(temp.matches("-?(\\d+\\.?|\\d*.\\d+)")) { // check float
-    			result[i] = Double.parseDouble(temp);
-    		}
-    		else {
-    			result[i] = temp;
-    		}
-    	}
-    	return result;
+    private static Object checkType(String s) {
+    	if(s.startsWith("\"") && s.endsWith("\"")) {
+			return s.substring(1, s.length() - 1);
+		}
+		else if(s.toLowerCase().equals("false") || s.toLowerCase().equals("true")) {
+			return Boolean.parseBoolean(s);
+		}
+		else if(s.matches("-?(\\d+)")) { // check integer
+			return Integer.parseInt(s);
+		}
+		else if(s.matches("-?(\\d+\\.?|\\d*.\\d+)")) { // check float
+			return Double.parseDouble(s);
+		}
+		else {
+			return s;
+		}
     }
 
     

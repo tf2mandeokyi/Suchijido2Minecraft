@@ -13,6 +13,7 @@ import com.mndk.kvm2m.core.vectormap.VectorMapParserResult;
 import com.mndk.kvm2m.core.vectormap.VectorMapUtils;
 import com.mndk.kvm2m.core.vectormap.elem.point.VectorMapElevationPoint;
 import com.mndk.kvm2m.core.vectormap.elem.point.VectorMapPoint;
+import com.mndk.kvm2m.core.vectormap.elem.poly.VectorMapBuilding;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VectorMapContour;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VectorMapPolyline;
 import com.mndk.ngiparser.NgiParser;
@@ -65,8 +66,11 @@ public class NgiMapParser {
 	    if(type == VectorMapObjectType.도곽선) {
 	    	result.setBoundary(new VectorMapPolyline(polygon, projection, VectorMapObjectType.도곽선));
 	    }
+	    else if(type == VectorMapObjectType.건물) {
+	    	result.addElement(new VectorMapBuilding(polygon, projection, type));
+	    }
 	    else {
-	    	result.getPolylines().add(new VectorMapPolyline(polygon, projection, type));
+	    	result.addElement(new VectorMapPolyline(polygon, projection, type));
 	    }
 	}
 	
@@ -87,7 +91,7 @@ public class NgiMapParser {
 	    	result.setBoundary(new VectorMapPolyline(line, projection, VectorMapObjectType.도곽선));
 	    }
 	    else {
-	    	result.getPolylines().add(new VectorMapPolyline(line, projection, type));
+	    	result.addElement(new VectorMapPolyline(line, projection, type));
 	    }
 	}
 	
@@ -102,14 +106,13 @@ public class NgiMapParser {
 			result.getElevationPoints().add(new VectorMapElevationPoint(point, projection).toVector());
 		}
 		else {
-		    result.getPoints().add(new VectorMapPoint(point, projection, type));
+		    result.addElement(new VectorMapPoint(point, projection, type));
 		}
 	}
 	
 	
 	
 	public static void main(String[] args) throws IOException {
-		VectorMapParserResult r = NgiMapParser.parse(new File("376081986.ngi"));
-		System.out.println(r.getBoundary());
+		NgiMapParser.parse(new File("376081986.ngi"));
 	}
 }

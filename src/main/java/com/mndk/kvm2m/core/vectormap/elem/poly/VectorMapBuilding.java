@@ -16,9 +16,11 @@ public class VectorMapBuilding extends VectorMapPolyline implements IHasElevatio
 
 	private final int buildingHeight;
 	
+	private static final int FLOOR_HEIGHT = 4;
+	
 	public VectorMapBuilding(NgiPolygonElement polygon, Grs80Projection projection, VectorMapObjectType type) {
 		super(polygon, projection, type);
-		this.buildingHeight = (Integer) polygon.getRowData("층수");
+		this.buildingHeight = (Integer) polygon.getRowData("층수") * FLOOR_HEIGHT;
 	}
 
 	@Override
@@ -30,7 +32,6 @@ public class VectorMapBuilding extends VectorMapPolyline implements IHasElevatio
 	
 	public void generateBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
-		int y = this.getType().getDefaultHeight();
 		IBlockState state = this.getType().getBlockState();
 		
 		if(state == null) return;
@@ -40,19 +41,45 @@ public class VectorMapBuilding extends VectorMapPolyline implements IHasElevatio
 		LineGenerator.region = region;
 		LineGenerator.getYFunction = v -> {
 			double height = triangleList.interpolateHeight(v);
-			return (int) Math.round(height) + y;
+			return (int) Math.round(height);
+		};
+		
+		int maxHeight = this.getMaxTerrainHeight(triangleList) + this.buildingHeight;
+		
+		Vector2DH[][] vertexList = this.getVertexList();
+		for(int j = 0; j < vertexList.length; ++j) {
+			Vector2DH[] temp = vertexList[j];
+        	for(int i = 0; i < temp.length - 1; ++i) {
+        		LineGenerator.generateLineWithMaxHeight(temp[i], temp[i+1], maxHeight);
+            }
+        	if(this.isClosed()) {
+                LineGenerator.generateLineWithMaxHeight(temp[temp.length-1], temp[0], maxHeight);
+        	}
+		}
+	}
+	
+	
+	
+	private int getMaxTerrainHeight(TriangleList triangleList) {
+		
+		int yMax = -10000, yTemp;
+		LineGenerator.getYFunction = v -> {
+			double height = triangleList.interpolateHeight(v);
+			return (int) Math.round(height);
 		};
 		
 		Vector2DH[][] vertexList = this.getVertexList();
 		for(int j = 0; j < vertexList.length; ++j) {
 			Vector2DH[] temp = vertexList[j];
         	for(int i = 0; i < temp.length - 1; ++i) {
-        		LineGenerator.generateLine(temp[i], temp[i+1]);
+        		yMax = yMax < (yTemp = LineGenerator.getMaxHeightOfTheLine(temp[i], temp[i+1])) ? yTemp : yMax;
             }
         	if(this.isClosed()) {
-                LineGenerator.generateLine(temp[temp.length-1], temp[0]);
+        		yMax = yMax < (yTemp = LineGenerator.getMaxHeightOfTheLine(temp[temp.length-1], temp[0])) ? yTemp : yMax;
         	}
 		}
+		
+		return yMax;
 	}
 
 }

@@ -3,7 +3,7 @@ package com.mndk.kvm2m.core.vectormap;
 import com.mndk.kvm2m.core.util.delaunator.FastDelaunayTriangulator;
 import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VectorMapPolyline;
+import com.mndk.kvm2m.core.vectormap.elem.VectorMapElement;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
@@ -51,8 +51,8 @@ public class VectorMapToMinecraftWorld {
 		
 		KVectorMap2MinecraftMod.logger.info("Generating lines...");
 		
-		for(VectorMapPolyline polyline : result.getPolylines()) {
-			polyline.generateBlocks(worldEditRegion, world, triangleList);
+		for(VectorMapElement element : result.getElements()) {
+			element.generateBlocks(worldEditRegion, world, triangleList);
 		}
         
         KVectorMap2MinecraftMod.logger.info("Successfully placed all blocks in the entry list.");

@@ -33,6 +33,7 @@ public class VectorMapPoint extends VectorMapElement {
 
 	@Override
 	public void generateBlocks(FlatRegion region, World world, TriangleList triangles) {
+		if(this.getType().getBlockState() == null) return;
 		Vector2DH p = point.withHeight(triangles.interpolateHeight(point));
 		if(region.contains(p.toIntegerWorldEditVector())) {
 			world.setBlockState(new BlockPos(p.x, p.height, p.z), this.getType().getBlockState());
