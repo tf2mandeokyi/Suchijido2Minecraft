@@ -109,10 +109,4 @@ public class NgiMapParser {
 		    result.addElement(new VectorMapPoint(point, projection, type));
 		}
 	}
-	
-	
-	
-	public static void main(String[] args) throws IOException {
-		NgiMapParser.parse(new File("376081986.ngi"));
-	}
 }

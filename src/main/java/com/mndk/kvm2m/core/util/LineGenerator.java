@@ -4,7 +4,7 @@ import java.util.function.Function;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.regions.FlatRegion;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
@@ -12,17 +12,23 @@ import net.minecraft.world.World;
 
 public class LineGenerator {
 
-	public static Function<Vector2DH, Integer> getYFunction;
-	public static World world;
-	public static Region region;
-	public static IBlockState state;
+	public final Function<Vector2DH, Integer> getYFunction;
+	public final World world;
+	public final FlatRegion region;
+	public final IBlockState state;
+
+	
+	
+    public LineGenerator(Function<Vector2DH, Integer> getYFunction, World world, FlatRegion region, IBlockState state) {
+		this.getYFunction = getYFunction;
+		this.world = world;
+		this.region = region;
+		this.state = state;
+	}
 
     
-    
-    /**
-	 * Initialize static members {@link getYFunction}, {@link containsFunction}, {@link world}, {@link region}, and {@link state} first before calling this method.
-	 * */
-    public static void generateLine(Vector2DH v1, Vector2DH v2) {
+
+    public void generateLine(Vector2DH v1, Vector2DH v2) {
 
         double dx = v2.x - v1.x, dz = v2.z - v1.z;
         double dxa = Math.abs(dx), dza = Math.abs(dz);
@@ -57,10 +63,7 @@ public class LineGenerator {
 
     
     
-    /**
-	 * Initialize static members {@link getYFunction}, {@link containsFunction}, {@link world}, {@link region}, and {@link state} first before calling this method.
-	 * */
-    public static void generateLineWithMaxHeight(Vector2DH v1, Vector2DH v2, int maxHeight) {
+    public void generateLineWithMaxHeight(Vector2DH v1, Vector2DH v2, int maxHeight) {
 
         double dx = v2.x - v1.x, dz = v2.z - v1.z;
         double dxa = Math.abs(dx), dza = Math.abs(dz);
@@ -95,11 +98,7 @@ public class LineGenerator {
 
     
     
-    /**
-	 * Initialize static member {@link getYFunction} first before calling this method.
-	 * @return The max height (or y-axis) of the line
-	 * */
-    public static int getMaxHeightOfTheLine(Vector2DH v1, Vector2DH v2) {
+    public int getMaxHeightOfTheLine(Vector2DH v1, Vector2DH v2) {
 
         double dx = v2.x - v1.x, dz = v2.z - v1.z;
         double dxa = Math.abs(dx), dza = Math.abs(dz);
@@ -144,17 +143,17 @@ public class LineGenerator {
     
     
     
-    private static void placeBlock(double x, double z) {
+    private void placeBlock(double x, double z) {
+    	if(!region.contains(new Vector(Math.floor(x), region.getMinimumY(), Math.floor(z)))) return;
     	int y = getYFunction.apply(new Vector2DH(x, z));
-    	if(!region.contains(new Vector(Math.floor(x), Math.floor(y), Math.floor(z)))) return;
     	world.setBlockState(new BlockPos(x, y, z), state);
     }
 
     
     
-    private static void placeBlock(double x, double z, int maxHeight) {
+    private void placeBlock(double x, double z, int maxHeight) {
+    	if(!region.contains(new Vector(Math.floor(x), region.getMinimumY(), Math.floor(z)))) return;
     	int terrainY = getYFunction.apply(new Vector2DH(x, z));
-    	if(!region.contains(new Vector(Math.floor(x), Math.floor(terrainY), Math.floor(z)))) return;
     	for(int y = terrainY; y <= maxHeight; ++y) world.setBlockState(new BlockPos(x, y, z), state);
     }
 

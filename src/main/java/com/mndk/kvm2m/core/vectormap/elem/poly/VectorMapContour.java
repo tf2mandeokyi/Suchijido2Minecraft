@@ -23,7 +23,7 @@ public class VectorMapContour extends VectorMapPolyline implements IHasElevation
     }
 
     public VectorMapContour(Vector2DH[] vertexes, int elevation) {
-    	super(vertexes);
+    	super(vertexes, false);
     	this.elevation = elevation;
     }
     

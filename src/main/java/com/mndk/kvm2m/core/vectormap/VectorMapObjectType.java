@@ -191,7 +191,7 @@ public enum VectorMapObjectType {
 			
 			// B types
 			case 건물: 
-				return Blocks.BRICK_BLOCK.getDefaultState();
+				return Blocks.STONE.getDefaultState();
 			case 담장:
 				return Blocks.OAK_FENCE.getDefaultState();
 			

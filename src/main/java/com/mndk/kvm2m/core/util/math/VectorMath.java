@@ -26,6 +26,11 @@ public class VectorMath {
 		return null;
 	}
 
+	public static boolean checkRayXIntersection(Vector2DH point, Vector2DH p0, Vector2DH p1) {
+		return ((p0.z > point.z) != (p1.z > point.z)) &&
+    			(point.x < (p1.x - p0.x) * (point.z - p0.z) / (p1.z - p0.z) + p0.x);
+	}
+
 	@Nullable
 	public static Vector2DH getLineIntersection(Vector2DH line0Start, Vector2DH line0Delta, Vector2DH line1Start, Vector2DH line1Delta) {
 		// r0 + t * rayDelta = l0 + u * lineDelta

@@ -13,36 +13,42 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.World;
 
 public class VectorMapBuilding extends VectorMapPolyline implements IHasElevationData {
-
-	private final int buildingHeight;
+	
 	
 	private static final int FLOOR_HEIGHT = 4;
+
+	
+	private final int buildingHeight;
+	
 	
 	public VectorMapBuilding(NgiPolygonElement polygon, Grs80Projection projection, VectorMapObjectType type) {
 		super(polygon, projection, type);
-		this.buildingHeight = (Integer) polygon.getRowData("층수") * FLOOR_HEIGHT;
+		if(type == VectorMapObjectType.건물) {
+			this.buildingHeight = (Integer) polygon.getRowData("층수") * FLOOR_HEIGHT;
+		}
+		else {
+			this.buildingHeight = 0;
+		}
 	}
 
+	
 	@Override
 	public int getElevation() {
 		return this.buildingHeight;
 	}
 	
 	
-	
-	public void generateBlocks(FlatRegion region, World w, TriangleList triangleList) {
+	@Override
+	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
 		
 		IBlockState state = this.getType().getBlockState();
 		
 		if(state == null) return;
 		
-		LineGenerator.world = w;
-		LineGenerator.state = state;
-		LineGenerator.region = region;
-		LineGenerator.getYFunction = v -> {
-			double height = triangleList.interpolateHeight(v);
-			return (int) Math.round(height);
-		};
+		LineGenerator lineGenerator = new LineGenerator(
+				v -> (int) Math.round(triangleList.interpolateHeight(v)),
+				w, region, state
+		);
 		
 		int maxHeight = this.getMaxTerrainHeight(triangleList) + this.buildingHeight;
 		
@@ -50,12 +56,18 @@ public class VectorMapBuilding extends VectorMapPolyline implements IHasElevatio
 		for(int j = 0; j < vertexList.length; ++j) {
 			Vector2DH[] temp = vertexList[j];
         	for(int i = 0; i < temp.length - 1; ++i) {
-        		LineGenerator.generateLineWithMaxHeight(temp[i], temp[i+1], maxHeight);
+        		lineGenerator.generateLineWithMaxHeight(temp[i], temp[i+1], maxHeight);
             }
         	if(this.isClosed()) {
-                LineGenerator.generateLineWithMaxHeight(temp[temp.length-1], temp[0], maxHeight);
+        		lineGenerator.generateLineWithMaxHeight(temp[temp.length-1], temp[0], maxHeight);
         	}
 		}
+	}
+	
+	
+	@Override
+	protected int getHeightValueOfPoint(Vector2DH v, TriangleList triangleList) {
+		return this.getMaxTerrainHeight(triangleList) + this.buildingHeight - 1;
 	}
 	
 	
@@ -63,19 +75,19 @@ public class VectorMapBuilding extends VectorMapPolyline implements IHasElevatio
 	private int getMaxTerrainHeight(TriangleList triangleList) {
 		
 		int yMax = -10000, yTemp;
-		LineGenerator.getYFunction = v -> {
-			double height = triangleList.interpolateHeight(v);
-			return (int) Math.round(height);
-		};
+		LineGenerator lineGenerator = new LineGenerator(
+				v -> (int) Math.round(triangleList.interpolateHeight(v)), 
+				null, null, null
+		);
 		
 		Vector2DH[][] vertexList = this.getVertexList();
 		for(int j = 0; j < vertexList.length; ++j) {
 			Vector2DH[] temp = vertexList[j];
         	for(int i = 0; i < temp.length - 1; ++i) {
-        		yMax = yMax < (yTemp = LineGenerator.getMaxHeightOfTheLine(temp[i], temp[i+1])) ? yTemp : yMax;
+        		yMax = yMax < (yTemp = lineGenerator.getMaxHeightOfTheLine(temp[i], temp[i+1])) ? yTemp : yMax;
             }
         	if(this.isClosed()) {
-        		yMax = yMax < (yTemp = LineGenerator.getMaxHeightOfTheLine(temp[temp.length-1], temp[0])) ? yTemp : yMax;
+        		yMax = yMax < (yTemp = lineGenerator.getMaxHeightOfTheLine(temp[temp.length-1], temp[0])) ? yTemp : yMax;
         	}
 		}
 		

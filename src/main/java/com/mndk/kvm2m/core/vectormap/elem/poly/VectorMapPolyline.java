@@ -14,35 +14,41 @@ import com.mndk.kvm2m.core.vectormap.elem.VectorMapElement;
 import com.mndk.ngiparser.ngi.element.NgiLineElement;
 import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
 import com.mndk.ngiparser.ngi.vertex.NgiVertex;
-import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
 import com.sk89q.worldedit.regions.Polygonal2DRegion;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class VectorMapPolyline extends VectorMapElement {
 
 	
-    private final Vector2DH[][] vertexList;
+    private Vector2DH[][] vertexList;
     private final boolean closed;
 
     
-    public VectorMapPolyline(DXFLWPolyline polyline, Grs80Projection projection, VectorMapObjectType type) {
+    private VectorMapPolyline(VectorMapObjectType type, boolean closed) {
     	super(type);
+        this.closed = closed;
+    }
+
+    
+    public VectorMapPolyline(DXFLWPolyline polyline, Grs80Projection projection, VectorMapObjectType type) {
+    	this(type, polyline.isClosed());
         this.vertexList = new Vector2DH[1][polyline.getVertexCount()];
-        this.closed = polyline.isClosed();
         
         for(int i = 0; i < polyline.getVertexCount(); ++i) {
             DXFVertex vertex = polyline.getVertex(i);
             this.vertexList[0][i] = projectGrs80CoordToBteCoord(projection, vertex.getX(), vertex.getY());
         }
+        this.getBoundingBox();
     }
 
     
     public VectorMapPolyline(NgiPolygonElement polyline, Grs80Projection projection, VectorMapObjectType type) {
-    	super(type);
-        this.closed = true;
+    	this(type, true);
         this.vertexList = new Vector2DH[polyline.vertexData.length][];
         
         for(int j = 0; j < polyline.vertexData.length; ++j) {
@@ -54,12 +60,12 @@ public class VectorMapPolyline extends VectorMapElement {
                 this.vertexList[j][i] = projectGrs80CoordToBteCoord(projection, vertex.getAxis(0), vertex.getAxis(1));
             }
         }
+        this.getBoundingBox();
     }
 
     
     public VectorMapPolyline(NgiLineElement line, Grs80Projection projection, VectorMapObjectType type) {
-    	super(type);
-        this.closed = false;
+    	this(type, false);
     	int size = line.lineData.getSize();
         this.vertexList = new Vector2DH[1][size];
         
@@ -67,41 +73,40 @@ public class VectorMapPolyline extends VectorMapElement {
             NgiVertex vertex = line.lineData.getVertex(i);
             this.vertexList[0][i] = projectGrs80CoordToBteCoord(projection, vertex.getAxis(0), vertex.getAxis(1));
         }
+        this.getBoundingBox();
     }
     
     
-    public VectorMapPolyline(Vector2DH[] vertexes) {
-    	super(null);
+    public VectorMapPolyline(Vector2DH[] vertexes, boolean closed) {
+    	this(VectorMapObjectType.기타경계, closed);
     	this.vertexList = new Vector2DH[][] {vertexes};
-    	this.closed = false;
+        this.getBoundingBox();
     }
     
     
     public VectorMapPolyline(Polygonal2DRegion region) {
-    	super(null);
+    	this(VectorMapObjectType.기타경계, true);
     	int n = region.size();
     	this.vertexList = new Vector2DH[1][n];
     	
     	for(int i = 0; i < n; i++) {
         	this.vertexList[0][i] = new Vector2DH(region.getPoints().get(i));
     	}
-    	this.closed = false;
+        this.getBoundingBox();
     }
     
     
     public boolean containsPoint(Vector2DH point) {
-    	for(int j = 0; j < vertexList.length; ++j) {
-        	int count = 0;
-        	Vector2DH[] temp = vertexList[j];
-        	for(int i = 0; i < temp.length - 1; ++i) {
-        		if(VectorMath.getLineRayIntersection(point, Vector2DH.UNIT_X, temp[i], temp[i+1]) != null) {
-        			count++;
-        		}
-        		if(this.isClosed() && VectorMath.getLineRayIntersection(point, Vector2DH.UNIT_X, temp[temp.length-1], temp[0]) != null) {
-        			count++;
+    	
+    	for(int k = 0; k < vertexList.length; ++k) {
+        	boolean inside = false;
+        	Vector2DH[] temp = vertexList[k];
+        	for(int i = 0, j = temp.length - 1; i < temp.length; j = i++) {
+        		if(VectorMath.checkRayXIntersection(point, temp[i], temp[j])) {
+                	inside = !inside;
         		}
         	}
-        	if (count % 2 == 1) return true;
+        	if(inside) return true;
     	}
     	return false;
     }
@@ -118,98 +123,73 @@ public class VectorMapPolyline extends VectorMapElement {
     		if(v.z < minZ) minZ = v.z;
     		if(v.z > maxZ) maxZ = v.z;
     	}
-    	return boundingBoxResult = new BoundingBox(minX, minZ, maxX-minX, maxZ-minZ);
+    	return boundingBoxResult = new BoundingBox(minX, minZ, maxX, maxZ);
     }
-    
-    
-	public boolean checkLineIntersection(Vector2DH p0, Vector2DH p1) {
-		Vector2DH dp = p1.sub2d(p0);
-		for(int j = 0; j < vertexList.length; ++j) {
-			for(int i = 0; i < vertexList[j].length - 1; ++i) {
-	    		if(VectorMath.getLineStraightIntersection(p0, dp, vertexList[j][i], vertexList[j][i+1]) != null) {
-	    			return true;
-	    		}
-	    	}
-		}
-		return false;
-	}
 	
 	
 	
 	public void generateBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
+		this.generateOutline(region, w, triangleList);
+		
+		if(this.isClosed()) {
+			this.fillBlocks(region, w, triangleList);
+		}
+	}
+	
+	
+	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
 		int y = this.getType().getDefaultHeight();
 		IBlockState state = this.getType().getBlockState();
 		
 		if(state == null) return;
 		
-		LineGenerator.world = w;
-		LineGenerator.state = state;
-		LineGenerator.region = region;
-		LineGenerator.getYFunction = v -> {
-			double height = triangleList.interpolateHeight(v);
-			return (int) Math.round(height) + y;
-		};
+		LineGenerator lineGenerator = new LineGenerator(
+				v -> (int) Math.round(triangleList.interpolateHeight(v)) + y, 
+				w, region, state
+		);
 		
 		for(int j = 0; j < vertexList.length; ++j) {
 			Vector2DH[] temp = vertexList[j];
         	for(int i = 0; i < temp.length - 1; ++i) {
-        		LineGenerator.generateLine(temp[i], temp[i+1]);
+        		lineGenerator.generateLine(temp[i], temp[i+1]);
             }
         	if(this.isClosed()) {
-                LineGenerator.generateLine(temp[temp.length-1], temp[0]);
+        		lineGenerator.generateLine(temp[temp.length-1], temp[0]);
         	}
 		}
 	}
 	
 	
-	
-	@Deprecated
-	public void generateBlocks_old(FlatRegion region, World w, TriangleList triangleList) {
+	private void fillBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
-		int y = this.getType().getDefaultHeight();
 		IBlockState state = this.getType().getBlockState();
 		
 		if(state == null) return;
-		
-		LineGenerator.world = w;
-		LineGenerator.state = state;
-		LineGenerator.region = region;
-		LineGenerator.getYFunction = v -> {
-			double height = triangleList.interpolateHeight(v);
-			return (int) Math.round(height) + y;
-		};
-		
-		if(region instanceof CuboidRegion) {
-			BoundingBox box = new BoundingBox((CuboidRegion) region);
-			
-			for(int j = 0; j < vertexList.length; ++j) {
-				Vector2DH[] temp = vertexList[j];
-	        	for(int i = 0; i < temp.length - 1; ++i) {
-	        		if(box.checkLineInside(temp[i], temp[i+1])) {
-		                LineGenerator.generateLine(temp[i], temp[i+1]);
-	        		}
-	            }
-	        	if(this.isClosed() && box.checkLineInside(temp[temp.length-1], temp[0])) {
-	                LineGenerator.generateLine(temp[temp.length-1], temp[0]);
-	        	}
-			}
-		}
-		else if(region instanceof Polygonal2DRegion) {
-        	VectorMapPolyline polySelection = new VectorMapPolyline((Polygonal2DRegion) region);
 
-        	for(int j = 0; j < vertexList.length; ++j) {
-				Vector2DH[] temp = vertexList[j];
-	        	for(int i = 0; i < temp.length - 1; ++i) {
-	        		if(polySelection.checkLineIntersection(temp[i], temp[i+1])) {
-		                LineGenerator.generateLine(temp[i], temp[i+1]);
-	        		}
-	            }
-	        	if(this.isClosed() && polySelection.checkLineIntersection(temp[temp.length-1], temp[0])) {
-	                LineGenerator.generateLine(temp[temp.length-1], temp[0]);
-	        	}
+		Vector region_vmin = region.getMinimumPoint(), region_vmax = region.getMaximumPoint();
+		int region_xmin = (int) Math.floor(region_vmin.getX()), region_xmax = (int) Math.ceil(region_vmax.getX());
+		int region_zmin = (int) Math.floor(region_vmin.getZ()), region_zmax = (int) Math.ceil(region_vmax.getZ());
+		
+		BoundingBox box = this.getBoundingBox();
+		int vertex_xmin = (int) Math.floor(box.xmin), vertex_xmax = (int) Math.ceil(box.xmax);
+		int vertex_zmin = (int) Math.floor(box.zmin), vertex_zmax = (int) Math.ceil(box.zmax);
+		
+		int xmin = Math.max(region_xmin, vertex_xmin), zmin = Math.max(region_zmin, vertex_zmin);
+		int xmax = Math.min(region_xmax, vertex_xmax), zmax = Math.min(region_zmax, vertex_zmax);
+		
+		for(int z = zmin; z <= zmax; ++z) {
+			for(int x = xmin; x <= xmax; ++x) {
+				if(!region.contains(new Vector(x, region.getMinimumY(), z)) || !this.containsPoint(new Vector2DH(x+.5, z+.5))) continue;
+				int y = getHeightValueOfPoint(new Vector2DH(x, z), triangleList);
+				w.setBlockState(new BlockPos(x, y, z), state);
 			}
 		}
+	}
+	
+	
+	protected int getHeightValueOfPoint(Vector2DH v, TriangleList triangleList) {
+		return (int) Math.round(triangleList.interpolateHeight(v)) + this.getType().getDefaultHeight();
 	}
 
     
@@ -221,5 +201,5 @@ public class VectorMapPolyline extends VectorMapElement {
     public boolean isClosed() {
     	return closed;
     }
-
+    
 }

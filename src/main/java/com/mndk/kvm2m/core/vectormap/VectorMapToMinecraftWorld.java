@@ -19,6 +19,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 
@@ -44,18 +45,21 @@ public class VectorMapToMinecraftWorld {
     	TriangleList triangleList = FastDelaunayTriangulator.from(result.getElevationPoints()).getTriangleList();
 
         KVectorMap2MinecraftMod.logger.info("Generating surface...");
+        player.sendMessage(new TextComponentString("§dGenerating surface..."));
         
         for(Triangle triangle : triangleList) {
         	triangle.rasterize(world, worldEditRegion, CONTOUR_AREA_BLOCK);
         }
 		
-		KVectorMap2MinecraftMod.logger.info("Generating lines...");
+		KVectorMap2MinecraftMod.logger.info("Generating vector map elements...");
+        player.sendMessage(new TextComponentString("§dGenerating vector map elements..."));
 		
 		for(VectorMapElement element : result.getElements()) {
 			element.generateBlocks(worldEditRegion, world, triangleList);
 		}
         
-        KVectorMap2MinecraftMod.logger.info("Successfully placed all blocks in the entry list.");
+        KVectorMap2MinecraftMod.logger.info("Done!");
+        player.sendMessage(new TextComponentString("§dDone!"));
         
     }
     
