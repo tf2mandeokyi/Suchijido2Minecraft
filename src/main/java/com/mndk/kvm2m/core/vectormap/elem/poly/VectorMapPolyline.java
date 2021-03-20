@@ -86,7 +86,7 @@ public class VectorMapPolyline extends VectorMapElement {
         	this.vertexList[0][i] = new Vector2DH(region.getPoints().get(i));
     	}
     	this.closed = false;
-    } 
+    }
     
     
     public boolean containsPoint(Vector2DH point) {
@@ -211,20 +211,10 @@ public class VectorMapPolyline extends VectorMapElement {
 			}
 		}
 	}
-	
-
-    public int getVertexCount() {
-        return this.vertexList.length;
-    }
 
     
     public Vector2DH[][] getVertexList() {
         return this.vertexList;
-    }
-
-    
-    public Vector2DH getVertex(int j, int i) {
-        return this.vertexList[j][i];
     }
     
     
