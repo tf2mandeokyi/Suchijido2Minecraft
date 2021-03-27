@@ -1,6 +1,4 @@
-package com.mndk.kvm2m.core.projection.grs80;
-
-import com.mndk.kvm2m.core.projection.Proj4jProjection;
+package com.mndk.kvm2m.core.projection;
 
 public class Grs80Projection extends Proj4jProjection {
     public Grs80Projection(String crsName, double lon_0) {

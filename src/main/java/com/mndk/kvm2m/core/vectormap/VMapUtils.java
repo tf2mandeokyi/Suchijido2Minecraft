@@ -1,9 +1,9 @@
 package com.mndk.kvm2m.core.vectormap;
 
+import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.projection.Projections;
-import com.mndk.kvm2m.core.projection.grs80.Grs80Projection;
 
-public class VectorMapUtils {
+public class VMapUtils {
 
 	public static Grs80Projection getProjectionFromMapId(String fileName) {
 	    char number = fileName.charAt(2);

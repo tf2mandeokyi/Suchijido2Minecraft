@@ -1,7 +1,5 @@
 package com.mndk.kvm2m.core.projection;
 
-import com.mndk.kvm2m.core.projection.grs80.Grs80Projection;
-
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.buildtheearth.terraplusplus.projection.dymaxion.BTEDymaxionProjection;
 

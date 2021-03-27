@@ -7,7 +7,7 @@ import com.sk89q.worldedit.regions.FlatRegion;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 
-public class TerrainGenerationTask implements MapGeneratorTask {
+public class TerrainGenerationTask implements VMapGeneratorTask {
 
 	private final TriangleList triangleList;
 	private final World world;

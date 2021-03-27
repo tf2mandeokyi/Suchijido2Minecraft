@@ -3,14 +3,14 @@ package com.mndk.kvm2m.core.vectormap.elem.poly;
 import org.kabeja.dxf.DXFLWPolyline;
 import org.kabeja.dxf.DXFVertex;
 
-import com.mndk.kvm2m.core.projection.grs80.Grs80Projection;
+import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.math.VectorMath;
 import com.mndk.kvm2m.core.util.shape.BoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VectorMapObjectType;
-import com.mndk.kvm2m.core.vectormap.elem.VectorMapElement;
+import com.mndk.kvm2m.core.vectormap.VMapObjectType;
+import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.ngiparser.ngi.element.NgiLineElement;
 import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
 import com.mndk.ngiparser.ngi.vertex.NgiVertex;
@@ -22,20 +22,20 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class VectorMapPolyline extends VectorMapElement {
+public class VMapPolyline extends VMapElement {
 
 	
     private Vector2DH[][] vertexList;
     private final boolean closed;
 
     
-    private VectorMapPolyline(VectorMapObjectType type, boolean closed) {
+    private VMapPolyline(VMapObjectType type, boolean closed) {
     	super(type);
         this.closed = closed;
     }
 
     
-    public VectorMapPolyline(DXFLWPolyline polyline, Grs80Projection projection, VectorMapObjectType type) {
+    public VMapPolyline(DXFLWPolyline polyline, Grs80Projection projection, VMapObjectType type) {
     	this(type, polyline.isClosed());
         this.vertexList = new Vector2DH[1][polyline.getVertexCount()];
         
@@ -47,7 +47,7 @@ public class VectorMapPolyline extends VectorMapElement {
     }
 
     
-    public VectorMapPolyline(NgiPolygonElement polyline, Grs80Projection projection, VectorMapObjectType type) {
+    public VMapPolyline(NgiPolygonElement polyline, Grs80Projection projection, VMapObjectType type) {
     	this(type, true);
         this.vertexList = new Vector2DH[polyline.vertexData.length][];
         
@@ -64,7 +64,7 @@ public class VectorMapPolyline extends VectorMapElement {
     }
 
     
-    public VectorMapPolyline(NgiLineElement line, Grs80Projection projection, VectorMapObjectType type) {
+    public VMapPolyline(NgiLineElement line, Grs80Projection projection, VMapObjectType type) {
     	this(type, false);
     	int size = line.lineData.getSize();
         this.vertexList = new Vector2DH[1][size];
@@ -77,15 +77,15 @@ public class VectorMapPolyline extends VectorMapElement {
     }
     
     
-    public VectorMapPolyline(Vector2DH[] vertexes, boolean closed) {
-    	this(VectorMapObjectType.기타경계, closed);
+    public VMapPolyline(Vector2DH[] vertexes, boolean closed) {
+    	this(VMapObjectType.기타경계, closed);
     	this.vertexList = new Vector2DH[][] {vertexes};
         this.getBoundingBox();
     }
     
     
-    public VectorMapPolyline(Polygonal2DRegion region) {
-    	this(VectorMapObjectType.기타경계, true);
+    public VMapPolyline(Polygonal2DRegion region) {
+    	this(VMapObjectType.기타경계, true);
     	int n = region.size();
     	this.vertexList = new Vector2DH[1][n];
     	

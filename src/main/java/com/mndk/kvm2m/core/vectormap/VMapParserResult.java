@@ -4,33 +4,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vectormap.elem.VectorMapElement;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VectorMapPolyline;
+import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
+import com.mndk.kvm2m.core.vectormap.elem.poly.VMapPolyline;
 
-public class VectorMapParserResult {
+public class VMapParserResult {
 	
-	private VectorMapPolyline boundary;
-	private List<VectorMapElement> elementList;
+	private VMapPolyline boundary;
+	private List<VMapElement> elementList;
 	private List<Vector2DH> elevationPointList;
 	
-	public VectorMapParserResult() {
+	public VMapParserResult() {
 		this.elementList = new ArrayList<>();
 		this.elevationPointList = new ArrayList<>();
 	}
 	
-	public VectorMapPolyline getBoundary() {
+	public VMapPolyline getBoundary() {
 		return boundary;
 	}
 	
-	public void setBoundary(VectorMapPolyline boundary) {
+	public void setBoundary(VMapPolyline boundary) {
 		this.boundary = boundary;
 	}
 	
-	public List<VectorMapElement> getElements() {
+	public List<VMapElement> getElements() {
 		return this.elementList;
 	}
 	
-	public void addElement(VectorMapElement element) {
+	public void addElement(VMapElement element) {
 		this.elementList.add(element);
 	}
 	

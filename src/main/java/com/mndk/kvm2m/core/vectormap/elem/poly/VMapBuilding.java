@@ -1,10 +1,10 @@
 package com.mndk.kvm2m.core.vectormap.elem.poly;
 
-import com.mndk.kvm2m.core.projection.grs80.Grs80Projection;
+import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VectorMapObjectType;
+import com.mndk.kvm2m.core.vectormap.VMapObjectType;
 import com.mndk.kvm2m.core.vectormap.elem.IHasElevationData;
 import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
 import com.sk89q.worldedit.regions.FlatRegion;
@@ -12,7 +12,7 @@ import com.sk89q.worldedit.regions.FlatRegion;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.World;
 
-public class VectorMapBuilding extends VectorMapPolyline implements IHasElevationData {
+public class VMapBuilding extends VMapPolyline implements IHasElevationData {
 	
 	
 	private static final int FLOOR_HEIGHT = 4;
@@ -21,9 +21,9 @@ public class VectorMapBuilding extends VectorMapPolyline implements IHasElevatio
 	private final int buildingHeight;
 	
 	
-	public VectorMapBuilding(NgiPolygonElement polygon, Grs80Projection projection, VectorMapObjectType type) {
+	public VMapBuilding(NgiPolygonElement polygon, Grs80Projection projection, VMapObjectType type) {
 		super(polygon, projection, type);
-		if(type == VectorMapObjectType.건물) {
+		if(type == VMapObjectType.건물) {
 			this.buildingHeight = (Integer) polygon.getRowData("층수") * FLOOR_HEIGHT;
 		}
 		else {

@@ -16,8 +16,8 @@ import org.kabeja.parser.ParseException;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VectorMapParserResult;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VectorMapContour;
+import com.mndk.kvm2m.core.vectormap.VMapParserResult;
+import com.mndk.kvm2m.core.vectormap.elem.poly.VMapContour;
 import com.mndk.kvm2m.core.vectorparser.DxfMapParser;
 
 
@@ -611,7 +611,7 @@ public class FastDelaunayTriangulator {
 	
 	
 	public static void main_(String[] args) throws FileNotFoundException, ParseException {
-    	VectorMapParserResult result = DxfMapParser.parse(new File("37612030.dxf"));
+    	VMapParserResult result = DxfMapParser.parse(new File("37612030.dxf"));
     	List<Vector2DH> vertexes = result.getElevationPoints();
     	System.out.println(vertexes.size());
     	List<Triangle> triangles = FastDelaunayTriangulator.from(vertexes).getTriangleList();
@@ -622,26 +622,26 @@ public class FastDelaunayTriangulator {
     	int w = 400, h = 400;
 		BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
 		final int ERROR_COLOR = new Color(255, 0, 0).getRGB();
-		VectorMapContour[] contours = new VectorMapContour[] {
-			new VectorMapContour(new Vector2DH[] {
+		VMapContour[] contours = new VMapContour[] {
+			new VMapContour(new Vector2DH[] {
 					new Vector2DH(0, 0),
 					new Vector2DH(0, h),
 					new Vector2DH(w, h),
 					new Vector2DH(w, 0)
 			}, 50),
-			new VectorMapContour(new Vector2DH[] {
+			new VMapContour(new Vector2DH[] {
 					new Vector2DH(20, 20),
 					new Vector2DH(20, 350),
 					new Vector2DH(350, 350),
 					new Vector2DH(350, 20)
 			}, 100),
-			new VectorMapContour(new Vector2DH[] {
+			new VMapContour(new Vector2DH[] {
 					new Vector2DH(50, 50),
 					new Vector2DH(50, 250),
 					new Vector2DH(250, 250),
 					new Vector2DH(250, 50)
 			}, 150),
-			new VectorMapContour(new Vector2DH[] {
+			new VMapContour(new Vector2DH[] {
 					new Vector2DH(100, 100),
 					new Vector2DH(100, 200),
 					new Vector2DH(200, 200),
@@ -649,7 +649,7 @@ public class FastDelaunayTriangulator {
 			}, 200)
 		};
 		List<Vector2DH> vertexList = new ArrayList<>();
-		for(VectorMapContour contour : contours) {
+		for(VMapContour contour : contours) {
 			for(Vector2DH[] va : contour.getVertexList()) for(Vector2DH v : va) {
 				vertexList.add(v.withHeight(contour.getElevation()));
 			}

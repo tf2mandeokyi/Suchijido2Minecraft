@@ -7,9 +7,9 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
 
-import com.mndk.kvm2m.core.vectormap.VectorMapParserException;
-import com.mndk.kvm2m.core.vectormap.VectorMapParserResult;
-import com.mndk.kvm2m.core.vectormap.VectorMapToMinecraftWorld;
+import com.mndk.kvm2m.core.vectormap.VMapParserException;
+import com.mndk.kvm2m.core.vectormap.VMapParserResult;
+import com.mndk.kvm2m.core.vectormap.VMapToMinecraft;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
@@ -32,13 +32,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 
-public abstract class VectorMapGeneratorCommand extends CommandBase {
+public abstract class VMapGeneratorCommand extends CommandBase {
     
     
     
     @Override
     public abstract String getName();
-	public abstract VectorMapParserResult fileDataToParserResult(File file) throws CommandException;
+	public abstract VMapParserResult fileDataToParserResult(File file) throws CommandException;
 	public abstract String getExtension();
 
 
@@ -77,10 +77,10 @@ public abstract class VectorMapGeneratorCommand extends CommandBase {
         	if(!file.exists() ||  file.isDirectory() || !FilenameUtils.isExtension(subDirectory, this.getExtension())) 
         		throw new CommandException("File does not exist!");
         	
-        	VectorMapParserResult result = this.fileDataToParserResult(file);
-            VectorMapToMinecraftWorld.generate(world, worldEditRegion, result);
+        	VMapParserResult result = this.fileDataToParserResult(file);
+            VMapToMinecraft.generateTasks(world, worldEditRegion, result);
             
-        } catch(VectorMapParserException exception) {
+        } catch(VMapParserException exception) {
             KVectorMap2MinecraftMod.logger.error(exception);
             throw new CommandException(exception.getMessage());
         }

@@ -1,12 +1,9 @@
 package com.mndk.kvm2m.core.vectormap;
 
-import net.minecraft.block.BlockColored;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.EnumDyeColor;
 
 // TODO translate this
-public enum VectorMapObjectType {
+public enum VMapObjectType {
 	
 	// A타입 - 교통
 	도로경계("A001", Category.교통),
@@ -149,16 +146,16 @@ public enum VectorMapObjectType {
 		}
 	}
 	
-	private final String layerHeader;
+	final String layerHeader;
 	private final Category category;
 	
-	private VectorMapObjectType(String layerHeader, Category category) {
+	private VMapObjectType(String layerHeader, Category category) {
 		this.layerHeader = layerHeader;
 		this.category = category;
 	}
 	
-	public static VectorMapObjectType getTypeFromLayerName(String layerName) {
-		for(VectorMapObjectType t : values()) {
+	public static VMapObjectType getTypeFromLayerName(String layerName) {
+		for(VMapObjectType t : values()) {
 			if(layerName.startsWith(t.layerHeader)) {
 				return t;
 			}
@@ -171,42 +168,7 @@ public enum VectorMapObjectType {
 	}
 	
 	public IBlockState getBlockState() {
-		if(this.layerHeader.startsWith("G") || this.layerHeader.startsWith("H")) {
-			return null;
-		}
-		switch(this) {
-			// A types
-			case 도로경계: 
-				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.GRAY);
-			case 도로중심선: 
-				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.YELLOW);
-			case 보도: 
-				return Blocks.DOUBLE_STONE_SLAB.getDefaultState();
-			case 횡단보도: 
-				return Blocks.CONCRETE.getDefaultState();
-			case 육교: 
-				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.SILVER);
-			case 터널: 
-				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.MAGENTA);
-			
-			// B types
-			case 건물: 
-				return Blocks.STONE.getDefaultState();
-			case 담장:
-				return Blocks.OAK_FENCE.getDefaultState();
-			
-			// E types
-			case 하천중심선:
-			case 등심선: 
-				return Blocks.LAPIS_BLOCK.getDefaultState();
-			case 하천경계:
-			case 호수:
-			case 해안선:
-				return Blocks.WATER.getDefaultState();
-			
-			default:
-				return null;
-		}
+		return VMapBlockSelector.getBlockState(this);
 	}
 	
 	public int getDefaultHeight() {
@@ -218,7 +180,6 @@ public enum VectorMapObjectType {
 			case 육교:
 			case 입체교차부:
 				return 2;
-			
 			default:
 				return 0;
 		}

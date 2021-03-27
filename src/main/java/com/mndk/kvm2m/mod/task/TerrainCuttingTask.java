@@ -6,7 +6,7 @@ import com.sk89q.worldedit.regions.FlatRegion;
 
 import net.minecraft.world.World;
 
-public class TerrainCuttingTask implements MapGeneratorTask {
+public class TerrainCuttingTask implements VMapGeneratorTask {
 
 	private final TriangleList triangleList;
 	private final World world;
