@@ -12,16 +12,11 @@ import com.sk89q.worldedit.forge.ForgeWorldEdit;
 import com.sk89q.worldedit.regions.FlatRegion;
 import com.sk89q.worldedit.regions.Region;
 
-import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
-import io.github.opencubicchunks.cubicchunks.core.server.CubeProviderServer;
-import net.buildtheearth.terraplusplus.generator.EarthGenerator;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.IChunkProvider;
 
 public class VectorMapToMinecraftWorld {
 
@@ -31,12 +26,7 @@ public class VectorMapToMinecraftWorld {
 	
 	
 	
-    public static void generate(MinecraftServer server, EntityPlayerMP player, VectorMapParserResult result) throws VectorMapParserException {
-
-        World world = server.getEntityWorld();
-        
-        // Validating world type
-        validateWorld(world);
+    public static void generate(World world, EntityPlayerMP player, VectorMapParserResult result) throws VectorMapParserException {
         
         // Validating world edit region
         FlatRegion worldEditRegion = validateWorldEditRegion(world, player);
@@ -61,22 +51,6 @@ public class VectorMapToMinecraftWorld {
         KVectorMap2MinecraftMod.logger.info("Done!");
         player.sendMessage(new TextComponentString("§dDone!"));
         
-    }
-    
-    
-    
-    private static void validateWorld(World world) throws VectorMapParserException {
-    	
-    	IChunkProvider chunkProvider = world.getChunkProvider();
-        if(!(chunkProvider instanceof CubeProviderServer)) {
-            throw new VectorMapParserException("You must be in a cubic chunks world to generate .dxf map.");
-        }
-
-        ICubeGenerator cubeGenerator = ((CubeProviderServer) chunkProvider).getCubeGenerator();
-        if (!(cubeGenerator instanceof EarthGenerator)) {
-            throw new VectorMapParserException("You must be in a terra 1 to 1 world to generate .dxf map.");
-        }
-    	
     }
     
     

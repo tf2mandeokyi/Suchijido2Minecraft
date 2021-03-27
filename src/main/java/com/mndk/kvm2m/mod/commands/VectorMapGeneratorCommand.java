@@ -12,6 +12,10 @@ import com.mndk.kvm2m.core.vectormap.VectorMapParserResult;
 import com.mndk.kvm2m.core.vectormap.VectorMapToMinecraftWorld;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 
+import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
+import io.github.opencubicchunks.cubicchunks.core.server.CubeProviderServer;
+import net.buildtheearth.terraplusplus.generator.EarthGenerator;
+import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -19,6 +23,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.IChunkProvider;
 
 public abstract class VectorMapGeneratorCommand extends CommandBase {
     
@@ -48,15 +54,10 @@ public abstract class VectorMapGeneratorCommand extends CommandBase {
 	@Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
     	
-    	if(!(sender instanceof EntityPlayer)) {
-    		throw new CommandException("Only players can run this command.");
-    	}
-    	
-    	if(!(sender instanceof EntityPlayerMP)) {
-    		throw new CommandException("This command is only available in the multiplayer server.");
-    	}
-    	
-    	EntityPlayerMP player = (EntityPlayerMP) sender;
+    	EntityPlayerMP player = commandSenderToPlayer(sender);
+    	World world = server.getEntityWorld();
+    	@SuppressWarnings("unused")
+    	GeographicProjection projection = getWorldProjection(world);
     	
         if(args.length == 0) {
             throw new CommandException("com.mndk.kvm2m.cmd.noid");
@@ -70,12 +71,46 @@ public abstract class VectorMapGeneratorCommand extends CommandBase {
         		throw new CommandException("File does not exist!");
         	
         	VectorMapParserResult result = this.fileDataToParserResult(file);
-            VectorMapToMinecraftWorld.generate(server, player, result);
+            VectorMapToMinecraftWorld.generate(world, player, result);
             
         } catch(VectorMapParserException exception) {
             KVectorMap2MinecraftMod.logger.error(exception);
             throw new CommandException(exception.getMessage());
         }
+    }
+	
+	
+	
+	private static EntityPlayerMP commandSenderToPlayer(ICommandSender sender) throws CommandException {
+		
+		if(!(sender instanceof EntityPlayer)) {
+    		throw new CommandException("Only players can run this command.");
+    	}
+		
+    	if(!(sender instanceof EntityPlayerMP)) {
+    		throw new CommandException("This command is only available in the multiplayer server.");
+    	}
+    	
+    	return (EntityPlayerMP) sender;
+	}
+	
+	
+	
+	private static GeographicProjection getWorldProjection(World world) throws CommandException {
+    	
+    	IChunkProvider chunkProvider = world.getChunkProvider();
+        if(!(chunkProvider instanceof CubeProviderServer)) {
+            throw new CommandException("You must be in a cubic chunks world to generate .dxf map.");
+        }
+
+        ICubeGenerator cubeGenerator = ((CubeProviderServer) chunkProvider).getCubeGenerator();
+        if (!(cubeGenerator instanceof EarthGenerator)) {
+            throw new CommandException("You must be in a terra 1 to 1 world to generate .dxf map.");
+        }
+        
+        EarthGenerator generator = (EarthGenerator) cubeGenerator;
+        
+        return generator.projection;
     }
 	
 	
