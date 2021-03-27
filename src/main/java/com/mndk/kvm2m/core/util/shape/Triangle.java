@@ -6,6 +6,7 @@ import com.sk89q.worldedit.Vector2D;
 import com.sk89q.worldedit.regions.FlatRegion;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -73,10 +74,20 @@ public class Triangle {
 	
 	public void rasterize(World world, FlatRegion region, IBlockState blockState) {
 		for(int z = minZ; z <= maxZ; ++z)  for(int x = minX; x <= maxX; ++x) {
-			if(this.contains(x + .5, z + .5) == null) continue;
+			if(this.contains(x + .5, z + .5) == null || !region.contains(new Vector(x, region.getMinimumY(), z))) continue;
 			int height = (int) Math.round(interpolateY(x, z));
-			if(region.contains(new Vector(x, height, z))) {
-				world.setBlockState(new BlockPos(x, height, z), blockState);
+			world.setBlockState(new BlockPos(x, height, z), blockState);
+		}
+	}
+	
+	
+	
+	public void removeTerrainAbove(World world, FlatRegion region) {
+		for(int z = minZ; z <= maxZ; ++z)  for(int x = minX; x <= maxX; ++x) {
+			if(this.contains(x + .5, z + .5) == null || !region.contains(new Vector(x, region.getMinimumY(), z))) continue;
+			int height = (int) Math.round(interpolateY(x, z));
+			for(int y = height + 1; world.getBlockState(new BlockPos(x, y, z)).getBlock() != Blocks.AIR; y++) {
+				world.setBlockState(new BlockPos(x, y, z), Blocks.AIR.getDefaultState());
 			}
 		}
 	}

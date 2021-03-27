@@ -1,76 +1,58 @@
 package com.mndk.kvm2m.core.vectormap;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.mndk.kvm2m.core.util.delaunator.FastDelaunayTriangulator;
-import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vectormap.elem.VectorMapElement;
-import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
-import com.sk89q.worldedit.IncompleteRegionException;
-import com.sk89q.worldedit.LocalSession;
-import com.sk89q.worldedit.forge.ForgeWorld;
-import com.sk89q.worldedit.forge.ForgeWorldEdit;
+import com.mndk.kvm2m.mod.event.ServerTickRepeater;
+import com.mndk.kvm2m.mod.task.TerrainCuttingTask;
+import com.mndk.kvm2m.mod.task.TerrainGenerationTask;
+import com.mndk.kvm2m.mod.task.MapObjectGenerationTask;
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.FlatRegion;
-import com.sk89q.worldedit.regions.Region;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 
 public class VectorMapToMinecraftWorld {
 
-	
-	
-	private static IBlockState CONTOUR_AREA_BLOCK = Blocks.EMERALD_BLOCK.getDefaultState();
-	
-	
-	
-    public static void generate(World world, EntityPlayerMP player, VectorMapParserResult result) throws VectorMapParserException {
-        
-        // Validating world edit region
-        FlatRegion worldEditRegion = validateWorldEditRegion(world, player);
-        
-        // Generate triangles based on contour lines with delaunay triangulate algorithm
-    	TriangleList triangleList = FastDelaunayTriangulator.from(result.getElevationPoints()).getTriangleList();
 
-        KVectorMap2MinecraftMod.logger.info("Generating surface...");
-        player.sendMessage(new TextComponentString("§dGenerating surface..."));
+	static final int MAX_AXIS = 30000000;
+	static final FlatRegion INFINITE_REGION = new CuboidRegion(new Vector(-MAX_AXIS, 0, -MAX_AXIS), new Vector(MAX_AXIS, 0, MAX_AXIS));
+	
+	
+    public static void generate(World world, FlatRegion worldEditRegion, VectorMapParserResult result) throws VectorMapParserException {
         
-        for(Triangle triangle : triangleList) {
-        	triangle.rasterize(world, worldEditRegion, CONTOUR_AREA_BLOCK);
+        // Schedule triangles generation task based on contour lines with delaunay triangulate algorithm
+    	TriangleList triangleList = FastDelaunayTriangulator.from(result.getElevationPoints()).getTriangleList();
+    	ServerTickRepeater.addTask(new TerrainGenerationTask(triangleList, world, worldEditRegion));
+    	ServerTickRepeater.addTask(new TerrainCuttingTask(triangleList, world, worldEditRegion));
+		
+        List<VectorMapElement> elementList = new ArrayList<>(), totalElements = result.getElements();
+        VectorMapObjectType lastType;
+        VectorMapElement temp;
+        
+	    if(!totalElements.isEmpty()) {
+	        elementList.add(temp = totalElements.get(0));
+	        lastType = temp.getType();
+			for(int i = 1; i < totalElements.size(); ++i) {
+				temp = totalElements.get(i);
+				if(lastType != temp.getType()) {
+					ServerTickRepeater.addTask(new MapObjectGenerationTask(elementList, lastType, world, worldEditRegion, triangleList));
+					lastType = temp.getType();
+					elementList = new ArrayList<>();
+				}
+				else {
+					elementList.add(temp);
+				}
+			}
+			ServerTickRepeater.addTask(new MapObjectGenerationTask(elementList, lastType, world, worldEditRegion, triangleList));
         }
-		
-		KVectorMap2MinecraftMod.logger.info("Generating vector map elements...");
-        player.sendMessage(new TextComponentString("§dGenerating vector map elements..."));
-		
-		for(VectorMapElement element : result.getElements()) {
-			element.generateBlocks(worldEditRegion, world, triangleList);
-		}
+	    // dirty code lmao
+	    // TODO categorize map objects by layers
         
-        KVectorMap2MinecraftMod.logger.info("Done!");
-        player.sendMessage(new TextComponentString("§dDone!"));
-        
-    }
-    
-    
-    
-    private static FlatRegion validateWorldEditRegion(World world, EntityPlayerMP player) throws VectorMapParserException {
-    	
-    	ForgeWorld weWorld = ForgeWorldEdit.inst.getWorld(world);
-    	LocalSession session = ForgeWorldEdit.inst.getSession(player);
-    	Region worldEditRegion;
-    	try {
-    		worldEditRegion = session.getSelection(weWorld);
-    		if(!(worldEditRegion instanceof FlatRegion)) {
-    			throw new VectorMapParserException("Worldedit region should be either cuboid, cylinder, or polygon.");
-    		}
-    	} catch(IncompleteRegionException exception) {
-    		// No region is selected
-    		throw new VectorMapParserException("Please select the worldedit region first.");
-    	}
-    	return (FlatRegion) worldEditRegion;
-    	
     }
 
 }

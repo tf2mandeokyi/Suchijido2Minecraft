@@ -11,6 +11,12 @@ import com.mndk.kvm2m.core.vectormap.VectorMapParserException;
 import com.mndk.kvm2m.core.vectormap.VectorMapParserResult;
 import com.mndk.kvm2m.core.vectormap.VectorMapToMinecraftWorld;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
+import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.forge.ForgeWorld;
+import com.sk89q.worldedit.forge.ForgeWorldEdit;
+import com.sk89q.worldedit.regions.FlatRegion;
+import com.sk89q.worldedit.regions.Region;
 
 import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
 import io.github.opencubicchunks.cubicchunks.core.server.CubeProviderServer;
@@ -58,6 +64,7 @@ public abstract class VectorMapGeneratorCommand extends CommandBase {
     	World world = server.getEntityWorld();
     	@SuppressWarnings("unused")
     	GeographicProjection projection = getWorldProjection(world);
+    	FlatRegion worldEditRegion = validateWorldEditRegion(world, player);
     	
         if(args.length == 0) {
             throw new CommandException("com.mndk.kvm2m.cmd.noid");
@@ -71,7 +78,7 @@ public abstract class VectorMapGeneratorCommand extends CommandBase {
         		throw new CommandException("File does not exist!");
         	
         	VectorMapParserResult result = this.fileDataToParserResult(file);
-            VectorMapToMinecraftWorld.generate(world, player, result);
+            VectorMapToMinecraftWorld.generate(world, worldEditRegion, result);
             
         } catch(VectorMapParserException exception) {
             KVectorMap2MinecraftMod.logger.error(exception);
@@ -111,6 +118,26 @@ public abstract class VectorMapGeneratorCommand extends CommandBase {
         EarthGenerator generator = (EarthGenerator) cubeGenerator;
         
         return generator.projection;
+    }
+	
+	
+	
+	private static FlatRegion validateWorldEditRegion(World world, EntityPlayerMP player) throws CommandException {
+    	
+    	ForgeWorld weWorld = ForgeWorldEdit.inst.getWorld(world);
+    	LocalSession session = ForgeWorldEdit.inst.getSession(player);
+    	Region worldEditRegion;
+    	try {
+    		worldEditRegion = session.getSelection(weWorld);
+    		if(!(worldEditRegion instanceof FlatRegion)) {
+    			throw new CommandException("Worldedit region should be either cuboid, cylinder, or polygon.");
+    		}
+    	} catch(IncompleteRegionException exception) {
+    		// No region is selected
+    		throw new CommandException("Please select the worldedit region first.");
+    	}
+    	return (FlatRegion) worldEditRegion;
+    	
     }
 	
 	

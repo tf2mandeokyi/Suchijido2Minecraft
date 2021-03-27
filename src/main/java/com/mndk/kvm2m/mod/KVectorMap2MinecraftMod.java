@@ -8,7 +8,9 @@ import com.mndk.kvm2m.mod.commands.DxfMapGeneratorCommand;
 import com.mndk.kvm2m.mod.commands.NgiMapGeneratorCommand;
 
 import net.minecraft.command.ICommand;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
@@ -54,5 +56,12 @@ public class KVectorMap2MinecraftMod {
         	temp.mkdirs();
         }
     }
-
+	
+	public static void broadcastMessage(String message) {
+		FMLCommonHandler.instance()
+				.getMinecraftServerInstance()
+				.getPlayerList()
+				.sendMessage(new TextComponentString(message));
+	}
+    
 }
