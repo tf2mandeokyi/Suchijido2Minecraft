@@ -25,6 +25,8 @@ public class VMapToMinecraft {
 	
     public static void generateTasks(World world, FlatRegion worldEditRegion, VMapParserResult result) throws VMapParserException {
         
+    	if(worldEditRegion == null) worldEditRegion = INFINITE_REGION;
+    	
         // Schedule triangles generation task based on contour lines with delaunay triangulate algorithm
     	TriangleList triangleList = FastDelaunayTriangulator.from(result.getElevationPoints()).getTriangleList();
     	ServerTickRepeater.addTask(new TerrainGenerationTask(triangleList, world, worldEditRegion));

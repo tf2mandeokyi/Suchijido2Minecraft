@@ -1,8 +1,9 @@
 package com.mndk.kvm2m.mod.commands;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
@@ -71,14 +72,14 @@ public abstract class VMapGeneratorCommand extends CommandBase {
         }
         try {
         	
-        	String subDirectory = args[0];
-        	for(int i=1;i<args.length;i++) subDirectory += args[i];
-        	File file = new File(KVectorMap2MinecraftMod.dxfFileDirectory + "/" + subDirectory);
-        	if(!file.exists() ||  file.isDirectory() || !FilenameUtils.isExtension(subDirectory, this.getExtension())) 
-        		throw new CommandException("File does not exist!");
-        	
-        	VMapParserResult result = this.fileDataToParserResult(file);
-            VMapToMinecraft.generateTasks(world, worldEditRegion, result);
+        	for(String fileName : args) {
+            	File file = new File(KVectorMap2MinecraftMod.kVecFileDirectory + "/" + fileName);
+            	if(!file.isFile() || !FilenameUtils.isExtension(fileName, this.getExtension())) 
+            		throw new CommandException("File does not exist!");
+            	
+            	VMapParserResult result = this.fileDataToParserResult(file);
+                VMapToMinecraft.generateTasks(world, worldEditRegion, result);
+        	}
             
         } catch(VMapParserException exception) {
             KVectorMap2MinecraftMod.logger.error(exception);
@@ -133,7 +134,7 @@ public abstract class VMapGeneratorCommand extends CommandBase {
     			throw new CommandException("Worldedit region should be either cuboid, cylinder, or polygon.");
     		}
     	} catch(IncompleteRegionException exception) {
-    		// No region is selected
+    		// No region is selected, or is incomplete.
     		throw new CommandException("Please select the worldedit region first.");
     	}
     	return (FlatRegion) worldEditRegion;
@@ -144,32 +145,17 @@ public abstract class VMapGeneratorCommand extends CommandBase {
     
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos targetPos) {
-    	if(args.length == 0) {
-    		return Arrays.asList(getFilesNDirectoriesInDir("./", getExtension()));
-    	} else {
-        	String subDirectory = args[0];
-        	for(int i=1;i<args.length;i++) subDirectory += args[i];
-    		return Arrays.asList(getFilesNDirectoriesInDir(subDirectory, getExtension()));
-    	}
-    }
-    
-    
-    
-    private static String[] getFilesNDirectoriesInDir(String dir, String extension) {
-    	String filePath = KVectorMap2MinecraftMod.dxfFileDirectory + "/" + dir;
-    	File file = new File(filePath);
+    	
+    	File file = new File(KVectorMap2MinecraftMod.kVecFileDirectory);
+    	String extension = this.getExtension();
+    	
     	final String final_extension = extension.startsWith(".") ? extension : "." + extension;
     	
-    	if(!file.exists()) return new String[] {};
+    	File[] files = file.listFiles();
+    	if(files == null) return new ArrayList<>();
     	
-    	if(file.isFile()) {
-    		return new String[] {};
-    	} else /*file.isDirectory()*/ {
-    		return Stream.of(file.listFiles())
-    				.filter(f -> f.isDirectory() ? true : f.getName().endsWith(final_extension) ? true : false)
-    				.map(f -> f.isDirectory() ? f.getName() + "/" : f.getName())
-    				.toArray(String[]::new);
-    	}
+    	return Stream.of(files).filter(f -> f.isFile() && f.getName().endsWith(final_extension))
+    			.map(f -> f.getName()).collect(Collectors.toList());
     }
     
     

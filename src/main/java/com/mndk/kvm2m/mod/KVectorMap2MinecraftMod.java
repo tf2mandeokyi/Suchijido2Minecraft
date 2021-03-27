@@ -28,7 +28,7 @@ public class KVectorMap2MinecraftMod {
 
     public static Logger logger;
     
-    public static String dxfFileDirectory;
+    public static String kVecFileDirectory;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
@@ -50,8 +50,8 @@ public class KVectorMap2MinecraftMod {
     }
     
     private void initializeMapDirectory() {
-    	dxfFileDirectory = DimensionManager.getCurrentSaveRootDirectory().getAbsolutePath() + "/kvecmap_files/";
-        File temp = new File(dxfFileDirectory);
+    	kVecFileDirectory = DimensionManager.getCurrentSaveRootDirectory().getAbsolutePath() + "/kvecmap_files/";
+        File temp = new File(kVecFileDirectory);
         if(!temp.isDirectory()) {
         	temp.mkdirs();
         }

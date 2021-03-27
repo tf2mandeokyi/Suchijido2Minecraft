@@ -16,6 +16,8 @@ public class ServerTickRepeater {
 
 	private static final List<VMapGeneratorTask> tasks = new ArrayList<>();
 	
+	private static boolean alreadySentDoneMessage = true;
+	
 	public static void addTask(VMapGeneratorTask task) {
 		synchronized(tasks) {
 			tasks.add(task);
@@ -26,13 +28,18 @@ public class ServerTickRepeater {
 	public static void onServerTick(ServerTickEvent event) {
 		synchronized(tasks) {
 			if(!tasks.isEmpty()) {
+				alreadySentDoneMessage = false;
 				VMapGeneratorTask task = tasks.get(0);
 				KVectorMap2MinecraftMod.broadcastMessage(task.getBroadcastMessage());
 				task.doTask();
 				tasks.remove(0);
 			}
 			else {
-				KVectorMap2MinecraftMod.broadcastMessage("§dDone!");
+				if(!alreadySentDoneMessage) {
+					KVectorMap2MinecraftMod.broadcastMessage("§dDone!");
+					System.gc();
+					alreadySentDoneMessage = true;
+				}
 			}
 		}
 	}
