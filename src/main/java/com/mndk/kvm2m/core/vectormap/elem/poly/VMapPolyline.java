@@ -150,7 +150,9 @@ public class VMapPolyline extends VMapElement {
     @Override
 	public final void generateBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
-		this.generateOutline(region, w, triangleList);
+		if(!this.isClosed() || this.getType() == VMapObjectType.건물) { // TODO
+			this.generateOutline(region, w, triangleList);
+		}
 		
 		if(this.isClosed()) {
 			this.fillBlocks(region, w, triangleList);

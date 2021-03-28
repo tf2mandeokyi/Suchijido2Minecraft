@@ -12,6 +12,7 @@ import com.mndk.kvm2m.core.vectormap.VMapParserException;
 import com.mndk.kvm2m.core.vectormap.VMapParserResult;
 import com.mndk.kvm2m.core.vectormap.VMapToMinecraft;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
+import com.mojang.authlib.GameProfile;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.forge.ForgeWorld;
@@ -32,6 +33,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public abstract class VMapGeneratorCommand extends CommandBase {
     
@@ -53,7 +55,9 @@ public abstract class VMapGeneratorCommand extends CommandBase {
     
     @Override
     public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-    	return true;
+    	if(!(sender instanceof EntityPlayerMP)) return false;
+    	GameProfile profile = ((EntityPlayerMP) sender).getGameProfile();
+    	return FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().canSendCommands(profile);
     }
 	
 	
