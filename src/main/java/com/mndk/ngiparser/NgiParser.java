@@ -277,7 +277,7 @@ public class NgiParser {
             String line = ndaReader.readLine();
             if(line.equals("$END")) break;
             else if(line.startsWith("ATTRIB")) {
-            	String columnData = line.substring(line.indexOf("(") + 1, line.indexOf(")"));
+            	String columnData = line.substring(line.indexOf("(") + 1, line.lastIndexOf(")"));
             	result.add(new NdaDataColumn(parseDataParametersToObject(columnData)));
             }
         }
@@ -518,7 +518,7 @@ public class NgiParser {
     
     
     public static void main(String[] args) throws IOException {
-		Map<Integer, NgiLayer> layers = NgiParser.parse("376081986.ngi", "MS949", true).getLayers();
+		Map<Integer, NgiLayer> layers = NgiParser.parse("377052193.ngi", "MS949", true).getLayers();
 		System.out.println(layers.size());
 		for(Map.Entry<Integer, NgiLayer> entry : layers.entrySet()) {
 			NgiLayer layer = entry.getValue();
