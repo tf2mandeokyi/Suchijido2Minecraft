@@ -72,14 +72,17 @@ public abstract class VMapGeneratorCommand extends CommandBase {
         }
         try {
         	
+        	VMapParserResult result = new VMapParserResult();
+        	
         	for(String fileName : args) {
             	File file = new File(KVectorMap2MinecraftMod.kVecFileDirectory + "/" + fileName);
             	if(!file.isFile() || !FilenameUtils.isExtension(fileName, this.getExtension())) 
             		throw new CommandException("File does not exist!");
             	
-            	VMapParserResult result = this.fileDataToParserResult(file);
-                VMapToMinecraft.generateTasks(world, worldEditRegion, result);
+            	result.append(this.fileDataToParserResult(file));
         	}
+        	
+            VMapToMinecraft.generateTasks(world, worldEditRegion, result);
             
         } catch(VMapParserException exception) {
             KVectorMap2MinecraftMod.logger.error(exception);

@@ -1,5 +1,7 @@
 package com.mndk.kvm2m.core.vectormap.elem.poly;
 
+import java.util.Arrays;
+
 import org.kabeja.dxf.DXFLWPolyline;
 import org.kabeja.dxf.DXFVertex;
 
@@ -10,6 +12,7 @@ import com.mndk.kvm2m.core.util.math.VectorMath;
 import com.mndk.kvm2m.core.util.shape.BoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vectormap.VMapObjectType;
+import com.mndk.kvm2m.core.vectormap.VMapParserException;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.ngiparser.ngi.element.NgiLineElement;
 import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
@@ -84,6 +87,13 @@ public class VMapPolyline extends VMapElement {
     }
     
     
+    public VMapPolyline(Vector2DH[][] vertexes, boolean closed, VMapObjectType type) {
+    	this(type, closed);
+    	this.vertexList = vertexes;
+        this.getBoundingBox();
+    }
+    
+    
     public VMapPolyline(Polygonal2DRegion region) {
     	this(VMapObjectType.기타경계, true);
     	int n = region.size();
@@ -112,8 +122,20 @@ public class VMapPolyline extends VMapElement {
     }
     
     
-    private BoundingBox boundingBoxResult;
+    public VMapPolyline merge(VMapPolyline other) {
+    	if(this.getType() != other.getType()) {
+    		throw new RuntimeException(new VMapParserException("Cannot merge two different types of polygon together!"));
+    	}
+    	
+    	Vector2DH[][] newVertexList = new Vector2DH[this.vertexList.length + other.vertexList.length][];
+    	System.arraycopy(this.vertexList, 0, newVertexList, 0, this.vertexList.length);
+    	System.arraycopy(other.vertexList, 0, newVertexList, this.vertexList.length, other.vertexList.length);
+    	
+    	return new VMapPolyline(newVertexList, this.closed, this.getType());
+    }
     
+    
+    private BoundingBox boundingBoxResult;
     public BoundingBox getBoundingBox() {
     	if(boundingBoxResult != null) return boundingBoxResult;
     	double minX = Double.MAX_VALUE, maxX = Double.MIN_VALUE, minZ = Double.MAX_VALUE, maxZ = Double.MIN_VALUE;

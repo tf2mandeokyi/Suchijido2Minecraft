@@ -37,4 +37,15 @@ public class VMapParserResult {
 	public List<Vector2DH> getElevationPoints() {
 		return elevationPointList;
 	}
+	
+	public void append(VMapParserResult other) {
+		if(this.boundary == null) {
+			this.boundary = other.boundary;
+		}
+		else {			
+			this.boundary = this.boundary.merge(other.boundary);
+		}
+		this.elementList.addAll(other.elementList);
+		this.elevationPointList.addAll(other.elevationPointList);
+	}
 }
