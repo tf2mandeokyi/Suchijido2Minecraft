@@ -8,7 +8,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vectormap.VMapObjectType;
+import com.mndk.kvm2m.core.vectormap.VMapElementType;
 import com.mndk.kvm2m.core.vectormap.VMapParserResult;
 import com.mndk.kvm2m.core.vectormap.VMapUtils;
 import com.mndk.kvm2m.core.vectormap.elem.point.VMapElevationPoint;
@@ -61,12 +61,12 @@ public class NgiMapParser {
 	public static void fromNgiPolygonElement(NgiLayer layer, NgiPolygonElement polygon, Grs80Projection projection, VMapParserResult result) {
 		
 		String layerName = layer.name;
-		VMapObjectType type = VMapObjectType.getTypeFromLayerName(layerName);
+		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
 
-		if(type == VMapObjectType.도곽선) {
-			result.setBoundary(new VMapPolyline(polygon, projection, VMapObjectType.도곽선));
+		if(type == VMapElementType.도곽선) {
+			result.setBoundary(new VMapPolyline(polygon, projection, VMapElementType.도곽선));
 		}
-		else if(type == VMapObjectType.건물) {
+		else if(type == VMapElementType.건물) {
 			result.addElement(new VMapBuilding(polygon, projection, type));
 		}
 		else {
@@ -79,16 +79,16 @@ public class NgiMapParser {
 	public static void fromNgiLineElement(NgiLayer layer, NgiLineElement line, Grs80Projection projection, VMapParserResult result) {
 		
 		String layerName = layer.name;
-		VMapObjectType type = VMapObjectType.getTypeFromLayerName(layerName);
+		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
 		
-		if(type == VMapObjectType.등고선) {
+		if(type == VMapElementType.등고선) {
 			VMapContour contour = new VMapContour(line, projection);
 			for(Vector2DH[] va : contour.getVertexList()) for(Vector2DH v : va) {
 				result.getElevationPoints().add(v.withHeight(contour.getElevation()));
 			}
 		}
-		else if(type == VMapObjectType.도곽선) {
-			result.setBoundary(new VMapPolyline(line, projection, VMapObjectType.도곽선));
+		else if(type == VMapElementType.도곽선) {
+			result.setBoundary(new VMapPolyline(line, projection, VMapElementType.도곽선));
 		}
 		else {
 			result.addElement(new VMapPolyline(line, projection, type));
@@ -100,9 +100,9 @@ public class NgiMapParser {
 	public static void fromNgiPointElement(NgiLayer layer, NgiPointElement point, Grs80Projection projection, VMapParserResult result) {
 		
 		String layerName = layer.name;
-		VMapObjectType type = VMapObjectType.getTypeFromLayerName(layerName);
+		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
 		
-		if(type == VMapObjectType.표고점) {
+		if(type == VMapElementType.표고점) {
 			result.getElevationPoints().add(new VMapElevationPoint(point, projection).toVector());
 		}
 		else {

@@ -4,7 +4,7 @@ import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.projection.Projections;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VMapObjectType;
+import com.mndk.kvm2m.core.vectormap.VMapElementType;
 import com.sk89q.worldedit.regions.FlatRegion;
 
 import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
@@ -13,10 +13,10 @@ import net.minecraft.world.World;
 public abstract class VMapElement {
 
 	
-	private final VMapObjectType type;
+	private final VMapElementType type;
 	
 	
-	public VMapElement(VMapObjectType type) {
+	public VMapElement(VMapElementType type) {
 		this.type = type;
 	}
 	
@@ -32,7 +32,7 @@ public abstract class VMapElement {
 	}
 	
 	
-	public VMapObjectType getType() {
+	public VMapElementType getType() {
 		return type;
 	}
 	

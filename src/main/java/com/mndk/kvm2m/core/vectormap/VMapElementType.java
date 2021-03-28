@@ -3,7 +3,7 @@ package com.mndk.kvm2m.core.vectormap;
 import net.minecraft.block.state.IBlockState;
 
 // TODO translate this
-public enum VMapObjectType {
+public enum VMapElementType {
 	
 	// A타입 - 교통
 	도로경계("A001", Category.교통),
@@ -149,13 +149,13 @@ public enum VMapObjectType {
 	final String layerHeader;
 	private final Category category;
 	
-	private VMapObjectType(String layerHeader, Category category) {
+	private VMapElementType(String layerHeader, Category category) {
 		this.layerHeader = layerHeader;
 		this.category = category;
 	}
 	
-	public static VMapObjectType getTypeFromLayerName(String layerName) {
-		for(VMapObjectType t : values()) {
+	public static VMapElementType getTypeFromLayerName(String layerName) {
+		for(VMapElementType t : values()) {
 			if(layerName.startsWith(t.layerHeader)) {
 				return t;
 			}

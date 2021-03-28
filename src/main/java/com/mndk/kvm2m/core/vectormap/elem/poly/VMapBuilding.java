@@ -5,7 +5,7 @@ import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.BoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VMapObjectType;
+import com.mndk.kvm2m.core.vectormap.VMapElementType;
 import com.mndk.kvm2m.core.vectormap.elem.IHasElevationData;
 import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
 import com.sk89q.worldedit.Vector;
@@ -24,9 +24,9 @@ public class VMapBuilding extends VMapPolyline implements IHasElevationData {
 	private final int buildingHeight;
 	
 	
-	public VMapBuilding(NgiPolygonElement polygon, Grs80Projection projection, VMapObjectType type) {
+	public VMapBuilding(NgiPolygonElement polygon, Grs80Projection projection, VMapElementType type) {
 		super(polygon, projection, type);
-		if(type == VMapObjectType.건물) {
+		if(type == VMapElementType.건물) {
 			this.buildingHeight = (Integer) polygon.getRowData("층수") * FLOOR_HEIGHT;
 		}
 		else {

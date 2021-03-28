@@ -7,7 +7,7 @@ import net.minecraft.item.EnumDyeColor;
 
 public class VMapBlockSelector {
 
-	static IBlockState getBlockState(VMapObjectType type) {
+	static IBlockState getBlockState(VMapElementType type) {
 		
 		if(type.layerHeader.startsWith("G") || type.layerHeader.startsWith("H")) {
 			return null;

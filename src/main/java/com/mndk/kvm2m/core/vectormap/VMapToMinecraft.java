@@ -33,7 +33,7 @@ public class VMapToMinecraft {
 		ServerTickRepeater.addTask(new TerrainCuttingTask(triangleList, world, worldEditRegion));
 		
 		List<VMapElement> elementList = new ArrayList<>(), totalElements = result.getElements();
-		VMapObjectType lastType;
+		VMapElementType lastType;
 		VMapElement temp;
 		
 		if(!totalElements.isEmpty()) {

@@ -9,7 +9,7 @@ import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.math.VectorMath;
 import com.mndk.kvm2m.core.util.shape.BoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VMapObjectType;
+import com.mndk.kvm2m.core.vectormap.VMapElementType;
 import com.mndk.kvm2m.core.vectormap.VMapParserException;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.ngiparser.ngi.element.NgiLineElement;
@@ -30,13 +30,13 @@ public class VMapPolyline extends VMapElement {
 	private final boolean closed;
 
 	
-	private VMapPolyline(VMapObjectType type, boolean closed) {
+	private VMapPolyline(VMapElementType type, boolean closed) {
 		super(type);
 		this.closed = closed;
 	}
 
 	
-	public VMapPolyline(DXFLWPolyline polyline, Grs80Projection projection, VMapObjectType type) {
+	public VMapPolyline(DXFLWPolyline polyline, Grs80Projection projection, VMapElementType type) {
 		this(type, polyline.isClosed());
 		this.vertexList = new Vector2DH[1][polyline.getVertexCount()];
 		
@@ -48,7 +48,7 @@ public class VMapPolyline extends VMapElement {
 	}
 
 	
-	public VMapPolyline(NgiPolygonElement polyline, Grs80Projection projection, VMapObjectType type) {
+	public VMapPolyline(NgiPolygonElement polyline, Grs80Projection projection, VMapElementType type) {
 		this(type, true);
 		this.vertexList = new Vector2DH[polyline.vertexData.length][];
 		
@@ -65,7 +65,7 @@ public class VMapPolyline extends VMapElement {
 	}
 
 	
-	public VMapPolyline(NgiLineElement line, Grs80Projection projection, VMapObjectType type) {
+	public VMapPolyline(NgiLineElement line, Grs80Projection projection, VMapElementType type) {
 		this(type, false);
 		int size = line.lineData.getSize();
 		this.vertexList = new Vector2DH[1][size];
@@ -79,13 +79,13 @@ public class VMapPolyline extends VMapElement {
 	
 	
 	public VMapPolyline(Vector2DH[] vertexes, boolean closed) {
-		this(VMapObjectType.기타경계, closed);
+		this(VMapElementType.기타경계, closed);
 		this.vertexList = new Vector2DH[][] {vertexes};
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapPolyline(Vector2DH[][] vertexes, boolean closed, VMapObjectType type) {
+	public VMapPolyline(Vector2DH[][] vertexes, boolean closed, VMapElementType type) {
 		this(type, closed);
 		this.vertexList = vertexes;
 		this.getBoundingBox();
@@ -93,7 +93,7 @@ public class VMapPolyline extends VMapElement {
 	
 	
 	public VMapPolyline(Polygonal2DRegion region) {
-		this(VMapObjectType.기타경계, true);
+		this(VMapElementType.기타경계, true);
 		int n = region.size();
 		this.vertexList = new Vector2DH[1][n];
 		
@@ -150,7 +150,7 @@ public class VMapPolyline extends VMapElement {
 	@Override
 	public final void generateBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
-		if(!this.isClosed() || this.getType() == VMapObjectType.건물) { // TODO
+		if(!this.isClosed() || this.getType() == VMapElementType.건물) { // TODO
 			this.generateOutline(region, w, triangleList);
 		}
 		
