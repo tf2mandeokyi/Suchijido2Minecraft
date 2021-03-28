@@ -7,22 +7,14 @@ import java.util.Collection;
 import org.apache.commons.io.FilenameUtils;
 
 import com.mndk.kvm2m.core.projection.Grs80Projection;
-import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vectormap.VMapElementType;
 import com.mndk.kvm2m.core.vectormap.VMapParserResult;
 import com.mndk.kvm2m.core.vectormap.VMapUtils;
-import com.mndk.kvm2m.core.vectormap.elem.point.VMapElevationPoint;
-import com.mndk.kvm2m.core.vectormap.elem.point.VMapPoint;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VMapBuilding;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VMapContour;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VMapPolyline;
+import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
+import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.mndk.ngiparser.NgiParser;
 import com.mndk.ngiparser.ngi.NgiLayer;
 import com.mndk.ngiparser.ngi.NgiParserResult;
-import com.mndk.ngiparser.ngi.element.NgiElement;
-import com.mndk.ngiparser.ngi.element.NgiLineElement;
-import com.mndk.ngiparser.ngi.element.NgiPointElement;
-import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
 
 public class NgiMapParser {
 
@@ -38,75 +30,23 @@ public class NgiMapParser {
 		Collection<NgiLayer> layers = parseResult.getLayers().values();
 		for(NgiLayer layer : layers) {
 			if(layer.header.dimensions != 2) continue;
-			Collection<NgiElement<?>> elements = layer.data.values();
-			for(NgiElement<?> element : elements) {
-				if(element instanceof NgiPolygonElement) {
-					fromNgiPolygonElement(layer, (NgiPolygonElement) element, projection, result);
-				}
-				else if(element instanceof NgiLineElement) {
-					fromNgiLineElement(layer, (NgiLineElement) element, projection, result);
-				}
-				else if(element instanceof NgiPointElement) {
-					fromNgiPointElement(layer, (NgiPointElement) element, projection, result);
-				}
-			}
+			VMapElementLayer elementLayer = VMapElementLayer.fromNgiLayer(layer, projection, result.getElevationPoints());
+			result.addElement(elementLayer);
 		}
 		
 		return result;
 		
 	}
 	
-	
-	
-	public static void fromNgiPolygonElement(NgiLayer layer, NgiPolygonElement polygon, Grs80Projection projection, VMapParserResult result) {
-		
-		String layerName = layer.name;
-		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
-
-		if(type == VMapElementType.도곽선) {
-			result.setBoundary(new VMapPolyline(polygon, projection, VMapElementType.도곽선));
-		}
-		else if(type == VMapElementType.건물) {
-			result.addElement(new VMapBuilding(polygon, projection, type));
-		}
-		else {
-			result.addElement(new VMapPolyline(polygon, projection, type));
-		}
-	}
-	
-	
-	
-	public static void fromNgiLineElement(NgiLayer layer, NgiLineElement line, Grs80Projection projection, VMapParserResult result) {
-		
-		String layerName = layer.name;
-		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
-		
-		if(type == VMapElementType.등고선) {
-			VMapContour contour = new VMapContour(line, projection);
-			for(Vector2DH[] va : contour.getVertexList()) for(Vector2DH v : va) {
-				result.getElevationPoints().add(v.withHeight(contour.getElevation()));
+	public static void main(String[] args) throws IOException {
+		VMapParserResult result = NgiMapParser.parse(new File("376081986.ngi"));
+		for(VMapElementLayer layer : result.getElementLayers()) {
+			if(layer.getType() != VMapElementType.건물) continue;
+			System.out.println(layer.getType());
+			for(VMapElement element : layer) {
+				System.out.println("  " + element);
 			}
 		}
-		else if(type == VMapElementType.도곽선) {
-			result.setBoundary(new VMapPolyline(line, projection, VMapElementType.도곽선));
-		}
-		else {
-			result.addElement(new VMapPolyline(line, projection, type));
-		}
 	}
 	
-	
-	
-	public static void fromNgiPointElement(NgiLayer layer, NgiPointElement point, Grs80Projection projection, VMapParserResult result) {
-		
-		String layerName = layer.name;
-		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
-		
-		if(type == VMapElementType.표고점) {
-			result.getElevationPoints().add(new VMapElevationPoint(point, projection).toVector());
-		}
-		else {
-			result.addElement(new VMapPoint(point, projection, type));
-		}
-	}
 }

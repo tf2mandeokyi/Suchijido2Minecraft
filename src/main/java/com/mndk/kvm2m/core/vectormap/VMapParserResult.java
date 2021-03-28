@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
+import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VMapPolyline;
 
 public class VMapParserResult {
 	
 	private VMapPolyline boundary;
-	private List<VMapElement> elementList;
+	private List<VMapElementLayer> layerList;
 	private List<Vector2DH> elevationPointList;
 	
 	public VMapParserResult() {
-		this.elementList = new ArrayList<>();
+		this.layerList = new ArrayList<>();
 		this.elevationPointList = new ArrayList<>();
 	}
 	
@@ -26,12 +26,12 @@ public class VMapParserResult {
 		this.boundary = boundary;
 	}
 	
-	public List<VMapElement> getElements() {
-		return this.elementList;
+	public List<VMapElementLayer> getElementLayers() {
+		return this.layerList;
 	}
 	
-	public void addElement(VMapElement element) {
-		this.elementList.add(element);
+	public void addElement(VMapElementLayer elementLayer) {
+		this.layerList.add(elementLayer);
 	}
 	
 	public List<Vector2DH> getElevationPoints() {
@@ -45,7 +45,7 @@ public class VMapParserResult {
 		else {			
 			this.boundary = this.boundary.merge(other.boundary);
 		}
-		this.elementList.addAll(other.elementList);
+		this.layerList.addAll(other.layerList);
 		this.elevationPointList.addAll(other.elevationPointList);
 	}
 }
