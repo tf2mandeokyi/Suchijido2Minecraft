@@ -55,8 +55,8 @@ public class Vector2DH {
 	}
 	
 	public double cross2d(Vector2DH v) {
-    	return x*v.z - v.x*z;
-    }
+		return x*v.z - v.x*z;
+	}
 	
 	public double distance2dSq(Vector2DH v) {
 		double dx = x - v.x, dz = z - v.z;
@@ -68,9 +68,9 @@ public class Vector2DH {
 	}
 	
 	@Override
-    public String toString() {
-        return "(" + x + ", " + height + ", " + z + ")";
-    }
+	public String toString() {
+		return "(" + x + ", " + height + ", " + z + ")";
+	}
 	
 	@Override
 	public boolean equals(Object obj) {

@@ -10,25 +10,25 @@ import com.mndk.ngiparser.ngi.element.NgiLineElement;
 
 public class VMapContour extends VMapPolyline implements IHasElevationData {
 
-    private final int elevation;
+	private final int elevation;
 
-    public VMapContour(DXFLWPolyline polyline, Grs80Projection projection) {
-        super(polyline, projection, VMapObjectType.등고선);
-        this.elevation = (int) polyline.getElevation();
-    }
+	public VMapContour(DXFLWPolyline polyline, Grs80Projection projection) {
+		super(polyline, projection, VMapObjectType.등고선);
+		this.elevation = (int) polyline.getElevation();
+	}
 
-    public VMapContour(NgiLineElement polyline, Grs80Projection projection) {
-        super(polyline, projection, VMapObjectType.등고선);
-        this.elevation = (int) Math.round((Double) polyline.getRowData("등고수치"));
-    }
+	public VMapContour(NgiLineElement polyline, Grs80Projection projection) {
+		super(polyline, projection, VMapObjectType.등고선);
+		this.elevation = (int) Math.round((Double) polyline.getRowData("등고수치"));
+	}
 
-    public VMapContour(Vector2DH[] vertexes, int elevation) {
-    	super(vertexes, false);
-    	this.elevation = elevation;
-    }
-    
-    @Override
-    public int getElevation() {
-        return this.elevation;
-    }
+	public VMapContour(Vector2DH[] vertexes, int elevation) {
+		super(vertexes, false);
+		this.elevation = elevation;
+	}
+	
+	@Override
+	public int getElevation() {
+		return this.elevation;
+	}
 }

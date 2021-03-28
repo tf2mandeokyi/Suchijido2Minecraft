@@ -21,12 +21,12 @@ public class NgiMapGeneratorCommand extends VMapGeneratorCommand {
 	@Override
 	public VMapParserResult fileDataToParserResult(File file) throws CommandException {
 		try {
-            return NgiMapParser.parse(file);
-        } catch(FileNotFoundException exception) {
-        	throw new CommandException("File does not exist!");
-        } catch(IOException exception) {
-            throw new CommandException("There was an error while parsing .dxf map.");
-        }
+			return NgiMapParser.parse(file);
+		} catch(FileNotFoundException exception) {
+			throw new CommandException("File does not exist!");
+		} catch(IOException exception) {
+			throw new CommandException("There was an error while parsing .dxf map.");
+		}
 	}
 
 

@@ -13,29 +13,29 @@ import net.minecraft.world.World;
 public abstract class VMapElement {
 
 	
-    private final VMapObjectType type;
-    
-    
-    public VMapElement(VMapObjectType type) {
-    	this.type = type;
-    }
-    
-    
-    protected static Vector2DH projectGrs80CoordToBteCoord(Grs80Projection projection, double x, double y) {
-        double[] geoCoordinate = projection.toGeo(x, y), bteCoordinate;
-        try {
-            bteCoordinate = Projections.BTE.fromGeo(geoCoordinate[0], geoCoordinate[1]);
-        } catch(OutOfProjectionBoundsException exception) {
-            throw new RuntimeException(exception); // wcpgw lmao
-        }
-        return new Vector2DH(bteCoordinate[0] * Projections.BTE.metersPerUnit(), -bteCoordinate[1] * Projections.BTE.metersPerUnit());
-    }
+	private final VMapObjectType type;
 	
-    
-    public VMapObjectType getType() {
-    	return type;
-    }
-    
-    
-    public abstract void generateBlocks(FlatRegion region, World world, TriangleList triangles);
+	
+	public VMapElement(VMapObjectType type) {
+		this.type = type;
+	}
+	
+	
+	protected static Vector2DH projectGrs80CoordToBteCoord(Grs80Projection projection, double x, double y) {
+		double[] geoCoordinate = projection.toGeo(x, y), bteCoordinate;
+		try {
+			bteCoordinate = Projections.BTE.fromGeo(geoCoordinate[0], geoCoordinate[1]);
+		} catch(OutOfProjectionBoundsException exception) {
+			throw new RuntimeException(exception); // wcpgw lmao
+		}
+		return new Vector2DH(bteCoordinate[0] * Projections.BTE.metersPerUnit(), -bteCoordinate[1] * Projections.BTE.metersPerUnit());
+	}
+	
+	
+	public VMapObjectType getType() {
+		return type;
+	}
+	
+	
+	public abstract void generateBlocks(FlatRegion region, World world, TriangleList triangles);
 }

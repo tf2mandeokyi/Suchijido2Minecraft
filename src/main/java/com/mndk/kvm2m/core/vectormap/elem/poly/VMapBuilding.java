@@ -58,12 +58,12 @@ public class VMapBuilding extends VMapPolyline implements IHasElevationData {
 		Vector2DH[][] vertexList = this.getVertexList();
 		for(int j = 0; j < vertexList.length; ++j) {
 			Vector2DH[] temp = vertexList[j];
-        	for(int i = 0; i < temp.length - 1; ++i) {
-        		lineGenerator.generateLineWithMaxHeight(temp[i], temp[i+1], maxHeight);
-            }
-        	if(this.isClosed()) {
-        		lineGenerator.generateLineWithMaxHeight(temp[temp.length-1], temp[0], maxHeight);
-        	}
+			for(int i = 0; i < temp.length - 1; ++i) {
+				lineGenerator.generateLineWithMaxHeight(temp[i], temp[i+1], maxHeight);
+			}
+			if(this.isClosed()) {
+				lineGenerator.generateLineWithMaxHeight(temp[temp.length-1], temp[0], maxHeight);
+			}
 		}
 	}
 	
@@ -108,12 +108,12 @@ public class VMapBuilding extends VMapPolyline implements IHasElevationData {
 		Vector2DH[][] vertexList = this.getVertexList();
 		for(int j = 0; j < vertexList.length; ++j) {
 			Vector2DH[] temp = vertexList[j];
-        	for(int i = 0; i < temp.length - 1; ++i) {
-        		yMax = yMax < (yTemp = lineGenerator.getMaxHeightOfTheLine(temp[i], temp[i+1])) ? yTemp : yMax;
-            }
-        	if(this.isClosed()) {
-        		yMax = yMax < (yTemp = lineGenerator.getMaxHeightOfTheLine(temp[temp.length-1], temp[0])) ? yTemp : yMax;
-        	}
+			for(int i = 0; i < temp.length - 1; ++i) {
+				yMax = yMax < (yTemp = lineGenerator.getMaxHeightOfTheLine(temp[i], temp[i+1])) ? yTemp : yMax;
+			}
+			if(this.isClosed()) {
+				yMax = yMax < (yTemp = lineGenerator.getMaxHeightOfTheLine(temp[temp.length-1], temp[0])) ? yTemp : yMax;
+			}
 		}
 		
 		return yMax;

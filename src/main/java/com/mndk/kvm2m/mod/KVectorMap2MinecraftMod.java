@@ -17,44 +17,44 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 @Mod(modid = KVectorMap2MinecraftMod.MODID, version = KVectorMap2MinecraftMod.VERSION, acceptableRemoteVersions = "*")
 public class KVectorMap2MinecraftMod {
 
-    public static final String MODID = "kvm2m";
-    public static final String VERSION = "b1.0";
+	public static final String MODID = "kvm2m";
+	public static final String VERSION = "b1.0";
 
-    private static final ICommand[] serverCommands = {
-    		// new DxfMapGeneratorCommand(),
-    		new NgiMapGeneratorCommand()
-    };
+	private static final ICommand[] serverCommands = {
+			// new DxfMapGeneratorCommand(),
+			new NgiMapGeneratorCommand()
+	};
 
-    public static Logger logger;
-    
-    public static String kVecFileDirectory;
+	public static Logger logger;
+	
+	public static String kVecFileDirectory;
 
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        KVectorMap2MinecraftMod.logger = event.getModLog();
-    }
-    
-    @Mod.EventHandler
-    public void serverStarting(FMLServerStartingEvent event) {
-    	
-        this.registerCommands(event);
-        this.initializeMapDirectory();
-        
-    }
-    
-    private void registerCommands(FMLServerStartingEvent event) {
-    	for(ICommand command : serverCommands) {
-    		event.registerServerCommand(command);
-    	}
-    }
-    
-    private void initializeMapDirectory() {
-    	kVecFileDirectory = DimensionManager.getCurrentSaveRootDirectory().getAbsolutePath() + "/kvecmap_files/";
-        File temp = new File(kVecFileDirectory);
-        if(!temp.isDirectory()) {
-        	temp.mkdirs();
-        }
-    }
+	@Mod.EventHandler
+	public void preInit(FMLPreInitializationEvent event) {
+		KVectorMap2MinecraftMod.logger = event.getModLog();
+	}
+	
+	@Mod.EventHandler
+	public void serverStarting(FMLServerStartingEvent event) {
+		
+		this.registerCommands(event);
+		this.initializeMapDirectory();
+		
+	}
+	
+	private void registerCommands(FMLServerStartingEvent event) {
+		for(ICommand command : serverCommands) {
+			event.registerServerCommand(command);
+		}
+	}
+	
+	private void initializeMapDirectory() {
+		kVecFileDirectory = DimensionManager.getCurrentSaveRootDirectory().getAbsolutePath() + "/kvecmap_files/";
+		File temp = new File(kVecFileDirectory);
+		if(!temp.isDirectory()) {
+			temp.mkdirs();
+		}
+	}
 	
 	public static void broadcastMessage(String message) {
 		FMLCommonHandler.instance()
@@ -62,5 +62,5 @@ public class KVectorMap2MinecraftMod {
 				.getPlayerList()
 				.sendMessage(new TextComponentString(message));
 	}
-    
+	
 }

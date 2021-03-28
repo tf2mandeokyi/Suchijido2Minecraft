@@ -30,8 +30,8 @@ public class Triangle {
 	
 	
 	public Vector contains(Vector2D point) {
-        return contains(point.getX(), point.getZ());
-    }
+		return contains(point.getX(), point.getZ());
+	}
 	
 	public Vector contains(Vector p) {
 		return contains(p.getX(), p.getZ());
@@ -115,8 +115,8 @@ public class Triangle {
 	
 	
 	@Override
-    public String toString() {
-        return "Triangle[" + v1 + ", " + v2 + ", " + v3 + "]";
-    }
+	public String toString() {
+		return "Triangle[" + v1 + ", " + v2 + ", " + v3 + "]";
+	}
 	
 }

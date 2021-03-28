@@ -17,19 +17,19 @@ public class VMapPoint extends VMapElement {
 
 	private final Vector2DH point;
 
-    public VMapPoint(DXFPoint point, Grs80Projection projection, VMapObjectType type) {
-    	super(type);
-        this.point = projectGrs80CoordToBteCoord(projection, point.getX(), point.getY());
-    }
+	public VMapPoint(DXFPoint point, Grs80Projection projection, VMapObjectType type) {
+		super(type);
+		this.point = projectGrs80CoordToBteCoord(projection, point.getX(), point.getY());
+	}
 
-    public VMapPoint(NgiPointElement point, Grs80Projection projection, VMapObjectType type) {
-    	super(type);
-        this.point = projectGrs80CoordToBteCoord(projection, point.position.getAxis(0), point.position.getAxis(1));
-    }
-    
-    public Vector2DH getPosition() {
-    	return this.point;
-    }
+	public VMapPoint(NgiPointElement point, Grs80Projection projection, VMapObjectType type) {
+		super(type);
+		this.point = projectGrs80CoordToBteCoord(projection, point.position.getAxis(0), point.position.getAxis(1));
+	}
+	
+	public Vector2DH getPosition() {
+		return this.point;
+	}
 
 	@Override
 	public void generateBlocks(FlatRegion region, World world, TriangleList triangles) {

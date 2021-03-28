@@ -6,8 +6,8 @@ import com.mndk.ngiparser.ngi.element.NgiElement;
 
 public class NgiLayer {
 
-    public String name;
-    public NgiHeader header;
-    public Map<Integer, NgiElement<?>> data;
+	public String name;
+	public NgiHeader header;
+	public Map<Integer, NgiElement<?>> data;
 
 }
