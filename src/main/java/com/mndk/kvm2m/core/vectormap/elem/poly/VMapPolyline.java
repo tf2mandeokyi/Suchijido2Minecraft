@@ -1,7 +1,5 @@
 package com.mndk.kvm2m.core.vectormap.elem.poly;
 
-import java.util.Arrays;
-
 import org.kabeja.dxf.DXFLWPolyline;
 import org.kabeja.dxf.DXFVertex;
 

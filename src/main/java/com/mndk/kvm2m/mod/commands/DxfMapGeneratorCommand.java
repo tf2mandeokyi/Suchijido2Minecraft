@@ -10,6 +10,7 @@ import com.mndk.kvm2m.core.vectorparser.DxfMapParser;
 
 import net.minecraft.command.CommandException;
 
+@Deprecated
 public class DxfMapGeneratorCommand extends VMapGeneratorCommand {
 
 

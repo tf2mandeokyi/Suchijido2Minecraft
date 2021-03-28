@@ -3,7 +3,6 @@ package com.mndk.kvm2m.core.util.delaunator;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,14 +10,12 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import org.kabeja.parser.ParseException;
-
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vectormap.VMapParserResult;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VMapContour;
-import com.mndk.kvm2m.core.vectorparser.DxfMapParser;
+import com.mndk.kvm2m.core.vectorparser.NgiMapParser;
 
 
 
@@ -610,8 +607,8 @@ public class FastDelaunayTriangulator {
 
 	
 	
-	public static void main_(String[] args) throws FileNotFoundException, ParseException {
-    	VMapParserResult result = DxfMapParser.parse(new File("37612030.dxf"));
+	public static void main_(String[] args) throws IOException {
+    	VMapParserResult result = NgiMapParser.parse(new File("37612030.ngi"));
     	List<Vector2DH> vertexes = result.getElevationPoints();
     	System.out.println(vertexes.size());
     	List<Triangle> triangles = FastDelaunayTriangulator.from(vertexes).getTriangleList();

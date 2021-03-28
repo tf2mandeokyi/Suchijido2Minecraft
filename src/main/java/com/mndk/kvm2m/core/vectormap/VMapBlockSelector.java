@@ -16,8 +16,6 @@ public class VMapBlockSelector {
 			// A types
 			case 도로경계: 
 				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.GRAY);
-//			case 도로중심선: 
-//				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.YELLOW);
 			case 보도: 
 			case 안전지대:
 				return Blocks.DOUBLE_STONE_SLAB.getDefaultState();

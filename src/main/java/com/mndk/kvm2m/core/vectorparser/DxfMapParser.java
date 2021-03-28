@@ -26,6 +26,7 @@ import com.mndk.kvm2m.core.vectormap.elem.point.VMapPoint;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VMapContour;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VMapPolyline;
 
+@Deprecated
 public class DxfMapParser {
 
     @SuppressWarnings("unchecked")
