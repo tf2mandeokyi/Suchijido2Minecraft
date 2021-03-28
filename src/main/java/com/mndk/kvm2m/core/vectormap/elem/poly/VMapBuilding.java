@@ -7,6 +7,7 @@ import com.mndk.kvm2m.core.util.shape.BoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vectormap.VMapElementType;
 import com.mndk.kvm2m.core.vectormap.elem.IHasElevationData;
+import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
@@ -24,9 +25,9 @@ public class VMapBuilding extends VMapPolyline implements IHasElevationData {
 	private final int buildingHeight;
 	
 	
-	public VMapBuilding(NgiPolygonElement polygon, Grs80Projection projection, VMapElementType type) {
-		super(polygon, projection, type);
-		if(type == VMapElementType.건물) {
+	public VMapBuilding(VMapElementLayer layer, NgiPolygonElement polygon, Grs80Projection projection) {
+		super(layer, polygon, projection);
+		if(this.parent.getType() == VMapElementType.건물) {
 			this.buildingHeight = (Integer) polygon.getRowData("층수") * FLOOR_HEIGHT;
 		}
 		else {
@@ -44,7 +45,7 @@ public class VMapBuilding extends VMapPolyline implements IHasElevationData {
 	@Override
 	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
 		
-		IBlockState state = this.getType().getBlockState();
+		IBlockState state = this.parent.getType().getBlockState();
 		
 		if(state == null) return;
 		
@@ -71,7 +72,7 @@ public class VMapBuilding extends VMapPolyline implements IHasElevationData {
 	@Override
 	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
-		IBlockState state = this.getType().getBlockState();
+		IBlockState state = this.parent.getType().getBlockState();
 		
 		if(state == null) return;
 
