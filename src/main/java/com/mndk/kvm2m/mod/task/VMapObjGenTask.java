@@ -34,7 +34,7 @@ public class VMapObjGenTask implements VMapGeneratorTask {
 
 	@Override
 	public String getBroadcastMessage() {
-		return "§dGenerating object layer (" + type + ", object count = " + elementList.size() + ")...";
+		return "§dGenerating object layer \"" + type + "\" (" + elementList.size() + ")...";
 	}
 
 }

@@ -127,8 +127,8 @@ public class VMapPolyline extends VMapElement {
     }
 	
 	
-	
-	public void generateBlocks(FlatRegion region, World w, TriangleList triangleList) {
+    @Override
+	public final void generateBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
 		this.generateOutline(region, w, triangleList);
 		
@@ -161,7 +161,7 @@ public class VMapPolyline extends VMapElement {
 	}
 	
 	
-	private void fillBlocks(FlatRegion region, World w, TriangleList triangleList) {
+	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
 		IBlockState state = this.getType().getBlockState();
 		
