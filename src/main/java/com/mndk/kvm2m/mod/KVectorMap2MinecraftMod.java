@@ -14,7 +14,12 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
-@Mod(modid = KVectorMap2MinecraftMod.MODID, version = KVectorMap2MinecraftMod.VERSION, acceptableRemoteVersions = "*")
+@Mod(
+		modid = KVectorMap2MinecraftMod.MODID, 
+		version = KVectorMap2MinecraftMod.VERSION, 
+		acceptableRemoteVersions = "*",
+		dependencies = "required-after:worldedit"
+)
 public class KVectorMap2MinecraftMod {
 
 	public static final String MODID = "kvm2m";
