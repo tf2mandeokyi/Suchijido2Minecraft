@@ -10,7 +10,6 @@ import com.mndk.kvm2m.core.vectormap.elem.point.VMapPoint;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VMapBuilding;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VMapContour;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VMapPolyline;
-import com.mndk.ngiparser.ngi.NgiLayer;
 import com.mndk.ngiparser.ngi.element.NgiElement;
 import com.mndk.ngiparser.ngi.element.NgiLineElement;
 import com.mndk.ngiparser.ngi.element.NgiPointElement;
@@ -18,7 +17,6 @@ import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
 import com.sk89q.worldedit.regions.FlatRegion;
 
 import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.World;
 
 public abstract class VMapElement {
@@ -46,7 +44,7 @@ public abstract class VMapElement {
 	public abstract void generateBlocks(FlatRegion region, World world, TriangleList triangles);
 	
 	
-	public static VMapElement fromNgiElement(NgiLayer layer, NgiElement<?> ngiElement, Grs80Projection projection) {
+	public static VMapElement fromNgiElement(VMapElementLayer layer, NgiElement<?> ngiElement, Grs80Projection projection) {
 		if(ngiElement instanceof NgiPolygonElement) {
 			return VMapElement.fromNgiPolygon(layer, (NgiPolygonElement) ngiElement, projection);
 		}
@@ -60,52 +58,52 @@ public abstract class VMapElement {
 	}
 	
 	
-	public static VMapPolyline fromNgiPolygon(NgiLayer layer, NgiPolygonElement polygon, Grs80Projection projection) {
+	public static VMapPolyline fromNgiPolygon(VMapElementLayer layer, NgiPolygonElement polygon, Grs80Projection projection) {
 		
-		String layerName = layer.name;
+		String layerName = polygon.parent.name;
 		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
 
 		if(type == VMapElementType.도곽선) {
-			return new VMapPolyline(polygon, projection);
+			return new VMapPolyline(layer, polygon, projection);
 		}
 		else if(type == VMapElementType.건물) {
-			return new VMapBuilding(polygon, projection);
+			return new VMapBuilding(layer, polygon, projection);
 		}
 		else {
-			return new VMapPolyline(polygon, projection);
+			return new VMapPolyline(layer, polygon, projection);
 		}
 	}
 	
 	
 	
-	public static VMapPolyline fromNgiLine(NgiLayer layer, NgiLineElement line, Grs80Projection projection) {
+	public static VMapPolyline fromNgiLine(VMapElementLayer layer, NgiLineElement line, Grs80Projection projection) {
 		
-		String layerName = layer.name;
+		String layerName = line.parent.name;
 		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
 		
 		if(type == VMapElementType.등고선) {
-			return new VMapContour(line, projection);
+			return new VMapContour(layer, line, projection);
 		}
 		else if(type == VMapElementType.도곽선) {
-			return new VMapPolyline(line, projection);
+			return new VMapPolyline(layer, line, projection);
 		}
 		else {
-			return new VMapPolyline(line, projection);
+			return new VMapPolyline(layer, line, projection);
 		}
 	}
 	
 	
 	
-	public static VMapPoint fromNgiPoint(NgiLayer layer, NgiPointElement point, Grs80Projection projection) {
+	public static VMapPoint fromNgiPoint(VMapElementLayer layer, NgiPointElement point, Grs80Projection projection) {
 		
-		String layerName = layer.name;
+		String layerName = point.parent.name;
 		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
 		
 		if(type == VMapElementType.표고점) {
-			return new VMapElevationPoint(point, projection);
+			return new VMapElevationPoint(layer, point, projection);
 		}
 		else {
-			return new VMapPoint(point, projection, type);
+			return new VMapPoint(layer, point, projection);
 		}
 	}
 }

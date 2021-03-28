@@ -1,21 +1,11 @@
 package com.mndk.kvm2m.core.util.delaunator;
 
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.imageio.ImageIO;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VMapParserResult;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VMapContour;
-import com.mndk.kvm2m.core.vectorparser.NgiMapParser;
 
 
 
@@ -603,86 +593,6 @@ public class FastDelaunayTriangulator {
 		int tmp = arr[i];
 		arr[i] = arr[j];
 		arr[j] = tmp;
-	}
-
-	
-	
-	public static void main_(String[] args) throws IOException {
-		VMapParserResult result = NgiMapParser.parse(new File("37612030.ngi"));
-		List<Vector2DH> vertexes = result.getElevationPoints();
-		System.out.println(vertexes.size());
-		List<Triangle> triangles = FastDelaunayTriangulator.from(vertexes).getTriangleList();
-		System.out.println(triangles.size());
-	}
-	
-	public static void main(String[] args) throws IOException {
-		int w = 400, h = 400;
-		BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
-		final int ERROR_COLOR = new Color(255, 0, 0).getRGB();
-		VMapContour[] contours = new VMapContour[] {
-			new VMapContour(new Vector2DH[] {
-					new Vector2DH(0, 0),
-					new Vector2DH(0, h),
-					new Vector2DH(w, h),
-					new Vector2DH(w, 0)
-			}, 50),
-			new VMapContour(new Vector2DH[] {
-					new Vector2DH(20, 20),
-					new Vector2DH(20, 350),
-					new Vector2DH(350, 350),
-					new Vector2DH(350, 20)
-			}, 100),
-			new VMapContour(new Vector2DH[] {
-					new Vector2DH(50, 50),
-					new Vector2DH(50, 250),
-					new Vector2DH(250, 250),
-					new Vector2DH(250, 50)
-			}, 150),
-			new VMapContour(new Vector2DH[] {
-					new Vector2DH(100, 100),
-					new Vector2DH(100, 200),
-					new Vector2DH(200, 200),
-					new Vector2DH(200, 100)
-			}, 200)
-		};
-		List<Vector2DH> vertexList = new ArrayList<>();
-		for(VMapContour contour : contours) {
-			for(Vector2DH[] va : contour.getVertexList()) for(Vector2DH v : va) {
-				vertexList.add(v.withHeight(contour.getElevation()));
-			}
-		}
-		
-		FastDelaunayTriangulator v = FastDelaunayTriangulator.from(vertexList);
-		System.out.println(Arrays.toString(v.coords));
-		System.out.println(Arrays.toString(v.triangles));
-		System.out.println(Arrays.toString(v.halfedges));
-		System.out.println(v.coords.length);
-		TriangleList triangleList = v.getTriangleList();
-		
-		for(int y=0;y<h;y++) {
-			for(int x=0;x<h;x++) {
-				double value = triangleList.interpolateHeight(new Vector2DH(x, y));
-				if(value != value) image.setRGB(x, y, ERROR_COLOR);
-				else {
-					int a = (int) Math.round(value);
-					if(a > 255) a = 255;
-					if(a < 0) a = 0;
-					image.setRGB(x, y, new Color(a, a, a).getRGB());
-				}
-			}
-		}
-		
-		/*Graphics2D g2d = (Graphics2D) image.getGraphics();
-		g2d.setColor(Color.GREEN);
-		for(Triangle triangle : triangleList) {
-			g2d.drawLine((int) triangle.v1.x, (int) triangle.v1.z, (int) triangle.v2.x, (int) triangle.v2.z);
-			g2d.drawLine((int) triangle.v2.x, (int) triangle.v2.z, (int) triangle.v3.x, (int) triangle.v3.z);
-			g2d.drawLine((int) triangle.v3.x, (int) triangle.v3.z, (int) triangle.v1.x, (int) triangle.v1.z);
-		}*/
-		
-		
-		File file = new File("test.png");
-		ImageIO.write(image, "png", file);
 	}
 	
 	

@@ -1,35 +1,9 @@
 package com.mndk.kvm2m.core.vectorparser;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.Iterator;
-import java.util.List;
-
-import org.apache.commons.io.FilenameUtils;
-import org.kabeja.dxf.DXFDocument;
-import org.kabeja.dxf.DXFLWPolyline;
-import org.kabeja.dxf.DXFLayer;
-import org.kabeja.dxf.DXFPoint;
-import org.kabeja.parser.DXFParser;
-import org.kabeja.parser.ParseException;
-import org.kabeja.parser.Parser;
-import org.kabeja.parser.ParserBuilder;
-
-import com.mndk.kvm2m.core.projection.Grs80Projection;
-import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vectormap.VMapElementType;
-import com.mndk.kvm2m.core.vectormap.VMapParserResult;
-import com.mndk.kvm2m.core.vectormap.VMapUtils;
-import com.mndk.kvm2m.core.vectormap.elem.point.VMapElevationPoint;
-import com.mndk.kvm2m.core.vectormap.elem.point.VMapPoint;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VMapContour;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VMapPolyline;
-
 @Deprecated
 public class DxfMapParser {
 
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	public static VMapParserResult parse(File mapFile) throws ParseException, FileNotFoundException {
 
 		VMapParserResult result = new VMapParserResult();
@@ -101,6 +75,6 @@ public class DxfMapParser {
 		else {
 			result.addElement(new VMapPoint(point, projection, type));
 		}
-	}
+	}*/
 	
 }

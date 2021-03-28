@@ -7,14 +7,14 @@ import java.util.Collection;
 import org.apache.commons.io.FilenameUtils;
 
 import com.mndk.kvm2m.core.projection.Grs80Projection;
+import com.mndk.kvm2m.core.vectormap.VMapElementType;
 import com.mndk.kvm2m.core.vectormap.VMapParserResult;
 import com.mndk.kvm2m.core.vectormap.VMapUtils;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VMapContour;
+import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.mndk.ngiparser.NgiParser;
 import com.mndk.ngiparser.ngi.NgiLayer;
 import com.mndk.ngiparser.ngi.NgiParserResult;
-import com.mndk.ngiparser.ngi.element.NgiElement;
 
 public class NgiMapParser {
 
@@ -30,20 +30,23 @@ public class NgiMapParser {
 		Collection<NgiLayer> layers = parseResult.getLayers().values();
 		for(NgiLayer layer : layers) {
 			if(layer.header.dimensions != 2) continue;
-			Collection<NgiElement<?>> elements = layer.data.values();
-			for(NgiElement<?> ngiElement : elements) {
-				VMapElement element = VMapElement.fromNgiElement(layer, ngiElement, projection);
-				if(element == null) continue;
-				
-				if(element instanceof VMapContour) {
-					
-				}
-			}
+			VMapElementLayer elementLayer = VMapElementLayer.fromNgiLayer(layer, projection, result.getElevationPoints());
+			result.addElement(elementLayer);
 		}
 		
 		return result;
 		
 	}
 	
+	public static void main(String[] args) throws IOException {
+		VMapParserResult result = NgiMapParser.parse(new File("376081986.ngi"));
+		for(VMapElementLayer layer : result.getElementLayers()) {
+			if(layer.getType() != VMapElementType.건물) continue;
+			System.out.println(layer.getType());
+			for(VMapElement element : layer) {
+				System.out.println("  " + element);
+			}
+		}
+	}
 	
 }

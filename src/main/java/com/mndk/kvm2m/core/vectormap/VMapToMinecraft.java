@@ -1,15 +1,14 @@
 package com.mndk.kvm2m.core.vectormap;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.mndk.kvm2m.core.util.delaunator.FastDelaunayTriangulator;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
+import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.mndk.kvm2m.mod.event.ServerTickRepeater;
 import com.mndk.kvm2m.mod.task.TerrainCuttingTask;
 import com.mndk.kvm2m.mod.task.TerrainGenerationTask;
-import com.mndk.kvm2m.mod.task.VMapObjGenTask;
+import com.mndk.kvm2m.mod.task.VMapElemLayerGenTask;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.FlatRegion;
@@ -32,25 +31,12 @@ public class VMapToMinecraft {
 		ServerTickRepeater.addTask(new TerrainGenerationTask(triangleList, world, worldEditRegion));
 		ServerTickRepeater.addTask(new TerrainCuttingTask(triangleList, world, worldEditRegion));
 		
-		List<VMapElement> elementList = new ArrayList<>(), totalElements = result.getElements();
-		VMapElementType lastType;
-		VMapElement temp;
+		List<VMapElementLayer> totalElements = result.getElementLayers();
 		
 		if(!totalElements.isEmpty()) {
-			elementList.add(temp = totalElements.get(0));
-			lastType = temp.getType();
-			for(int i = 1; i < totalElements.size(); ++i) {
-				temp = totalElements.get(i);
-				if(lastType != temp.getType()) {
-					ServerTickRepeater.addTask(new VMapObjGenTask(elementList, lastType, world, worldEditRegion, triangleList));
-					lastType = temp.getType();
-					elementList = new ArrayList<>();
-				}
-				else {
-					elementList.add(temp);
-				}
+			for(VMapElementLayer elementLayer : totalElements) {
+				ServerTickRepeater.addTask(new VMapElemLayerGenTask(elementLayer, world, worldEditRegion, triangleList));
 			}
-			ServerTickRepeater.addTask(new VMapObjGenTask(elementList, lastType, world, worldEditRegion, triangleList));
 		}
 		// dirty code lmao
 		// TODO categorize map objects by layers
