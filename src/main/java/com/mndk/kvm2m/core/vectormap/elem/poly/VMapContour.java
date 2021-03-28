@@ -18,12 +18,12 @@ public class VMapContour extends VMapPolyline implements IHasElevationData {
 	*/
 
 	public VMapContour(VMapElementLayer parent, NgiLineElement polyline, Grs80Projection projection) {
-		super(parent, polyline, projection);
+		super(parent, polyline, null, projection);
 		this.elevation = (int) Math.round((Double) polyline.getRowData("등고수치"));
 	}
 
 	public VMapContour(VMapElementLayer parent, Vector2DH[] vertexes, int elevation) {
-		super(parent, vertexes, false);
+		super(parent, vertexes, null, false);
 		this.elevation = elevation;
 	}
 	

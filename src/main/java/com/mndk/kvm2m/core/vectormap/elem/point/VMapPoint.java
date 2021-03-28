@@ -8,6 +8,7 @@ import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.mndk.ngiparser.ngi.element.NgiPointElement;
 import com.sk89q.worldedit.regions.FlatRegion;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -22,8 +23,8 @@ public class VMapPoint extends VMapElement {
 	}
 	*/
 
-	public VMapPoint(VMapElementLayer layer, NgiPointElement point, Grs80Projection projection) {
-		super(layer);
+	public VMapPoint(VMapElementLayer layer, NgiPointElement point, IBlockState blockState, Grs80Projection projection) {
+		super(layer, blockState);
 		this.point = projectGrs80CoordToBteCoord(projection, point.position.getAxis(0), point.position.getAxis(1));
 	}
 	
@@ -33,10 +34,11 @@ public class VMapPoint extends VMapElement {
 
 	@Override
 	public void generateBlocks(FlatRegion region, World world, TriangleList triangles) {
-		if(this.parent.getType().getBlockState() == null) return;
+		if(this.blockState == null) return;
+		
 		if(region.contains(point.withHeight(region.getMinimumY()).toIntegerWorldEditVector())) {
 			Vector2DH p = point.withHeight(triangles.interpolateHeight(point));
-			world.setBlockState(new BlockPos(p.x, p.height, p.z), this.parent.getType().getBlockState());
+			world.setBlockState(new BlockPos(p.x, p.height, p.z), this.blockState);
 		}
 	}
 	

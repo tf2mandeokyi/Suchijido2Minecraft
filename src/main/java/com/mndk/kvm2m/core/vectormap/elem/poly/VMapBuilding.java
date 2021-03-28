@@ -25,8 +25,8 @@ public class VMapBuilding extends VMapPolyline implements IHasElevationData {
 	private final int buildingHeight;
 	
 	
-	public VMapBuilding(VMapElementLayer layer, NgiPolygonElement polygon, Grs80Projection projection) {
-		super(layer, polygon, projection);
+	public VMapBuilding(VMapElementLayer layer, NgiPolygonElement polygon, IBlockState state, Grs80Projection projection) {
+		super(layer, polygon, state, projection);
 		if(this.parent.getType() == VMapElementType.건물) {
 			this.buildingHeight = (Integer) polygon.getRowData("층수") * FLOOR_HEIGHT;
 		}
@@ -45,13 +45,11 @@ public class VMapBuilding extends VMapPolyline implements IHasElevationData {
 	@Override
 	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
 		
-		IBlockState state = this.parent.getType().getBlockState();
-		
-		if(state == null) return;
+		if(this.blockState == null) return;
 		
 		LineGenerator lineGenerator = new LineGenerator(
 				v -> (int) Math.round(triangleList.interpolateHeight(v)),
-				w, region, state
+				w, region, this.blockState
 		);
 		
 		int maxHeight = this.getMaxTerrainHeight(triangleList) + this.buildingHeight;
@@ -72,9 +70,7 @@ public class VMapBuilding extends VMapPolyline implements IHasElevationData {
 	@Override
 	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
-		IBlockState state = this.parent.getType().getBlockState();
-		
-		if(state == null) return;
+		if(this.blockState == null) return;
 
 		Vector region_vmin = region.getMinimumPoint(), region_vmax = region.getMaximumPoint();
 		int region_xmin = (int) Math.floor(region_vmin.getX()), region_xmax = (int) Math.ceil(region_vmax.getX());
@@ -92,7 +88,7 @@ public class VMapBuilding extends VMapPolyline implements IHasElevationData {
 		for(int z = zmin; z <= zmax; ++z) {
 			for(int x = xmin; x <= xmax; ++x) {
 				if(!region.contains(new Vector(x, region.getMinimumY(), z)) || !this.containsPoint(new Vector2DH(x+.5, z+.5))) continue;
-				w.setBlockState(new BlockPos(x, y, z), state);
+				w.setBlockState(new BlockPos(x, y, z), this.blockState);
 			}
 		}
 	}

@@ -4,6 +4,7 @@ import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.projection.Projections;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
+import com.mndk.kvm2m.core.vectormap.VMapBlockSelector;
 import com.mndk.kvm2m.core.vectormap.VMapElementType;
 import com.mndk.kvm2m.core.vectormap.elem.point.VMapElevationPoint;
 import com.mndk.kvm2m.core.vectormap.elem.point.VMapPoint;
@@ -17,17 +18,23 @@ import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
 import com.sk89q.worldedit.regions.FlatRegion;
 
 import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.World;
 
 public abstract class VMapElement {
 	
 	
 	protected final VMapElementLayer parent;
+	protected final IBlockState blockState;
 	
 	
-	public VMapElement(VMapElementLayer parent) {
+	public VMapElement(VMapElementLayer parent, IBlockState blockState) {
 		this.parent = parent;
+		this.blockState = blockState;
 	}
+	
+	
+	public VMapElementLayer getParent() { return parent; }
 	
 	
 	protected static Vector2DH projectGrs80CoordToBteCoord(Grs80Projection projection, double x, double y) {
@@ -62,15 +69,16 @@ public abstract class VMapElement {
 		
 		String layerName = polygon.parent.name;
 		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
-
+		IBlockState state = VMapBlockSelector.getBlockState(polygon, type);
+		
 		if(type == VMapElementType.도곽선) {
-			return new VMapPolyline(layer, polygon, projection);
+			return new VMapPolyline(layer, polygon, state, projection);
 		}
 		else if(type == VMapElementType.건물) {
-			return new VMapBuilding(layer, polygon, projection);
+			return new VMapBuilding(layer, polygon, state, projection);
 		}
 		else {
-			return new VMapPolyline(layer, polygon, projection);
+			return new VMapPolyline(layer, polygon, state, projection);
 		}
 	}
 	
@@ -80,15 +88,16 @@ public abstract class VMapElement {
 		
 		String layerName = line.parent.name;
 		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
+		IBlockState state = VMapBlockSelector.getBlockState(line, type);
 		
 		if(type == VMapElementType.등고선) {
 			return new VMapContour(layer, line, projection);
 		}
 		else if(type == VMapElementType.도곽선) {
-			return new VMapPolyline(layer, line, projection);
+			return new VMapPolyline(layer, line, state, projection);
 		}
 		else {
-			return new VMapPolyline(layer, line, projection);
+			return new VMapPolyline(layer, line, state, projection);
 		}
 	}
 	
@@ -98,12 +107,13 @@ public abstract class VMapElement {
 		
 		String layerName = point.parent.name;
 		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
+		IBlockState state = VMapBlockSelector.getBlockState(point, type);
 		
 		if(type == VMapElementType.표고점) {
 			return new VMapElevationPoint(layer, point, projection);
 		}
 		else {
-			return new VMapPoint(layer, point, projection);
+			return new VMapPoint(layer, point, state, projection);
 		}
 	}
 }

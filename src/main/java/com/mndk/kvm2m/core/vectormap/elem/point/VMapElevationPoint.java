@@ -18,7 +18,7 @@ public class VMapElevationPoint extends VMapPoint implements IHasElevationData {
 	*/
 	
 	public VMapElevationPoint(VMapElementLayer layer, NgiPointElement point, Grs80Projection projection) {
-		super(layer, point, projection);
+		super(layer, point, null, projection);
 		this.elevation = (int) Math.round((Double) point.getRowData("수치"));
 	}
 

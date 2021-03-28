@@ -1,7 +1,5 @@
 package com.mndk.kvm2m.core.vectormap;
 
-import net.minecraft.block.state.IBlockState;
-
 // TODO translate this
 public enum VMapElementType {
 	
@@ -128,6 +126,7 @@ public enum VMapElementType {
 	지명("H004", Category.주기),
 	산("H005", Category.주기);
 	
+	@Deprecated
 	public enum FillType {
 		AREA, LINE, POINT
 	}
@@ -165,23 +164,5 @@ public enum VMapElementType {
 	
 	public Category getCategory() {
 		return category;
-	}
-	
-	public IBlockState getBlockState() {
-		return VMapBlockSelector.getBlockState(this);
-	}
-	
-	public int getDefaultHeight() {
-		switch(this) {
-			case 담장:
-			case 터널입구:
-			case 철도: case 철도경계: case 철도중심선: case 철도전차대:
-				return 1;
-			case 육교:
-			case 입체교차부:
-				return 2;
-			default:
-				return 0;
-		}
 	}
 }
