@@ -8,7 +8,7 @@ The mod that imports Korean vector map files (such as ~~.dxf~~ and .ngi) to Mine
  * .ngi
 
 ## Terrain generation algorithm
- * [Fast delaunay triangulation](https://github.com/mapbox/delaunator)
+Fast delaunay triangulation ([Original source](https://github.com/mapbox/delaunator), [Java implementation](src/main/java/com/mndk/kvm2m/core/util/delaunator/FastDelaunayTriangulator.java))
 
 ## Copyright
 
