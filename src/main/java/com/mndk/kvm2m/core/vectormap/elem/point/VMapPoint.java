@@ -3,6 +3,7 @@ package com.mndk.kvm2m.core.vectormap.elem.point;
 import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
+import com.mndk.kvm2m.core.vectormap.VMapBlockSelector;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.mndk.ngiparser.ngi.element.NgiPointElement;
@@ -37,7 +38,9 @@ public class VMapPoint extends VMapElement {
 		if(this.blockState == null) return;
 		
 		if(region.contains(point.withHeight(region.getMinimumY()).toIntegerWorldEditVector())) {
-			Vector2DH p = point.withHeight(triangles.interpolateHeight(point));
+			int y = VMapBlockSelector.getAdditionalHeight(this);
+			
+			Vector2DH p = point.withHeight(triangles.interpolateHeight(point) + y);
 			world.setBlockState(new BlockPos(p.x, p.height, p.z), this.blockState);
 		}
 	}

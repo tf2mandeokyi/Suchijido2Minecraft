@@ -2,7 +2,9 @@ package com.mndk.kvm2m.mod.commands;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,8 +17,10 @@ import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.mojang.authlib.GameProfile;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.forge.ForgeWorld;
 import com.sk89q.worldedit.forge.ForgeWorldEdit;
+import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.FlatRegion;
 import com.sk89q.worldedit.regions.Region;
 
@@ -36,6 +40,11 @@ import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public abstract class VMapGeneratorCommand extends CommandBase {
+
+	
+
+	static final int MAX_AXIS = 30000000;
+	static final FlatRegion INFINITE_REGION = new CuboidRegion(new Vector(-MAX_AXIS, 0, -MAX_AXIS), new Vector(MAX_AXIS, 0, MAX_AXIS));
 	
 	
 	
@@ -65,28 +74,43 @@ public abstract class VMapGeneratorCommand extends CommandBase {
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		
-		EntityPlayerMP player = commandSenderToPlayer(sender);
-		World world = server.getEntityWorld();
-		@SuppressWarnings("unused")
-		GeographicProjection projection = getWorldProjection(world);
-		FlatRegion worldEditRegion = validateWorldEditRegion(world, player);
-		
-		if(args.length == 0) {
-			throw new CommandException("com.mndk.kvm2m.cmd.noid");
-		}
 		try {
 			
 			VMapParserResult result = new VMapParserResult();
 			
+			Map<String, String> options = new HashMap<>();
+			boolean isEmpty = true;
+			
 			for(String fileName : args) {
-				File file = new File(KVectorMap2MinecraftMod.kVecFileDirectory + "/" + fileName);
-				if(!file.isFile() || !FilenameUtils.isExtension(fileName, this.getExtension())) 
-					throw new CommandException("File does not exist!");
-				
-				result.append(this.fileDataToParserResult(file));
+				if(fileName.startsWith("--")) {
+					String keyNvalue = fileName.substring(2);
+					if(keyNvalue.contains("=")) {
+						String[] temp = keyNvalue.split("=", 2);
+						options.put(temp[0], temp[1]);
+					}
+					else {
+						options.put(keyNvalue, null);
+					}
+				}
+				else {
+					File file = new File(KVectorMap2MinecraftMod.kVecFileDirectory + "/" + fileName);
+					if(!file.isFile() || !FilenameUtils.isExtension(fileName, this.getExtension())) 
+						throw new CommandException("File does not exist!");
+					
+					isEmpty = false;
+					result.append(this.fileDataToParserResult(file));
+				}
 			}
 			
-			VMapToMinecraft.generateTasks(world, worldEditRegion, result);
+			if(isEmpty) throw new CommandException("No Files are given!");
+			
+			EntityPlayerMP player = commandSenderToPlayer(sender);
+			World world = server.getEntityWorld();
+			@SuppressWarnings("unused")
+			GeographicProjection projection = getWorldProjection(world);
+			FlatRegion worldEditRegion = options.containsKey("generate-all") ? INFINITE_REGION : validateWorldEditRegion(world, player);
+			
+			VMapToMinecraft.generateTasks(world, worldEditRegion, result, options);
 			
 		} catch(VMapParserException exception) {
 			KVectorMap2MinecraftMod.logger.error(exception);
