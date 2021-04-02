@@ -75,10 +75,6 @@ repositories {
         url = "https://repo.elytradev.com/"
     }
     maven {
-        name = "Sonatype"
-        url = "https://oss.sonatype.org/content/repositories/public/"
-    }
-    maven {
         name = "Sponge"
         url = "https://repo.spongepowered.org/maven/"
     }
@@ -110,7 +106,6 @@ dependencies {
     shade 'org.osgeo:proj4j:0.1.0'
 	// Used to read .dxf files. It's now unused, since dxf files don't have database files, making it impossible to get building heights only with it.
     // shade 'org.kabeja:kabeja:0.4'
-    shade 'org.ejml:ejml-all:0.40'
 
     runtime "org.apache.commons:commons-imaging:1.0-alpha2"
     runtime("net.daporkchop:leveldb-mcpe-jni:0.0.10-SNAPSHOT")  {
