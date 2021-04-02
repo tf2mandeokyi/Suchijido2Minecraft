@@ -7,7 +7,7 @@ import com.mndk.kvm2m.core.vectormap.VMapParserResult;
 import net.minecraft.command.CommandException;
 
 @Deprecated
-public class DxfMapGeneratorCommand extends VMapGeneratorCommand {
+public class DxfMapGenCmd extends VMapGenCmd {
 
 
 	@Override

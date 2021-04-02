@@ -39,7 +39,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
-public abstract class VMapGeneratorCommand extends CommandBase {
+public abstract class VMapGenCmd extends CommandBase {
 
 	
 

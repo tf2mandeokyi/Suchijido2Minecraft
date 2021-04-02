@@ -9,7 +9,7 @@ import com.mndk.kvm2m.core.vectorparser.NgiMapParser;
 
 import net.minecraft.command.CommandException;
 
-public class NgiMapGeneratorCommand extends VMapGeneratorCommand {
+public class NgiMapGenCmd extends VMapGenCmd {
 
 
 	@Override
