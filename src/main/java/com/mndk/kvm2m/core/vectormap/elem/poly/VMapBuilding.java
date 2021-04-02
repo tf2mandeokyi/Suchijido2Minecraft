@@ -5,7 +5,6 @@ import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.BoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VMapElementType;
 import com.mndk.kvm2m.core.vectormap.elem.IHasElevationData;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
@@ -19,26 +18,17 @@ import net.minecraft.world.World;
 public class VMapBuilding extends VMapPolyline implements IHasElevationData {
 	
 	
-	private static final int FLOOR_HEIGHT = 4;
-
-	
-	private final int buildingHeight;
+	public static final int FLOOR_HEIGHT = 4;
 	
 	
-	public VMapBuilding(VMapElementLayer layer, NgiPolygonElement polygon, IBlockState state, Grs80Projection projection) {
-		super(layer, polygon, state, projection);
-		if(this.parent.getType() == VMapElementType.건물) {
-			this.buildingHeight = (Integer) polygon.getRowData("층수") * FLOOR_HEIGHT;
-		}
-		else {
-			this.buildingHeight = 0;
-		}
+	public VMapBuilding(VMapElementLayer layer, NgiPolygonElement polygon, IBlockState state, int buildingHeight, Grs80Projection projection) {
+		super(layer, polygon, state, buildingHeight, projection);
 	}
 
 	
 	@Override
 	public int getElevation() {
-		return this.buildingHeight;
+		return this.y;
 	}
 	
 	
@@ -52,7 +42,7 @@ public class VMapBuilding extends VMapPolyline implements IHasElevationData {
 				w, region, this.blockState
 		);
 		
-		int maxHeight = this.getMaxTerrainHeight(triangleList) + this.buildingHeight;
+		int maxHeight = this.getMaxTerrainHeight(triangleList) + this.y;
 		
 		Vector2DH[][] vertexList = this.getVertexList();
 		for(int j = 0; j < vertexList.length; ++j) {
@@ -83,7 +73,7 @@ public class VMapBuilding extends VMapPolyline implements IHasElevationData {
 		int xmin = Math.max(region_xmin, vertex_xmin), zmin = Math.max(region_zmin, vertex_zmin);
 		int xmax = Math.min(region_xmax, vertex_xmax), zmax = Math.min(region_zmax, vertex_zmax);
 		
-		int y = this.getMaxTerrainHeight(triangleList) + this.buildingHeight - 1;
+		int y = this.getMaxTerrainHeight(triangleList) + this.y - 1;
 		
 		for(int z = zmin; z <= zmax; ++z) {
 			for(int x = xmin; x <= xmax; ++x) {

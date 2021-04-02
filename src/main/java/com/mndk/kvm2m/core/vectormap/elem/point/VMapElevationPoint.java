@@ -7,8 +7,6 @@ import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.mndk.ngiparser.ngi.element.NgiPointElement;
 
 public class VMapElevationPoint extends VMapPoint implements IHasElevationData {
-
-	private int elevation;
 	
 	/*
 	public VMapElevationPoint(DXFPoint point, Grs80Projection projection) {
@@ -17,18 +15,17 @@ public class VMapElevationPoint extends VMapPoint implements IHasElevationData {
 	}
 	*/
 	
-	public VMapElevationPoint(VMapElementLayer layer, NgiPointElement point, Grs80Projection projection) {
-		super(layer, point, null, projection);
-		this.elevation = (int) Math.round((Double) point.getRowData("수치"));
+	public VMapElevationPoint(VMapElementLayer layer, NgiPointElement point, int height, Grs80Projection projection) {
+		super(layer, point, null, height, projection);
 	}
 
 	@Override
 	public int getElevation() {
-		return this.elevation;
+		return this.y;
 	}
 	
 	public Vector2DH toVector() {
-		return this.getPosition().withHeight(elevation);
+		return this.getPosition().withHeight(this.y);
 	}
 
 }

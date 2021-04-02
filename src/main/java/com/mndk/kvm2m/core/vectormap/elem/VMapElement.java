@@ -26,11 +26,13 @@ public abstract class VMapElement {
 	
 	protected final VMapElementLayer parent;
 	protected final IBlockState blockState;
+	protected final int y;
 	
 	
-	public VMapElement(VMapElementLayer parent, IBlockState blockState) {
+	public VMapElement(VMapElementLayer parent, IBlockState blockState, int y) {
 		this.parent = parent;
 		this.blockState = blockState;
+		this.y = y;
 	}
 	
 	
@@ -52,68 +54,81 @@ public abstract class VMapElement {
 	
 	
 	public static VMapElement fromNgiElement(VMapElementLayer layer, NgiElement<?> ngiElement, Grs80Projection projection) {
+		
+		String layerName = ngiElement.parent.name;
+		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
+		IBlockState state = VMapBlockSelector.getBlockState(ngiElement, type);
+		int y = VMapBlockSelector.getAdditionalHeight(ngiElement, type);
+		
 		if(ngiElement instanceof NgiPolygonElement) {
-			return VMapElement.fromNgiPolygon(layer, (NgiPolygonElement) ngiElement, projection);
+			return VMapElement.fromNgiPolygon(layer, (NgiPolygonElement) ngiElement, type, state, y, projection);
 		}
 		else if(ngiElement instanceof NgiLineElement) {
-			return VMapElement.fromNgiLine(layer, (NgiLineElement) ngiElement, projection);
+			return VMapElement.fromNgiLine(layer, (NgiLineElement) ngiElement, type, state, y, projection);
 		}
 		else if(ngiElement instanceof NgiPointElement) {
-			return VMapElement.fromNgiPoint(layer, (NgiPointElement) ngiElement, projection);
+			return VMapElement.fromNgiPoint(layer, (NgiPointElement) ngiElement, type, state, y, projection);
 		}
 		return null;
 	}
 	
 	
-	public static VMapPolyline fromNgiPolygon(VMapElementLayer layer, NgiPolygonElement polygon, Grs80Projection projection) {
-		
-		String layerName = polygon.parent.name;
-		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
-		IBlockState state = VMapBlockSelector.getBlockState(polygon, type);
-		
+	public static VMapPolyline fromNgiPolygon(
+			VMapElementLayer layer, 
+			NgiPolygonElement polygon, 
+			VMapElementType type, 
+			IBlockState state, 
+			int y, 
+			Grs80Projection projection
+	) {
 		if(type == VMapElementType.도곽선) {
-			return new VMapPolyline(layer, polygon, state, projection);
+			return new VMapPolyline(layer, polygon, state, y, projection);
 		}
 		else if(type == VMapElementType.건물) {
-			return new VMapBuilding(layer, polygon, state, projection);
+			return new VMapBuilding(layer, polygon, state, y, projection);
 		}
 		else {
-			return new VMapPolyline(layer, polygon, state, projection);
+			return new VMapPolyline(layer, polygon, state, y, projection);
 		}
 	}
 	
 	
 	
-	public static VMapPolyline fromNgiLine(VMapElementLayer layer, NgiLineElement line, Grs80Projection projection) {
-		
-		String layerName = line.parent.name;
-		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
-		IBlockState state = VMapBlockSelector.getBlockState(line, type);
+	public static VMapPolyline fromNgiLine(
+			VMapElementLayer layer, 
+			NgiLineElement line, 
+			VMapElementType type, 
+			IBlockState state, 
+			int y, 
+			Grs80Projection projection
+	) {
 		
 		if(type == VMapElementType.등고선) {
-			return new VMapContour(layer, line, projection);
+			return new VMapContour(layer, line, y, projection);
 		}
 		else if(type == VMapElementType.도곽선) {
-			return new VMapPolyline(layer, line, state, projection);
+			return new VMapPolyline(layer, line, state, y, projection);
 		}
 		else {
-			return new VMapPolyline(layer, line, state, projection);
+			return new VMapPolyline(layer, line, state, y, projection);
 		}
 	}
 	
 	
 	
-	public static VMapPoint fromNgiPoint(VMapElementLayer layer, NgiPointElement point, Grs80Projection projection) {
-		
-		String layerName = point.parent.name;
-		VMapElementType type = VMapElementType.getTypeFromLayerName(layerName);
-		IBlockState state = VMapBlockSelector.getBlockState(point, type);
-		
+	public static VMapPoint fromNgiPoint(
+			VMapElementLayer layer, 
+			NgiPointElement point, 
+			VMapElementType type, 
+			IBlockState state, 
+			int y, 
+			Grs80Projection projection
+	) {
 		if(type == VMapElementType.표고점) {
-			return new VMapElevationPoint(layer, point, projection);
+			return new VMapElevationPoint(layer, point, y, projection);
 		}
 		else {
-			return new VMapPoint(layer, point, state, projection);
+			return new VMapPoint(layer, point, state, y, projection);
 		}
 	}
 }

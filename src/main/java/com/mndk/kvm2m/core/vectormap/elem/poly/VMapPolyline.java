@@ -6,7 +6,6 @@ import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.math.VectorMath;
 import com.mndk.kvm2m.core.util.shape.BoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VMapBlockSelector;
 import com.mndk.kvm2m.core.vectormap.VMapElementType;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
@@ -27,8 +26,8 @@ public class VMapPolyline extends VMapElement {
 	private final boolean closed;
 
 	
-	private VMapPolyline(VMapElementLayer parent, IBlockState state, boolean closed) {
-		super(parent, state);
+	private VMapPolyline(VMapElementLayer parent, IBlockState state, int y, boolean closed) {
+		super(parent, state, y);
 		this.closed = closed;
 	}
 
@@ -47,8 +46,8 @@ public class VMapPolyline extends VMapElement {
 	*/
 
 	
-	public VMapPolyline(VMapElementLayer parent, NgiPolygonElement polyline, IBlockState state, Grs80Projection projection) {
-		this(parent, state, true);
+	public VMapPolyline(VMapElementLayer parent, NgiPolygonElement polyline, IBlockState state, int y, Grs80Projection projection) {
+		this(parent, state, y, true);
 		this.vertexList = new Vector2DH[polyline.vertexData.length][];
 		
 		for(int j = 0; j < polyline.vertexData.length; ++j) {
@@ -64,8 +63,8 @@ public class VMapPolyline extends VMapElement {
 	}
 
 	
-	public VMapPolyline(VMapElementLayer parent, NgiLineElement line, IBlockState state, Grs80Projection projection) {
-		this(parent, state, false);
+	public VMapPolyline(VMapElementLayer parent, NgiLineElement line, IBlockState state, int y, Grs80Projection projection) {
+		this(parent, state, y, false);
 		int size = line.lineData.getSize();
 		this.vertexList = new Vector2DH[1][size];
 		
@@ -77,15 +76,15 @@ public class VMapPolyline extends VMapElement {
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[] vertexes, IBlockState state, boolean closed) {
-		this(parent, state, closed);
+	public VMapPolyline(VMapElementLayer parent, Vector2DH[] vertexes, IBlockState state, int y, boolean closed) {
+		this(parent, state, y, closed);
 		this.vertexList = new Vector2DH[][] {vertexes};
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertexes, IBlockState state, boolean closed) {
-		this(parent, state, closed);
+	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertexes, IBlockState state, int y, boolean closed) {
+		this(parent, state, y, closed);
 		this.vertexList = vertexes;
 		this.getBoundingBox();
 	}
@@ -132,7 +131,7 @@ public class VMapPolyline extends VMapElement {
 		System.arraycopy(this.vertexList, 0, newVertexList, 0, this.vertexList.length);
 		System.arraycopy(other.vertexList, 0, newVertexList, this.vertexList.length, other.vertexList.length);
 		
-		return new VMapPolyline(this.parent, newVertexList, this.blockState, this.closed);
+		return new VMapPolyline(this.parent, newVertexList, this.blockState, this.y, this.closed);
 	}
 	
 	
@@ -165,12 +164,10 @@ public class VMapPolyline extends VMapElement {
 	
 	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
 		
-		int y = VMapBlockSelector.getAdditionalHeight(this);
-		
 		if(this.blockState == null) return;
 		
 		LineGenerator lineGenerator = new LineGenerator(
-				v -> (int) Math.round(triangleList.interpolateHeight(v)) + y, 
+				v -> (int) Math.round(triangleList.interpolateHeight(v)) + this.y, 
 				w, region, this.blockState
 		);
 		
@@ -212,7 +209,7 @@ public class VMapPolyline extends VMapElement {
 	
 	
 	protected int getHeightValueOfPoint(Vector2DH v, TriangleList triangleList) {
-		return (int) Math.round(triangleList.interpolateHeight(v)) + VMapBlockSelector.getAdditionalHeight(this);
+		return (int) Math.round(triangleList.interpolateHeight(v)) + this.y;
 	}
 
 	

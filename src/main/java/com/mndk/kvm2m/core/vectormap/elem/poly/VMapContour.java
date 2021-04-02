@@ -8,8 +8,6 @@ import com.mndk.ngiparser.ngi.element.NgiLineElement;
 
 public class VMapContour extends VMapPolyline implements IHasElevationData {
 
-	private final int elevation;
-
 	/*
 	public VMapContour(DXFLWPolyline polyline, Grs80Projection projection) {
 		super(polyline, projection);
@@ -17,18 +15,16 @@ public class VMapContour extends VMapPolyline implements IHasElevationData {
 	}
 	*/
 
-	public VMapContour(VMapElementLayer parent, NgiLineElement polyline, Grs80Projection projection) {
-		super(parent, polyline, null, projection);
-		this.elevation = (int) Math.round((Double) polyline.getRowData("등고수치"));
+	public VMapContour(VMapElementLayer parent, NgiLineElement polyline, int elevation, Grs80Projection projection) {
+		super(parent, polyline, null, elevation, projection);
 	}
 
 	public VMapContour(VMapElementLayer parent, Vector2DH[] vertexes, int elevation) {
-		super(parent, vertexes, null, false);
-		this.elevation = elevation;
+		super(parent, vertexes, null, elevation, false);
 	}
 	
 	@Override
 	public int getElevation() {
-		return this.elevation;
+		return this.y;
 	}
 }

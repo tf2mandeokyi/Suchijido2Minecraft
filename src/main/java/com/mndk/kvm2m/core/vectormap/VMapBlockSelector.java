@@ -1,6 +1,6 @@
 package com.mndk.kvm2m.core.vectormap;
 
-import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
+import com.mndk.kvm2m.core.vectormap.elem.poly.VMapBuilding;
 import com.mndk.ngiparser.ngi.element.NgiElement;
 
 import net.minecraft.block.BlockColored;
@@ -16,6 +16,8 @@ public class VMapBlockSelector {
 			// A types
 			case 도로경계: 
 				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.GRAY);
+			case 입체교차부:
+				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.SILVER);
 			case 보도: 
 			case 안전지대:
 			case 승강장:
@@ -23,8 +25,11 @@ public class VMapBlockSelector {
 				return Blocks.DOUBLE_STONE_SLAB.getDefaultState();
 			case 횡단보도: 
 				return Blocks.CONCRETE.getDefaultState();
-			case 육교: 
-				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.SILVER);
+			case 육교:
+			case 교량:
+				return Blocks.IRON_BLOCK.getDefaultState();
+			case 승강장_지붕:
+				return Blocks.WOOL.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.SILVER);
 			case 터널: 
 				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.MAGENTA);
 			case 철도:
@@ -60,6 +65,12 @@ public class VMapBlockSelector {
 				return Blocks.END_BRICKS.getDefaultState();
 			case 옹벽:
 				return Blocks.BRICK_BLOCK.getDefaultState();
+				
+			// G types
+			case 읍면동_행정경계:
+				if("기타콘크리트구조물".equals(element.getRowData("용도")))
+					return Blocks.CONCRETE.getDefaultState();
+					
 			
 			default:
 				return null;
@@ -67,20 +78,29 @@ public class VMapBlockSelector {
 		
 	}
 	
-	public static int getAdditionalHeight(VMapElement element) {
-		
-		VMapElementType type = element.getParent().getType();
+	public static int getAdditionalHeight(NgiElement<?> ngiElement, VMapElementType type) {
 		
 		switch(type) {
+			case 옹벽:
+				return (int) Math.round((Double) ngiElement.getRowData("높이"));
+			case 건물:
+				return (Integer) ngiElement.getRowData("층수") * VMapBuilding.FLOOR_HEIGHT;
+			case 등고선:
+				return (int) Math.round((Double) ngiElement.getRowData("등고수치"));
+			case 표고점:
+				return (int) Math.round((Double) ngiElement.getRowData("수치"));
 			case 담장:
 			case 터널입구:
 			case 철도: case 승강장:
 			case 조명: case 신호등:
 			case 독립수:
+			case 절토:
 				return 1;
+			case 승강장_지붕:
+				return 2;
 			case 육교:
 			case 입체교차부:
-				return 2;
+				return 3;
 			default:
 				return 0;
 		}

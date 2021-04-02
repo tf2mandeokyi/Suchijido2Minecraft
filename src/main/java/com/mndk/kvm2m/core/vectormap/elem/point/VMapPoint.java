@@ -3,7 +3,6 @@ package com.mndk.kvm2m.core.vectormap.elem.point;
 import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VMapBlockSelector;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.mndk.ngiparser.ngi.element.NgiPointElement;
@@ -24,8 +23,8 @@ public class VMapPoint extends VMapElement {
 	}
 	*/
 
-	public VMapPoint(VMapElementLayer layer, NgiPointElement point, IBlockState blockState, Grs80Projection projection) {
-		super(layer, blockState);
+	public VMapPoint(VMapElementLayer layer, NgiPointElement point, IBlockState blockState, int height, Grs80Projection projection) {
+		super(layer, blockState, height);
 		this.point = projectGrs80CoordToBteCoord(projection, point.position.getAxis(0), point.position.getAxis(1));
 	}
 	
@@ -38,9 +37,8 @@ public class VMapPoint extends VMapElement {
 		if(this.blockState == null) return;
 		
 		if(region.contains(point.withHeight(region.getMinimumY()).toIntegerWorldEditVector())) {
-			int y = VMapBlockSelector.getAdditionalHeight(this);
 			
-			Vector2DH p = point.withHeight(triangles.interpolateHeight(point) + y);
+			Vector2DH p = point.withHeight(triangles.interpolateHeight(point) + this.y);
 			world.setBlockState(new BlockPos(p.x, p.height, p.z), this.blockState);
 		}
 	}
