@@ -6,10 +6,12 @@ buildscript {
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
+		classpath "com.github.jengelman.gradle.plugins:shadow:4.0.0"
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: "com.github.johnrengelman.shadow"
 apply plugin: 'eclipse'
 apply plugin: 'java'
 
@@ -53,9 +55,9 @@ minecraft {
 repositories {
     mavenCentral()
     jcenter()
-    maven { // kabeja
+    /* maven { // kabeja
         url = "http://logicaldoc.sourceforge.net/maven/"
-    }
+    } */
     maven { // cubicchunks, cubicworldgen, terraplusplus
         name = "JitPack"
         url = "https://jitpack.io/"
@@ -98,28 +100,16 @@ configurations {
 dependencies {
 	minecraft "net.minecraftforge:forge:${project.forge_version}"
 
-    compile 'com.github.OpenCubicChunks.CubicChunks:cubicchunks:6e18a97abe31e1c7892ebcf8ed0f17a4ac379e10' /* {
-        transitive = false
-    }*/
-
-    compile 'com.github.OpenCubicChunks:CubicWorldGen:27de56d2f792513873584b2f8fd9f3082fb259ec' /* {
-        transitive = false
-    }*/
-
-    compile 'com.github.BuildTheEarth:terraplusplus:74449c4af349fd9b77b10e1041ed2c09f2d78518' /* {
-        transitive = true
-    }*/
+    compile 'com.github.OpenCubicChunks.CubicChunks:cubicchunks:6e18a97abe31e1c7892ebcf8ed0f17a4ac379e10'
+    compile 'com.github.OpenCubicChunks:CubicWorldGen:27de56d2f792513873584b2f8fd9f3082fb259ec'
+    compile 'com.github.BuildTheEarth:terraplusplus:74449c4af349fd9b77b10e1041ed2c09f2d78518'
     
-    compile ('com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT') {
-  		transitive = false
-  	}
-    
-    compile ('com.sk89q.worldedit:worldedit-forge-mc1.12.1:7.0.0-SNAPSHOT') {
-  		transitive = false
-  	}
+    compile ('com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT') { transitive = false }
+    compile ('com.sk89q.worldedit:worldedit-forge-mc1.12.1:7.0.0-SNAPSHOT') { transitive = false }
 
     shade 'org.osgeo:proj4j:0.1.0'
-    shade 'org.kabeja:kabeja:0.4'
+	// Used to read .dxf files. It's now unused, since dxf files don't have database files, making it impossible to get building heights only with it.
+    // shade 'org.kabeja:kabeja:0.4'
     shade 'org.ejml:ejml-all:0.40'
 
     runtime "org.apache.commons:commons-imaging:1.0-alpha2"
@@ -130,12 +120,28 @@ dependencies {
 
 
 
-jar {
-    configurations.shade.each { dep ->
-        from(project.zipTree(dep)){
-            exclude 'META-INF', 'META-INF/**'
-        }
-    }
+shadowJar {
+	classifier = null
+	configurations = [project.configurations.shade]
+
+	exclude 'module-info.class'
 }
 
-jar.finalizedBy('reobfJar')
+build.dependsOn shadowJar
+
+
+
+reobf {
+	shadowJar {}
+}
+
+
+
+task relocateShadowJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation) {
+	target = tasks.shadowJar
+	prefix = "${project.mod_group}.${project.mod_id}.dep"
+}
+
+
+
+shadowJar.dependsOn relocateShadowJar
