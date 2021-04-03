@@ -67,7 +67,7 @@ public class VMapBlockSelector {
 				return Blocks.BRICK_BLOCK.getDefaultState();
 				
 			// G types
-			case 읍면동_행정경계:
+			case 기타경계:
 				if("기타콘크리트구조물".equals(element.getDataByColumn("용도")))
 					return Blocks.CONCRETE.getDefaultState();
 					
@@ -84,7 +84,9 @@ public class VMapBlockSelector {
 			case 옹벽:
 				return (int) Math.round((Double) element.getDataByColumn("높이"));
 			case 건물:
-				return (Integer) element.getDataByColumn("층수") * VMapBuilding.FLOOR_HEIGHT;
+				Object floorCount = element.getDataByColumn("층수");
+				if(floorCount instanceof Integer) return (Integer) element.getDataByColumn("층수") * VMapBuilding.FLOOR_HEIGHT;
+				else return (int) Math.round((Double) element.getDataByColumn("층수")) * VMapBuilding.FLOOR_HEIGHT;
 			case 등고선:
 				return (int) Math.round((Double) element.getDataByColumn("등고수치"));
 			case 표고점:

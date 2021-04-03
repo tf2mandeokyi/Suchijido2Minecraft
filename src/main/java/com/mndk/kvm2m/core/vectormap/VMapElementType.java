@@ -114,10 +114,10 @@ public enum VMapElementType {
 	
 	// G타입 - 경계
 	시도_행정경계("G001", Category.경계),
-	시군구_행정경계("G002", Category.경계),
-	읍면동_행정경계("G003", Category.경계),
-	수부지형경계("G004", Category.경계),
-	기타경계("G005", Category.경계),
+	시군구_행정경계("G010", Category.경계),
+	읍면동_행정경계("G011", Category.경계),
+	수부지형경계("G002", Category.경계),
+	기타경계("G003", Category.경계),
 	
 	// H타입 - 주기
 	도곽선("H001", Category.주기),
