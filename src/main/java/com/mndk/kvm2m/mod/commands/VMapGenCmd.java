@@ -104,6 +104,8 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 		
 		try {
 			
+			KVectorMap2MinecraftMod.broadcastMessage("§dParsing files...");
+			
 			VMapParserResult result = new VMapParserResult();
 			
 			Map<String, String> options = new HashMap<>();
