@@ -126,11 +126,6 @@ public enum VMapElementType {
 	지명("H004", Category.주기),
 	산("H005", Category.주기);
 	
-	@Deprecated
-	public enum FillType {
-		AREA, LINE, POINT
-	}
-	
 	public enum Category {
 		교통('A'), 건물('B'), 시설('C'), 식생('D'), 수계('E'), 지형('F'), 경계('G'), 주기('H');
 		private final char character;

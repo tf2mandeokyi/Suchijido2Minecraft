@@ -5,6 +5,7 @@ public class NdaDataColumn {
 	
 	public String name;
 	public String type; 
+	@Deprecated
 	public int size; // Why do you even need this lmao
 	public int unknownInt; // TODO figure out what this variable is
 	public boolean unknownBoolean; // TODO figure out what this variable is

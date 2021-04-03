@@ -1,6 +1,8 @@
 package com.mndk.kvm2m.mod.commands;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +15,7 @@ import org.apache.commons.io.FilenameUtils;
 import com.mndk.kvm2m.core.vectormap.VMapParserException;
 import com.mndk.kvm2m.core.vectormap.VMapParserResult;
 import com.mndk.kvm2m.core.vectormap.VMapToMinecraft;
+import com.mndk.kvm2m.core.vectorparser.VMapParser;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.mojang.authlib.GameProfile;
 import com.sk89q.worldedit.IncompleteRegionException;
@@ -39,7 +42,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
-public abstract class VMapGenCmd extends CommandBase {
+public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 
 	
 
@@ -48,10 +51,35 @@ public abstract class VMapGenCmd extends CommandBase {
 	
 	
 	
+	private final String name, extension;
+	private final T parser;
+	
+	
+	
+	public VMapGenCmd(String name, String extension, T parser) {
+		this.name = name;
+		this.extension = extension;
+		this.parser = parser;
+	}
+	
+	
+	
 	@Override
-	public abstract String getName();
-	public abstract VMapParserResult fileDataToParserResult(File file) throws CommandException;
-	public abstract String getExtension();
+	public String getName() {
+		return this.name;
+	}
+	
+	
+	
+	public VMapParserResult fileDataToParserResult(File file) throws CommandException {
+		try {
+			return parser.parse(file);
+		} catch(FileNotFoundException exception) {
+			throw new CommandException("File does not exist!");
+		} catch(IOException exception) {
+			throw new CommandException("An unexpected error occured while parsing vector map.");
+		}
+	}
 
 
 	
@@ -94,8 +122,10 @@ public abstract class VMapGenCmd extends CommandBase {
 				}
 				else {
 					File file = new File(KVectorMap2MinecraftMod.kVecFileDirectory + "/" + fileName);
-					if(!file.isFile() || !FilenameUtils.isExtension(fileName, this.getExtension())) 
+					if(!file.isFile())
 						throw new CommandException("File does not exist!");
+					if(!FilenameUtils.isExtension(fileName, this.extension))
+						throw new CommandException("Invalid extension!");
 					
 					isEmpty = false;
 					result.append(this.fileDataToParserResult(file));
@@ -178,7 +208,7 @@ public abstract class VMapGenCmd extends CommandBase {
 	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos targetPos) {
 		
 		File file = new File(KVectorMap2MinecraftMod.kVecFileDirectory);
-		String extension = this.getExtension();
+		String extension = this.extension;
 		
 		final String final_extension = extension.startsWith(".") ? extension : "." + extension;
 		

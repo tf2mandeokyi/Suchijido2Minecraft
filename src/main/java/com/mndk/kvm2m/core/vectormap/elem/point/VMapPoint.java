@@ -1,11 +1,12 @@
 package com.mndk.kvm2m.core.vectormap.elem.point;
 
-import com.mndk.kvm2m.core.projection.Grs80Projection;
+import java.util.Map;
+
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
+import com.mndk.kvm2m.core.vectormap.VMapBlockSelector;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
-import com.mndk.ngiparser.ngi.element.NgiPointElement;
 import com.sk89q.worldedit.regions.FlatRegion;
 
 import net.minecraft.block.state.IBlockState;
@@ -16,16 +17,14 @@ public class VMapPoint extends VMapElement {
 
 	private final Vector2DH point;
 
-	/*
-	public VMapPoint(DXFPoint point, Grs80Projection projection, VMapElementType type) {
-		super(type);
-		this.point = projectGrs80CoordToBteCoord(projection, point.getX(), point.getY());
+	public VMapPoint(VMapElementLayer layer, Vector2DH point, Map<String, Object> dataRow) {
+		super(layer, dataRow);
+		this.point = point;
 	}
-	*/
 
-	public VMapPoint(VMapElementLayer layer, NgiPointElement point, IBlockState blockState, int height, Grs80Projection projection) {
-		super(layer, blockState, height);
-		this.point = projectGrs80CoordToBteCoord(projection, point.position.getAxis(0), point.position.getAxis(1));
+	public VMapPoint(VMapElementLayer layer, Vector2DH point, Object[] dataRow) {
+		super(layer, dataRow);
+		this.point = point;
 	}
 	
 	public Vector2DH getPosition() {
@@ -34,12 +33,16 @@ public class VMapPoint extends VMapElement {
 
 	@Override
 	public void generateBlocks(FlatRegion region, World world, TriangleList triangles) {
-		if(this.blockState == null) return;
+
+		IBlockState state = VMapBlockSelector.getBlockState(this);
+		if(state == null) return;
+		
+		int y = VMapBlockSelector.getAdditionalHeight(this);
 		
 		if(region.contains(point.withHeight(region.getMinimumY()).toIntegerWorldEditVector())) {
 			
-			Vector2DH p = point.withHeight(triangles.interpolateHeight(point) + this.y);
-			world.setBlockState(new BlockPos(p.x, p.height, p.z), this.blockState);
+			Vector2DH p = point.withHeight(triangles.interpolateHeight(point) + y);
+			world.setBlockState(new BlockPos(p.x, p.height, p.z), state);
 		}
 	}
 	

@@ -1,7 +1,7 @@
 package com.mndk.kvm2m.core.vectormap;
 
+import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VMapBuilding;
-import com.mndk.ngiparser.ngi.element.NgiElement;
 
 import net.minecraft.block.BlockColored;
 import net.minecraft.block.state.IBlockState;
@@ -10,9 +10,9 @@ import net.minecraft.item.EnumDyeColor;
 
 public class VMapBlockSelector {
 
-	public static IBlockState getBlockState(NgiElement<?> element, VMapElementType type) {
+	public static IBlockState getBlockState(VMapElement element) {
 		
-		switch(type) {
+		switch(element.getParent().getType()) {
 			// A types
 			case 도로경계: 
 				return Blocks.CONCRETE.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.GRAY);
@@ -21,7 +21,7 @@ public class VMapBlockSelector {
 			case 보도: 
 			case 안전지대:
 			case 승강장:
-				if("어린이보호구역".equals(element.getRowData("구조"))) return null;
+				if("어린이보호구역".equals(element.getDataByColumn("구조"))) return null;
 				return Blocks.DOUBLE_STONE_SLAB.getDefaultState();
 			case 횡단보도: 
 				return Blocks.CONCRETE.getDefaultState();
@@ -68,7 +68,7 @@ public class VMapBlockSelector {
 				
 			// G types
 			case 읍면동_행정경계:
-				if("기타콘크리트구조물".equals(element.getRowData("용도")))
+				if("기타콘크리트구조물".equals(element.getDataByColumn("용도")))
 					return Blocks.CONCRETE.getDefaultState();
 					
 			
@@ -78,17 +78,17 @@ public class VMapBlockSelector {
 		
 	}
 	
-	public static int getAdditionalHeight(NgiElement<?> ngiElement, VMapElementType type) {
+	public static int getAdditionalHeight(VMapElement element) {
 		
-		switch(type) {
+		switch(element.getParent().getType()) {
 			case 옹벽:
-				return (int) Math.round((Double) ngiElement.getRowData("높이"));
+				return (int) Math.round((Double) element.getDataByColumn("높이"));
 			case 건물:
-				return (Integer) ngiElement.getRowData("층수") * VMapBuilding.FLOOR_HEIGHT;
+				return (Integer) element.getDataByColumn("층수") * VMapBuilding.FLOOR_HEIGHT;
 			case 등고선:
-				return (int) Math.round((Double) ngiElement.getRowData("등고수치"));
+				return (int) Math.round((Double) element.getDataByColumn("등고수치"));
 			case 표고점:
-				return (int) Math.round((Double) ngiElement.getRowData("수치"));
+				return (int) Math.round((Double) element.getDataByColumn("수치"));
 			case 담장:
 			case 터널입구:
 			case 철도: case 승강장:

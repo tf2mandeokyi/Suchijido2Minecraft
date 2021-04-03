@@ -4,7 +4,8 @@ import java.io.File;
 
 import org.apache.logging.log4j.Logger;
 
-import com.mndk.kvm2m.mod.commands.NgiMapGenCmd;
+import com.mndk.kvm2m.core.vectorparser.NgiMapParser;
+import com.mndk.kvm2m.mod.commands.VMapGenCmd;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.util.text.TextComponentString;
@@ -26,8 +27,8 @@ public class KVectorMap2MinecraftMod {
 	public static final String VERSION = "b1.0";
 
 	private static final ICommand[] serverCommands = {
-			// new DxfMapGenCmd(),
-			new NgiMapGenCmd()
+			new VMapGenCmd<>("genngimap", "ngi", new NgiMapParser()),
+			// new VMapGenCmd<>("genshpzipmap", "zip", new ShpZipMapParser())
 	};
 
 	public static Logger logger;

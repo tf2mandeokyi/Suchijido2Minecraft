@@ -1,17 +1,16 @@
 package com.mndk.kvm2m.core.vectormap.elem.poly;
 
-import com.mndk.kvm2m.core.projection.Grs80Projection;
+import java.util.Map;
+
 import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.math.VectorMath;
 import com.mndk.kvm2m.core.util.shape.BoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
+import com.mndk.kvm2m.core.vectormap.VMapBlockSelector;
 import com.mndk.kvm2m.core.vectormap.VMapElementType;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
-import com.mndk.ngiparser.ngi.element.NgiLineElement;
-import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
-import com.mndk.ngiparser.ngi.vertex.NgiVertex;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
 
@@ -26,82 +25,44 @@ public class VMapPolyline extends VMapElement {
 	private final boolean closed;
 
 	
-	private VMapPolyline(VMapElementLayer parent, IBlockState state, int y, boolean closed) {
-		super(parent, state, y);
+	private VMapPolyline(VMapElementLayer parent, Map<String, Object> dataRow, boolean closed) {
+		super(parent, dataRow);
 		this.closed = closed;
 	}
 
 	
-	/*
-	public VMapPolyline(DXFLWPolyline polyline, Grs80Projection projection) {
-		this(polyline.isClosed());
-		this.vertexList = new Vector2DH[1][polyline.getVertexCount()];
-		
-		for(int i = 0; i < polyline.getVertexCount(); ++i) {
-			DXFVertex vertex = polyline.getVertex(i);
-			this.vertexList[0][i] = projectGrs80CoordToBteCoord(projection, vertex.getX(), vertex.getY());
-		}
-		this.getBoundingBox();
-	}
-	*/
-
-	
-	public VMapPolyline(VMapElementLayer parent, NgiPolygonElement polyline, IBlockState state, int y, Grs80Projection projection) {
-		this(parent, state, y, true);
-		this.vertexList = new Vector2DH[polyline.vertexData.length][];
-		
-		for(int j = 0; j < polyline.vertexData.length; ++j) {
-			int size = polyline.vertexData[j].getSize();
-			this.vertexList[j] = new Vector2DH[size];
-			
-			for(int i = 0; i < size; ++i) {
-				NgiVertex vertex = polyline.vertexData[0].getVertex(i);
-				this.vertexList[j][i] = projectGrs80CoordToBteCoord(projection, vertex.getAxis(0), vertex.getAxis(1));
-			}
-		}
-		this.getBoundingBox();
-	}
-
-	
-	public VMapPolyline(VMapElementLayer parent, NgiLineElement line, IBlockState state, int y, Grs80Projection projection) {
-		this(parent, state, y, false);
-		int size = line.lineData.getSize();
-		this.vertexList = new Vector2DH[1][size];
-		
-		for(int i = 0; i < size; ++i) {
-			NgiVertex vertex = line.lineData.getVertex(i);
-			this.vertexList[0][i] = projectGrs80CoordToBteCoord(projection, vertex.getAxis(0), vertex.getAxis(1));
-		}
-		this.getBoundingBox();
+	private VMapPolyline(VMapElementLayer parent, Object[] dataRow, boolean closed) {
+		super(parent, dataRow);
+		this.closed = closed;
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[] vertexes, IBlockState state, int y, boolean closed) {
-		this(parent, state, y, closed);
+	public VMapPolyline(VMapElementLayer parent, Vector2DH[] vertexes, Map<String, Object> dataRow, boolean closed) {
+		this(parent, dataRow, closed);
 		this.vertexList = new Vector2DH[][] {vertexes};
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertexes, IBlockState state, int y, boolean closed) {
-		this(parent, state, y, closed);
+	public VMapPolyline(VMapElementLayer parent, Vector2DH[] vertexes, Object[] dataRow, boolean closed) {
+		this(parent, dataRow, closed);
+		this.vertexList = new Vector2DH[][] {vertexes};
+		this.getBoundingBox();
+	}
+	
+	
+	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertexes, Map<String, Object> dataRow, boolean closed) {
+		this(parent, dataRow, closed);
 		this.vertexList = vertexes;
 		this.getBoundingBox();
 	}
 	
 	
-	/*
-	public VMapPolyline(Polygonal2DRegion region) {
-		this(true);
-		int n = region.size();
-		this.vertexList = new Vector2DH[1][n];
-		
-		for(int i = 0; i < n; i++) {
-			this.vertexList[0][i] = new Vector2DH(region.getPoints().get(i));
-		}
+	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertexes, Object[] dataRow, boolean closed) {
+		this(parent, dataRow, closed);
+		this.vertexList = vertexes;
 		this.getBoundingBox();
 	}
-	*/
 	
 	
 	public boolean containsPoint(Vector2DH point) {
@@ -131,7 +92,7 @@ public class VMapPolyline extends VMapElement {
 		System.arraycopy(this.vertexList, 0, newVertexList, 0, this.vertexList.length);
 		System.arraycopy(other.vertexList, 0, newVertexList, this.vertexList.length, other.vertexList.length);
 		
-		return new VMapPolyline(this.parent, newVertexList, this.blockState, this.y, this.closed);
+		return new VMapPolyline(this.parent, newVertexList, this.dataRow, this.closed);
 	}
 	
 	
@@ -164,11 +125,14 @@ public class VMapPolyline extends VMapElement {
 	
 	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
 		
-		if(this.blockState == null) return;
+		IBlockState state = VMapBlockSelector.getBlockState(this);
+		if(state == null) return;
+		
+		int y = VMapBlockSelector.getAdditionalHeight(this);
 		
 		LineGenerator lineGenerator = new LineGenerator(
-				v -> (int) Math.round(triangleList.interpolateHeight(v)) + this.y, 
-				w, region, this.blockState
+				v -> (int) Math.round(triangleList.interpolateHeight(v)) + y, 
+				w, region, state
 		);
 		
 		for(int j = 0; j < vertexList.length; ++j) {
@@ -185,7 +149,8 @@ public class VMapPolyline extends VMapElement {
 	
 	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
-		if(this.blockState == null) return;
+		IBlockState state = VMapBlockSelector.getBlockState(this);
+		if(state == null) return;
 
 		Vector region_vmin = region.getMinimumPoint(), region_vmax = region.getMaximumPoint();
 		int region_xmin = (int) Math.floor(region_vmin.getX()), region_xmax = (int) Math.ceil(region_vmax.getX());
@@ -202,14 +167,14 @@ public class VMapPolyline extends VMapElement {
 			for(int x = xmin; x <= xmax; ++x) {
 				if(!region.contains(new Vector(x, region.getMinimumY(), z)) || !this.containsPoint(new Vector2DH(x+.5, z+.5))) continue;
 				int y = getHeightValueOfPoint(new Vector2DH(x, z), triangleList);
-				w.setBlockState(new BlockPos(x, y, z), this.blockState);
+				w.setBlockState(new BlockPos(x, y, z), state);
 			}
 		}
 	}
 	
 	
 	protected int getHeightValueOfPoint(Vector2DH v, TriangleList triangleList) {
-		return (int) Math.round(triangleList.interpolateHeight(v)) + this.y;
+		return (int) Math.round(triangleList.interpolateHeight(v)) + VMapBlockSelector.getAdditionalHeight(this);
 	}
 
 	
