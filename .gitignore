@@ -22,10 +22,5 @@ eclipse
 run
 logs
 
-# vector maps
-*.dxf
-*.ngi
-*.nda
-
 # test
-test.png
+test
