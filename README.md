@@ -16,8 +16,8 @@ Fast delaunay triangulation ([Original source](https://github.com/mapbox/delauna
 ## Usage
 1. Download vector map data files [from one of those portals](#vector-map-data-portals)
 2. Put downloaded files at:
-    * Singleplayer: `.../.minecraft/saves/<world save file>/kvecmap_files/`
-    * Multiplayer: `/path/to/server_file/<world folder>/kvecmap_files/`
+    * Singleplayer: `.../.minecraft/kvecmap_files/`
+    * Multiplayer: `/path/to/server_file/kvecmap_files/`
 3. Select the region you want the mod to generate with WorldEdit wand.
 4. Type the command `/gen<extension_name>map <data_file_name> ...`
 
