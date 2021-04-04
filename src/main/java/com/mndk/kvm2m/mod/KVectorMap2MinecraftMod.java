@@ -10,7 +10,6 @@ import com.mndk.kvm2m.mod.commands.VMapGenCmd;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -39,13 +38,13 @@ public class KVectorMap2MinecraftMod {
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		KVectorMap2MinecraftMod.logger = event.getModLog();
+		this.initializeMapDirectory(event);
 	}
 	
 	@Mod.EventHandler
 	public void serverStarting(FMLServerStartingEvent event) {
 		
 		this.registerCommands(event);
-		this.initializeMapDirectory();
 		
 	}
 	
@@ -55,8 +54,8 @@ public class KVectorMap2MinecraftMod {
 		}
 	}
 	
-	private void initializeMapDirectory() {
-		kVecFileDirectory = DimensionManager.getCurrentSaveRootDirectory().getAbsolutePath() + "/kvecmap_files/";
+	private void initializeMapDirectory(FMLPreInitializationEvent event) {
+		kVecFileDirectory = event.getModConfigurationDirectory().getParentFile().getAbsolutePath() + "/kvecmap_files/";
 		File temp = new File(kVecFileDirectory);
 		if(!temp.isDirectory()) {
 			temp.mkdirs();
