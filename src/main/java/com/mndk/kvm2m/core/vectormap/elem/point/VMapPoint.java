@@ -41,7 +41,7 @@ public class VMapPoint extends VMapElement {
 		
 		if(region.contains(point.withHeight(region.getMinimumY()).toIntegerWorldEditVector())) {
 			
-			Vector2DH p = point.withHeight(triangles.interpolateHeight(point) + y);
+			Vector2DH p = point.withHeight(triangles.interpolateHeight((int) Math.floor(point.x), (int) Math.floor(point.z)) + y);
 			world.setBlockState(new BlockPos(p.x, p.height, p.z), state);
 		}
 	}

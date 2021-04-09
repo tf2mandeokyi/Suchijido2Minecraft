@@ -4,7 +4,7 @@ import java.util.Map;
 
 import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.util.shape.BoundingBox;
+import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vectormap.VMapBlockSelector;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
@@ -40,7 +40,7 @@ public class VMapBuilding extends VMapPolyline {
 		int buildingHeight = VMapBlockSelector.getAdditionalHeight(this);
 		
 		LineGenerator lineGenerator = new LineGenerator(
-				v -> (int) Math.round(triangleList.interpolateHeight(v)),
+				(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)),
 				w, region, state
 		);
 		
@@ -66,22 +66,13 @@ public class VMapBuilding extends VMapPolyline {
 		if(state == null) return;
 		
 		int buildingHeight = VMapBlockSelector.getAdditionalHeight(this);
-
-		Vector region_vmin = region.getMinimumPoint(), region_vmax = region.getMaximumPoint();
-		int region_xmin = (int) Math.floor(region_vmin.getX()), region_xmax = (int) Math.ceil(region_vmax.getX());
-		int region_zmin = (int) Math.floor(region_vmin.getZ()), region_zmax = (int) Math.ceil(region_vmax.getZ());
 		
-		BoundingBox box = this.getBoundingBox();
-		int vertex_xmin = (int) Math.floor(box.xmin), vertex_xmax = (int) Math.ceil(box.xmax);
-		int vertex_zmin = (int) Math.floor(box.zmin), vertex_zmax = (int) Math.ceil(box.zmax);
-		
-		int xmin = Math.max(region_xmin, vertex_xmin), zmin = Math.max(region_zmin, vertex_zmin);
-		int xmax = Math.min(region_xmax, vertex_xmax), zmax = Math.min(region_zmax, vertex_zmax);
+		IntegerBoundingBox box = this.getBoundingBox().getIntersectionArea(new IntegerBoundingBox(region));
 		
 		int y = this.getMaxTerrainHeight(triangleList) + buildingHeight - 1;
 		
-		for(int z = zmin; z <= zmax; ++z) {
-			for(int x = xmin; x <= xmax; ++x) {
+		for(int z = box.zmin; z <= box.zmax; ++z) {
+			for(int x = box.xmin; x <= box.xmax; ++x) {
 				if(!region.contains(new Vector(x, region.getMinimumY(), z)) || !this.containsPoint(new Vector2DH(x+.5, z+.5))) continue;
 				w.setBlockState(new BlockPos(x, y, z), state);
 			}
@@ -93,7 +84,7 @@ public class VMapBuilding extends VMapPolyline {
 		
 		int yMax = -10000, yTemp;
 		LineGenerator lineGenerator = new LineGenerator(
-				v -> (int) Math.round(triangleList.interpolateHeight(v)), 
+				(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)), 
 				null, null, null
 		);
 		

@@ -5,7 +5,7 @@ import java.util.Map;
 import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.math.VectorMath;
-import com.mndk.kvm2m.core.util.shape.BoundingBox;
+import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vectormap.VMapBlockSelector;
 import com.mndk.kvm2m.core.vectormap.VMapElementType;
@@ -96,17 +96,18 @@ public class VMapPolyline extends VMapElement {
 	}
 	
 	
-	private BoundingBox boundingBoxResult;
-	public BoundingBox getBoundingBox() {
+	private IntegerBoundingBox boundingBoxResult;
+	public IntegerBoundingBox getBoundingBox() {
 		if(boundingBoxResult != null) return boundingBoxResult;
-		double minX = Double.MAX_VALUE, maxX = Double.MIN_VALUE, minZ = Double.MAX_VALUE, maxZ = Double.MIN_VALUE;
+		int minX = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE, 
+			maxX = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
 		for(Vector2DH[] va : vertexList) for(Vector2DH v : va) {
-			if(v.x < minX) minX = v.x;
-			if(v.x > maxX) maxX = v.x;
-			if(v.z < minZ) minZ = v.z;
-			if(v.z > maxZ) maxZ = v.z;
+			if(v.x < minX) minX = (int) Math.floor(v.x);
+			if(v.x > maxX) maxX = (int) Math.ceil(v.x);
+			if(v.z < minZ) minZ = (int) Math.floor(v.z);
+			if(v.z > maxZ) maxZ = (int) Math.ceil(v.z);
 		}
-		return boundingBoxResult = new BoundingBox(minX, minZ, maxX, maxZ);
+		return boundingBoxResult = new IntegerBoundingBox(minX, minZ, maxX, maxZ);
 	}
 	
 	
@@ -131,7 +132,7 @@ public class VMapPolyline extends VMapElement {
 		int y = VMapBlockSelector.getAdditionalHeight(this);
 		
 		LineGenerator lineGenerator = new LineGenerator(
-				v -> (int) Math.round(triangleList.interpolateHeight(v)) + y, 
+				(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)) + y, 
 				w, region, state
 		);
 		
@@ -151,30 +152,21 @@ public class VMapPolyline extends VMapElement {
 		
 		IBlockState state = VMapBlockSelector.getBlockState(this);
 		if(state == null) return;
-
-		Vector region_vmin = region.getMinimumPoint(), region_vmax = region.getMaximumPoint();
-		int region_xmin = (int) Math.floor(region_vmin.getX()), region_xmax = (int) Math.ceil(region_vmax.getX());
-		int region_zmin = (int) Math.floor(region_vmin.getZ()), region_zmax = (int) Math.ceil(region_vmax.getZ());
 		
-		BoundingBox box = this.getBoundingBox();
-		int vertex_xmin = (int) Math.floor(box.xmin), vertex_xmax = (int) Math.ceil(box.xmax);
-		int vertex_zmin = (int) Math.floor(box.zmin), vertex_zmax = (int) Math.ceil(box.zmax);
+		IntegerBoundingBox box = this.getBoundingBox().getIntersectionArea(new IntegerBoundingBox(region));
 		
-		int xmin = Math.max(region_xmin, vertex_xmin), zmin = Math.max(region_zmin, vertex_zmin);
-		int xmax = Math.min(region_xmax, vertex_xmax), zmax = Math.min(region_zmax, vertex_zmax);
-		
-		for(int z = zmin; z <= zmax; ++z) {
-			for(int x = xmin; x <= xmax; ++x) {
+		for(int z = box.zmin; z <= box.zmax; ++z) {
+			for(int x = box.xmin; x <= box.xmax; ++x) {
 				if(!region.contains(new Vector(x, region.getMinimumY(), z)) || !this.containsPoint(new Vector2DH(x+.5, z+.5))) continue;
-				int y = getHeightValueOfPoint(new Vector2DH(x, z), triangleList);
+				int y = getHeightValueOfPoint(x, z, triangleList);
 				w.setBlockState(new BlockPos(x, y, z), state);
 			}
 		}
 	}
 	
 	
-	protected int getHeightValueOfPoint(Vector2DH v, TriangleList triangleList) {
-		return (int) Math.round(triangleList.interpolateHeight(v)) + VMapBlockSelector.getAdditionalHeight(this);
+	protected int getHeightValueOfPoint(int x, int z, TriangleList triangleList) {
+		return (int) Math.round(triangleList.interpolateHeight(x, z)) + VMapBlockSelector.getAdditionalHeight(this);
 	}
 
 	

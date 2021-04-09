@@ -1,6 +1,6 @@
 package com.mndk.kvm2m.core.util;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.sk89q.worldedit.Vector;
@@ -12,14 +12,14 @@ import net.minecraft.world.World;
 
 public class LineGenerator {
 
-	public final Function<Vector2DH, Integer> getYFunction;
+	public final BiFunction<Integer, Integer, Integer> getYFunction;
 	public final World world;
 	public final FlatRegion region;
 	public final IBlockState state;
 
 	
 	
-	public LineGenerator(Function<Vector2DH, Integer> getYFunction, World world, FlatRegion region, IBlockState state) {
+	public LineGenerator(BiFunction<Integer, Integer, Integer> getYFunction, World world, FlatRegion region, IBlockState state) {
 		this.getYFunction = getYFunction;
 		this.world = world;
 		this.region = region;
@@ -106,7 +106,7 @@ public class LineGenerator {
 		int yMax = -10000, yTemp;
 
 		if(dx == 0 && dz == 0) {
-			return getYFunction.apply(v1);
+			return getHeight(v1.x, v1.z);
 		}
 
 		if(dx > 0) { xs = v1.x; xe = v2.x; }
@@ -117,25 +117,25 @@ public class LineGenerator {
 		if(dxa == 0) {
 			double x = v1.x;
 			for(double z = zs; z < ze; z++) {
-				yMax = yMax < (yTemp = getYFunction.apply(new Vector2DH(x, z))) ? yTemp : yMax;
+				yMax = yMax < (yTemp = getHeight(x, z)) ? yTemp : yMax;
 			}
-			yMax = yMax < (yTemp = getYFunction.apply(new Vector2DH(x, ze))) ? yTemp : yMax;
+			yMax = yMax < (yTemp = getHeight(x, ze)) ? yTemp : yMax;
 		} else if(dza == 0) {
 			double z = v1.z;
 			for(double x = xs; x < xe; x++) {
-				yMax = yMax < (yTemp = getYFunction.apply(new Vector2DH(x, z))) ? yTemp : yMax;
+				yMax = yMax < (yTemp = getHeight(x, z)) ? yTemp : yMax;
 			}
-			yMax = yMax < (yTemp = getYFunction.apply(new Vector2DH(xe, z))) ? yTemp : yMax;
+			yMax = yMax < (yTemp = getHeight(xe, z)) ? yTemp : yMax;
 		} else if(dxa > dza) {
 			for(double x = xs; x < xe; x++) {
-				yMax = yMax < (yTemp = getYFunction.apply(new Vector2DH(x, v1.z + dz * (x - v1.x) / dx))) ? yTemp : yMax;
+				yMax = yMax < (yTemp = getHeight(x, v1.z + dz * (x - v1.x) / dx)) ? yTemp : yMax;
 			}
-			yMax = yMax < (yTemp = getYFunction.apply(new Vector2DH(xe, v1.z + dz * (xe - v1.x) / dx))) ? yTemp : yMax;
+			yMax = yMax < (yTemp = getHeight(xe, v1.z + dz * (xe - v1.x) / dx)) ? yTemp : yMax;
 		} else {
 			for(double z = zs; z < ze; z++) {
-				yMax = yMax < (yTemp = getYFunction.apply(new Vector2DH(v1.x + dx * (z - v1.z) / dz, z))) ? yTemp : yMax;
+				yMax = yMax < (yTemp = getHeight(v1.x + dx * (z - v1.z) / dz, z)) ? yTemp : yMax;
 			}
-			yMax = yMax < (yTemp = getYFunction.apply(new Vector2DH(v1.x + dx * (ze - v1.z) / dz, ze))) ? yTemp : yMax;
+			yMax = yMax < (yTemp = getHeight(v1.x + dx * (ze - v1.z) / dz, ze)) ? yTemp : yMax;
 		}
 		
 		return yMax;
@@ -145,7 +145,7 @@ public class LineGenerator {
 	
 	private void placeBlock(double x, double z) {
 		if(!region.contains(new Vector(Math.floor(x), region.getMinimumY(), Math.floor(z)))) return;
-		int y = getYFunction.apply(new Vector2DH(x, z));
+		int y = getHeight(x, z);
 		world.setBlockState(new BlockPos(x, y, z), state);
 	}
 
@@ -153,8 +153,14 @@ public class LineGenerator {
 	
 	private void placeBlock(double x, double z, int maxHeight) {
 		if(!region.contains(new Vector(Math.floor(x), region.getMinimumY(), Math.floor(z)))) return;
-		int terrainY = getYFunction.apply(new Vector2DH(x, z));
+		int terrainY = getHeight(x, z);
 		for(int y = terrainY; y <= maxHeight; ++y) world.setBlockState(new BlockPos(x, y, z), state);
+	}
+	
+	
+	
+	private int getHeight(double x, double z) {
+		return getYFunction.apply((int) Math.floor(x), (int) Math.floor(z));
 	}
 
 }
