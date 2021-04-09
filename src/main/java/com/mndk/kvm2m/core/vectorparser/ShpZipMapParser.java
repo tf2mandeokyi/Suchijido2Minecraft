@@ -21,7 +21,6 @@ import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.util.file.DirectoryManager;
 import com.mndk.kvm2m.core.util.file.ZipManager;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vectormap.VMapBlockSelector;
 import com.mndk.kvm2m.core.vectormap.VMapElementType;
 import com.mndk.kvm2m.core.vectormap.VMapParserException;
 import com.mndk.kvm2m.core.vectormap.VMapParserResult;
@@ -33,11 +32,14 @@ import com.mndk.kvm2m.core.vectormap.elem.poly.VMapBuilding;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VMapContour;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VMapPolyline;
 
+import net.buildtheearth.terraplusplus.generator.EarthGeneratorSettings;
+import net.buildtheearth.terraplusplus.projection.GeographicProjection;
+
 public class ShpZipMapParser extends VMapParser {
 
 
-	
-	public VMapParserResult parse(File mapFile) throws IOException {
+	@Override
+	public VMapParserResult parse(File mapFile, GeographicProjection worldProjection) throws IOException {
 		
 		VMapParserResult result = new VMapParserResult();
 	
@@ -83,7 +85,7 @@ public class ShpZipMapParser extends VMapParser {
 					try {
 						while(iterator.hasNext()) {
 							SimpleFeature feature = iterator.next();
-							VMapElement element = fromFeature(layer, feature, typeName, projection);
+							VMapElement element = fromFeature(layer, feature, typeName, projection, worldProjection);
 							if(element == null) continue;
 							layer.add(element);
 							extractElevationPoints(element, result.getElevationPoints());
@@ -106,7 +108,13 @@ public class ShpZipMapParser extends VMapParser {
 	
 	
 	
-	private static VMapElement fromFeature(VMapElementLayer layer, SimpleFeature feature, String typeName, Grs80Projection projection) {
+	private static VMapElement fromFeature(
+			VMapElementLayer layer,
+			SimpleFeature feature,
+			String typeName,
+			Grs80Projection projection,
+			GeographicProjection worldProjection
+	) {
 		int attributeCount = feature.getAttributeCount();
 		Object[] rowData = new Object[attributeCount];
 		for(int i = 0; i < attributeCount; ++i) {
@@ -114,13 +122,13 @@ public class ShpZipMapParser extends VMapParser {
 		}
 		Object the_geom = feature.getAttribute("the_geom");
 		if(the_geom instanceof MultiPolygon) {
-			return fromMultiPolygon(layer, (MultiPolygon) the_geom, rowData, projection);
+			return fromMultiPolygon(layer, (MultiPolygon) the_geom, rowData, projection, worldProjection);
 		}
 		else if(the_geom instanceof MultiLineString) {
-			return fromMultiLineString(layer, (MultiLineString) the_geom, rowData, projection);
+			return fromMultiLineString(layer, (MultiLineString) the_geom, rowData, projection, worldProjection);
 		}
 		else if(the_geom instanceof Point) {
-			return fromPoint(layer, (Point) the_geom, rowData, projection);
+			return fromPoint(layer, (Point) the_geom, rowData, projection, worldProjection);
 		}
 		else return null;
 		
@@ -132,14 +140,15 @@ public class ShpZipMapParser extends VMapParser {
 			VMapElementLayer layer, 
 			MultiPolygon polygon, 
 			Object[] rowData,
-			Grs80Projection projection
+			Grs80Projection projection,
+			GeographicProjection worldProjection
 	) {
 		Coordinate[] coordinates = polygon.getCoordinates();
 		int n;
 		Vector2DH[] vertexList = new Vector2DH[n = coordinates.length];
 		for(int i = 0; i < n; ++i) {
 			Coordinate coordinate = coordinates[i];
-			vertexList[i] = projectGrs80CoordToBteCoord(projection, coordinate.x, coordinate.y);
+			vertexList[i] = projectGrs80CoordToWorldCoord(projection, worldProjection, coordinate.x, coordinate.y);
 		}
 		
 		if(layer.getType() == VMapElementType.건물) { return new VMapBuilding(layer, new Vector2DH[][] { vertexList }, rowData); }
@@ -152,14 +161,15 @@ public class ShpZipMapParser extends VMapParser {
 			VMapElementLayer layer, 
 			MultiLineString lineString, 
 			Object[] rowData,
-			Grs80Projection projection
+			Grs80Projection projection,
+			GeographicProjection worldProjection
 	) {
 		Coordinate[] coordinates = lineString.getCoordinates();
 		int n;
 		Vector2DH[] vertexList = new Vector2DH[n = coordinates.length];
 		for(int i = 0; i < n; ++i) {
 			Coordinate coordinate = coordinates[i];
-			vertexList[i] = projectGrs80CoordToBteCoord(projection, coordinate.x, coordinate.y);
+			vertexList[i] = projectGrs80CoordToWorldCoord(projection, worldProjection, coordinate.x, coordinate.y);
 		}
 		
 		if(layer.getType() == VMapElementType.등고선) { return new VMapContour(layer, vertexList, rowData); }
@@ -172,10 +182,11 @@ public class ShpZipMapParser extends VMapParser {
 			VMapElementLayer layer, 
 			Point point, 
 			Object[] rowData,
-			Grs80Projection projection
+			Grs80Projection projection,
+			GeographicProjection worldProjection
 	) {
 		Coordinate coordinates = point.getCoordinate();
-		Vector2DH vpoint = projectGrs80CoordToBteCoord(projection, coordinates.x, coordinates.y);
+		Vector2DH vpoint = projectGrs80CoordToWorldCoord(projection, worldProjection, coordinates.x, coordinates.y);
 		
 		if(layer.getType() == VMapElementType.표고점) { return new VMapElevationPoint(layer, vpoint, rowData); }
 		else { return new VMapPoint(layer, vpoint, rowData); }
@@ -184,7 +195,17 @@ public class ShpZipMapParser extends VMapParser {
 	
 	
 	public static void main(String[] args) throws IOException {
-		VMapParserResult result = new ShpZipMapParser().parse(new File("test/37612030.zip"));
+		
+		String BTE_GEN_JSON =
+				"{" +
+					"\"projection\":\"bteairocean\"," +
+					"\"orentation\":\"upright\"," +
+					"\"scaleX\":7318261.522857145," +
+					"\"scaleY\":7318261.522857145" +
+				"}";
+		GeographicProjection BTE = EarthGeneratorSettings.parse(BTE_GEN_JSON).projection();
+		
+		VMapParserResult result = new ShpZipMapParser().parse(new File("test/37612030.zip"), BTE);
 		for(Vector2DH v : result.getElevationPoints()) {
 			System.out.println(v);
 		}

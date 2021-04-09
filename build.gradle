@@ -63,9 +63,6 @@ repositories {
 	}
     mavenCentral()
     jcenter()
-    /* maven { // kabeja
-        url = "http://logicaldoc.sourceforge.net/maven/"
-    } */
     maven { // cubicchunks, cubicworldgen, terraplusplus
         name = "JitPack"
         url = "https://jitpack.io/"
