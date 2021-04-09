@@ -68,18 +68,6 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 	public String getName() {
 		return this.name;
 	}
-	
-	
-	
-	public VMapParserResult fileDataToParserResult(File file, GeographicProjection worldProjection) throws CommandException {
-		try {
-			return parser.parse(file, worldProjection);
-		} catch(FileNotFoundException exception) {
-			throw new CommandException("File does not exist!");
-		} catch(IOException exception) {
-			throw new CommandException("An unexpected error occured while parsing vector map.");
-		}
-	}
 
 
 	
@@ -106,15 +94,9 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 			
 			EntityPlayerMP player = commandSenderToPlayer(sender);
 			World world = server.getEntityWorld();
-			@SuppressWarnings("unused")
 			GeographicProjection projection = getWorldProjection(world);
 			
-			KVectorMap2MinecraftMod.broadcastMessage("§dParsing files...");
-			
-			VMapParserResult result = new VMapParserResult();
-			
 			Map<String, String> options = new HashMap<>();
-			boolean isEmpty = true;
 			
 			for(String fileName : args) {
 				if(fileName.startsWith("--")) {
@@ -123,30 +105,42 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 						String[] temp = keyNvalue.split("=", 2);
 						options.put(temp[0], temp[1]);
 					}
-					else {
-						options.put(keyNvalue, null);
-					}
+					else options.put(keyNvalue, null);
 				}
-				else {
+			}
+			
+			FlatRegion worldEditRegion = options.containsKey("generate-all") ? INFINITE_REGION : validateWorldEditRegion(world, player);
+			
+			KVectorMap2MinecraftMod.broadcastMessage("§dParsing files...");
+			
+			VMapParserResult result = new VMapParserResult();
+			boolean isEmpty = true;
+			
+			for(String fileName : args) {
+				if(!fileName.startsWith("--")) {
 					File file = new File(KVectorMap2MinecraftMod.kVecFileDirectory + "/" + fileName);
 					if(!file.isFile())
-						throw new CommandException("File does not exist!");
+						throw new CommandException("File \"" + fileName + "\" does not exist!");
 					if(!FilenameUtils.isExtension(fileName, this.extension))
 						throw new CommandException("Invalid extension!");
 					
 					isEmpty = false;
-					result.append(this.fileDataToParserResult(file, projection));
+					VMapParserResult parserResult = this.parser.parse(file, projection);
+					result.append(parserResult);
 				}
 			}
 			
 			if(isEmpty) throw new CommandException("No Files are given!");
-			FlatRegion worldEditRegion = options.containsKey("generate-all") ? INFINITE_REGION : validateWorldEditRegion(world, player);
 			
 			VMapToMinecraft.generateTasks(world, worldEditRegion, result, options);
 			
+		} catch(FileNotFoundException exception) {
+			throw new CommandException("File does not exist!");
 		} catch(VMapParserException exception) {
 			KVectorMap2MinecraftMod.logger.error(exception);
 			throw new CommandException(exception.getMessage());
+		} catch(IOException exception) {
+			throw new CommandException("An unexpected error occured while parsing vector map.");
 		}
 	}
 	

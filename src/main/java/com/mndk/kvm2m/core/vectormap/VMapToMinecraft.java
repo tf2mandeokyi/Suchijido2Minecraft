@@ -22,13 +22,17 @@ public class VMapToMinecraft {
 		// Schedule triangles generation task based on contour lines with delaunay triangulate algorithm
 		TriangleList triangleList = FastDelaunayTriangulator.from(result.getElevationPoints()).getTriangleList();
 		ServerTickRepeater.addTask(new TerrainGenerationTask(triangleList, world, worldEditRegion));
-		ServerTickRepeater.addTask(new TerrainCuttingTask(triangleList, world, worldEditRegion));
+		if(!options.containsKey("no-cutting")) {
+			ServerTickRepeater.addTask(new TerrainCuttingTask(triangleList, world, worldEditRegion));
+		}
 		
-		List<VMapElementLayer> totalElements = result.getElementLayers();
-		
-		if(!totalElements.isEmpty()) {
-			for(VMapElementLayer elementLayer : totalElements) {
-				ServerTickRepeater.addTask(new VMapElemLayerGenTask(elementLayer, world, worldEditRegion, triangleList));
+		if(!options.containsKey("terrain-only")) {
+			List<VMapElementLayer> totalElements = result.getElementLayers();
+			
+			if(!totalElements.isEmpty()) {
+				for(VMapElementLayer elementLayer : totalElements) {
+					ServerTickRepeater.addTask(new VMapElemLayerGenTask(elementLayer, world, worldEditRegion, triangleList));
+				}
 			}
 		}
 		

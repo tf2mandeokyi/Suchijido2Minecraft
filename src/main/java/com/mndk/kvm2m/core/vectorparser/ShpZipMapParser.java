@@ -2,13 +2,13 @@ package com.mndk.kvm2m.core.vectorparser;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.charset.Charset;
 
-import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
-import org.geotools.data.FeatureSource;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.FileDataStore;
+import org.geotools.data.FileDataStoreFinder;
+import org.geotools.data.shapefile.ShapefileDataStore;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureIterator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.MultiLineString;
@@ -18,6 +18,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.mndk.kvm2m.core.projection.Grs80Projection;
+import com.mndk.kvm2m.core.util.delaunator.FastDelaunayTriangulator;
 import com.mndk.kvm2m.core.util.file.DirectoryManager;
 import com.mndk.kvm2m.core.util.file.ZipManager;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
@@ -51,50 +52,63 @@ public class ShpZipMapParser extends VMapParser {
 		if(zipDestination.exists()) {
 			throw new VMapParserException(zipDestination.getAbsolutePath() + " already exists.");
 		}
-		zipDestination.mkdir();
-		
-		// Extract all files in map file
-		ZipManager.extractZipFile(mapFile, zipDestination);
 		
 		try {
-			File[] shpFiles = zipDestination.listFiles((dir, name) -> name.endsWith(".shp"));
-			for(File file : shpFiles) {
-				Map<String, String> connect = new HashMap<>();
-				connect.put("url", file.toURI().toString());
-				connect.put("charset", "MS949");
+			if(!FileDataStoreFinder.getAvailableFileExtentions().contains(".shp")) {
+				throw new VMapParserException("Shapefile (.shp) extension is not available!");
+			}
+			
+			// Extract all files in map file
+			zipDestination.mkdir();			
+			ZipManager.extractZipFile(mapFile, zipDestination);
+			
+			File[] shapeFiles = zipDestination.listFiles((dir, name) -> name.endsWith(".shp"));
+			for(File shapeFile : shapeFiles) {
+				// System.out.println("Checking file \"" + shapeFile + "\"");
 				
-				DataStore dataStore = DataStoreFinder.getDataStore(connect);
-				if(dataStore == null) continue;
+				FileDataStore dataStore = FileDataStoreFinder.getDataStore(shapeFile);
+				if(dataStore == null) {
+					// System.out.println("  ! DataStore not found.");
+					continue;
+				}
+				if(dataStore instanceof ShapefileDataStore) {
+					((ShapefileDataStore) dataStore).setCharset(Charset.forName("MS949"));
+				}
 				String[] typeNames = dataStore.getTypeNames();
 				
 				for(String typeName : typeNames) {
-					FeatureSource<SimpleFeatureType, SimpleFeature> featureSource = dataStore.getFeatureSource(typeName);
-					FeatureCollection<SimpleFeatureType, SimpleFeature> collection = featureSource.getFeatures();
-					FeatureIterator<SimpleFeature> iterator = collection.features();
-					SimpleFeatureType featureType = collection.getSchema();
+
+					// System.out.println("  Checking typeName \"" + typeName + "\"");
 					
-					int attributeCount = featureType.getAttributeCount();
-					String[] columnArray = new String[attributeCount];
-					for(int i = 0; i < attributeCount; ++i) {
-						columnArray[i] = featureType.getDescriptor(i).getLocalName();
-					}
-					
-					VMapElementType type = VMapElementType.getTypeFromLayerName(typeName.substring(4));
-					VMapElementLayer layer = new VMapElementLayer(type, columnArray);
-					
-					try {
+					SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeName);
+					SimpleFeatureCollection collection = featureSource.getFeatures();
+					SimpleFeatureType schema = collection.getSchema();
+					try (FeatureIterator<SimpleFeature> iterator = collection.features()) {
+						
+						int attributeCount = schema.getAttributeCount();
+						String[] columnArray = new String[attributeCount];
+						for(int i = 0; i < attributeCount; ++i) {
+							columnArray[i] = schema.getDescriptor(i).getLocalName();
+						}
+						
+						VMapElementType type = VMapElementType.getTypeFromLayerName(typeName.substring(4));
+						VMapElementLayer layer = new VMapElementLayer(type, columnArray);
+						
+						// System.out.println("    Found iterator: n(attribute) = " + attributeCount + ", type = " + type);
+						
+						// int total = 0;
 						while(iterator.hasNext()) {
 							SimpleFeature feature = iterator.next();
 							VMapElement element = fromFeature(layer, feature, typeName, projection, worldProjection);
 							if(element == null) continue;
 							layer.add(element);
 							extractElevationPoints(element, result.getElevationPoints());
+							// ++total;
 						}
-					} finally {
-						iterator.close();
+						// System.out.println("    - Total size: " + total);
+						
+						result.addElement(layer);
 					}
-					
-					result.addElement(layer);
 				}
 			}
 		} finally {
@@ -204,10 +218,8 @@ public class ShpZipMapParser extends VMapParser {
 					"\"scaleY\":7318261.522857145" +
 				"}";
 		GeographicProjection BTE = EarthGeneratorSettings.parse(BTE_GEN_JSON).projection();
-		
-		VMapParserResult result = new ShpZipMapParser().parse(new File("test/37612030.zip"), BTE);
-		for(Vector2DH v : result.getElevationPoints()) {
-			System.out.println(v);
-		}
+		VMapParserResult result = new ShpZipMapParser().parse(new File("test/.asdf/37612030.zip"), BTE);
+		System.out.println(result.getElevationPoints().size());
+		FastDelaunayTriangulator.from(result.getElevationPoints());
 	}
 }
