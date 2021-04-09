@@ -1,7 +1,7 @@
 package com.mndk.kvm2m.core.vectormap.elem.point;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vectormap.VMapBlockSelector;
+import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 
 public class VMapElevationPoint extends VMapPoint {
@@ -10,7 +10,7 @@ public class VMapElevationPoint extends VMapPoint {
 	
 	public VMapElevationPoint(VMapElementLayer layer, Vector2DH point, Object[] rowData) {
 		super(layer, point, rowData);
-		this.y = VMapBlockSelector.getAdditionalHeight(this);
+		this.y = VMapElementStyleSelector.getStyle(this).y;
 	}
 	
 	public Vector2DH toVector() {

@@ -7,14 +7,14 @@ import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.math.VectorMath;
 import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VMapBlockSelector;
+import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector;
+import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector.VMapElementStyle;
 import com.mndk.kvm2m.core.vectormap.VMapElementType;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
 
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -82,12 +82,6 @@ public class VMapPolyline extends VMapElement {
 	
 	
 	public VMapPolyline merge(VMapPolyline other) {
-		/*
-		if(this.getType() != other.getType()) {
-			throw new RuntimeException(new VMapParserException("Cannot merge two different types of polygon together!"));
-		}
-		*/
-		
 		Vector2DH[][] newVertexList = new Vector2DH[this.vertexList.length + other.vertexList.length][];
 		System.arraycopy(this.vertexList, 0, newVertexList, 0, this.vertexList.length);
 		System.arraycopy(other.vertexList, 0, newVertexList, this.vertexList.length, other.vertexList.length);
@@ -126,14 +120,12 @@ public class VMapPolyline extends VMapElement {
 	
 	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
 		
-		IBlockState state = VMapBlockSelector.getBlockState(this);
-		if(state == null) return;
-		
-		int y = VMapBlockSelector.getAdditionalHeight(this);
+		VMapElementStyle style = VMapElementStyleSelector.getStyle(this);
+		if(style == null) return; if(style.state == null) return;
 		
 		LineGenerator lineGenerator = new LineGenerator(
-				(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)) + y, 
-				w, region, state
+				(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)) + style.y, 
+				w, region, style.state
 		);
 		
 		for(int j = 0; j < vertexList.length; ++j) {
@@ -150,23 +142,18 @@ public class VMapPolyline extends VMapElement {
 	
 	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
-		IBlockState state = VMapBlockSelector.getBlockState(this);
-		if(state == null) return;
+		VMapElementStyle style = VMapElementStyleSelector.getStyle(this);
+		if(style == null) return; if(style.state == null) return;
 		
 		IntegerBoundingBox box = this.getBoundingBox().getIntersectionArea(new IntegerBoundingBox(region));
 		
 		for(int z = box.zmin; z <= box.zmax; ++z) {
 			for(int x = box.xmin; x <= box.xmax; ++x) {
 				if(!region.contains(new Vector(x, region.getMinimumY(), z)) || !this.containsPoint(new Vector2DH(x+.5, z+.5))) continue;
-				int y = getHeightValueOfPoint(x, z, triangleList);
-				w.setBlockState(new BlockPos(x, y, z), state);
+				int y = (int) Math.round(triangleList.interpolateHeight(x, z)) + style.y;
+				w.setBlockState(new BlockPos(x, y, z), style.state);
 			}
 		}
-	}
-	
-	
-	protected int getHeightValueOfPoint(int x, int z, TriangleList triangleList) {
-		return (int) Math.round(triangleList.interpolateHeight(x, z)) + VMapBlockSelector.getAdditionalHeight(this);
 	}
 
 	

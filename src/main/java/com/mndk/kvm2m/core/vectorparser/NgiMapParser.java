@@ -172,12 +172,14 @@ public class NgiMapParser extends VMapParser {
 				"}";
 		GeographicProjection BTE = EarthGeneratorSettings.parse(BTE_GEN_JSON).projection();
 		
-		VMapParserResult result = new NgiMapParser().parse(new File("test/376081986.ngi"), BTE);
+		VMapParserResult result = new VMapParserResult();
+		result.append(new NgiMapParser().parse(new File("test/376081986.ngi"), BTE));
+		result.append(new NgiMapParser().parse(new File("test/377052193.ngi"), BTE));
 		for(VMapElementLayer layer : result.getElementLayers()) {
 			System.out.println(layer.getType() + ": " + layer.size());
-			for(VMapElement element : layer) {
+			/*for(VMapElement element : layer) {
 				System.out.println("  " + element.getParent().getType() + " (" + element.getDataByColumn("UFID") + ")");
-			}
+			}*/
 		}
 	}
 	

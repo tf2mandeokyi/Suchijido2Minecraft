@@ -119,14 +119,23 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 			for(String fileName : args) {
 				if(!fileName.startsWith("--")) {
 					File file = new File(KVectorMap2MinecraftMod.kVecFileDirectory + "/" + fileName);
-					if(!file.isFile())
-						throw new CommandException("File \"" + fileName + "\" does not exist!");
-					if(!FilenameUtils.isExtension(fileName, this.extension))
-						throw new CommandException("Invalid extension!");
+					if(file.isDirectory()) {
+						File[] files = file.listFiles((dir, name) -> name.endsWith(this.extension));
+						for(File child : files) {
+							VMapParserResult parserResult = this.parser.parse(child, projection);
+							result.append(parserResult);
+						}
+					}
+					else {
+						if(!file.isFile())
+							throw new CommandException("File \"" + fileName + "\" does not exist!");
+						if(!FilenameUtils.isExtension(fileName, this.extension))
+							throw new CommandException("Invalid extension!");
+						VMapParserResult parserResult = this.parser.parse(file, projection);
+						result.append(parserResult);
+					}
 					
 					isEmpty = false;
-					VMapParserResult parserResult = this.parser.parse(file, projection);
-					result.append(parserResult);
 				}
 			}
 			

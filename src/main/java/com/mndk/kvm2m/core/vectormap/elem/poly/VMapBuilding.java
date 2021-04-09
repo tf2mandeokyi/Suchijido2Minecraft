@@ -6,12 +6,12 @@ import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VMapBlockSelector;
+import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector;
+import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector.VMapElementStyle;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
 
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -34,14 +34,14 @@ public class VMapBuilding extends VMapPolyline {
 	@Override
 	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
 		
-		IBlockState state = VMapBlockSelector.getBlockState(this);
-		if(state == null) return;
+		VMapElementStyle style = VMapElementStyleSelector.getStyle(this);
+		if(style == null) return; if(style.state == null) return;
 		
-		int buildingHeight = VMapBlockSelector.getAdditionalHeight(this);
+		int buildingHeight = style.y;
 		
 		LineGenerator lineGenerator = new LineGenerator(
 				(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)),
-				w, region, state
+				w, region, style.state
 		);
 		
 		int maxHeight = this.getMaxTerrainHeight(triangleList) + buildingHeight;
@@ -62,10 +62,10 @@ public class VMapBuilding extends VMapPolyline {
 	@Override
 	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
-		IBlockState state = VMapBlockSelector.getBlockState(this);
-		if(state == null) return;
+		VMapElementStyle style = VMapElementStyleSelector.getStyle(this);
+		if(style == null) return; if(style.state == null) return;
 		
-		int buildingHeight = VMapBlockSelector.getAdditionalHeight(this);
+		int buildingHeight = style.y;
 		
 		IntegerBoundingBox box = this.getBoundingBox().getIntersectionArea(new IntegerBoundingBox(region));
 		
@@ -74,7 +74,7 @@ public class VMapBuilding extends VMapPolyline {
 		for(int z = box.zmin; z <= box.zmax; ++z) {
 			for(int x = box.xmin; x <= box.xmax; ++x) {
 				if(!region.contains(new Vector(x, region.getMinimumY(), z)) || !this.containsPoint(new Vector2DH(x+.5, z+.5))) continue;
-				w.setBlockState(new BlockPos(x, y, z), state);
+				w.setBlockState(new BlockPos(x, y, z), style.state);
 			}
 		}
 	}
