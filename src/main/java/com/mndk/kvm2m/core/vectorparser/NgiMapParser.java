@@ -26,9 +26,14 @@ import com.mndk.ngiparser.ngi.element.NgiPointElement;
 import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
 import com.mndk.ngiparser.ngi.vertex.NgiVertex;
 
+import net.buildtheearth.terraplusplus.generator.EarthGeneratorSettings;
+import net.buildtheearth.terraplusplus.projection.GeographicProjection;
+
 public class NgiMapParser extends VMapParser {
 
-	public VMapParserResult parse(File mapFile) throws IOException {
+
+	@Override
+	public VMapParserResult parse(File mapFile, GeographicProjection worldProjection) throws IOException {
 
 		VMapParserResult result = new VMapParserResult();
 
@@ -38,7 +43,7 @@ public class NgiMapParser extends VMapParser {
 		Collection<NgiLayer> layers = parseResult.getLayers().values();
 		for(NgiLayer layer : layers) {
 			if(layer.header.dimensions != 2) continue;
-			VMapElementLayer elementLayer = fromNgiLayer(layer, projection, result.getElevationPoints());
+			VMapElementLayer elementLayer = fromNgiLayer(layer, result.getElevationPoints(), projection, worldProjection);
 			result.addElement(elementLayer);
 		}
 		
@@ -48,7 +53,12 @@ public class NgiMapParser extends VMapParser {
 	
 	
 	
-	private static VMapElementLayer fromNgiLayer(NgiLayer ngiLayer, Grs80Projection projection, List<Vector2DH> elevPoints) {
+	private static VMapElementLayer fromNgiLayer(
+			NgiLayer ngiLayer,
+			List<Vector2DH> elevPoints,
+			Grs80Projection projection,
+			GeographicProjection worldProjection
+	) {
 		VMapElementType type = VMapElementType.getTypeFromLayerName(ngiLayer.name);
 		
 		NdaDataColumn[] columns = ngiLayer.header.columns;
@@ -60,7 +70,7 @@ public class NgiMapParser extends VMapParser {
 		
 		Collection<NgiElement<?>> ngiElements = ngiLayer.data.values();
 		for(NgiElement<?> ngiElement : ngiElements) {
-			VMapElement element = fromNgiElement(elementLayer, ngiElement, projection);
+			VMapElement element = fromNgiElement(elementLayer, ngiElement, projection, worldProjection);
 			if(element == null) continue;
 			elementLayer.add(element);
 			extractElevationPoints(element, elevPoints);
@@ -74,15 +84,20 @@ public class NgiMapParser extends VMapParser {
 
 	
 	
-	private static VMapElement fromNgiElement(VMapElementLayer layer, NgiElement<?> ngiElement, Grs80Projection projection) {
+	private static VMapElement fromNgiElement(
+			VMapElementLayer layer,
+			NgiElement<?> ngiElement,
+			Grs80Projection projection,
+			GeographicProjection worldProjection
+	) {
 		if(ngiElement instanceof NgiPolygonElement) {
-			return fromNgiPolygon(layer, (NgiPolygonElement) ngiElement, projection);
+			return fromNgiPolygon(layer, (NgiPolygonElement) ngiElement, projection, worldProjection);
 		}
 		else if(ngiElement instanceof NgiLineElement) {
-			return fromNgiLine(layer, (NgiLineElement) ngiElement, projection);
+			return fromNgiLine(layer, (NgiLineElement) ngiElement, projection, worldProjection);
 		}
 		else if(ngiElement instanceof NgiPointElement) {
-			return fromNgiPoint(layer, (NgiPointElement) ngiElement, projection);
+			return fromNgiPoint(layer, (NgiPointElement) ngiElement, projection, worldProjection);
 		}
 		return null;
 	}
@@ -91,7 +106,8 @@ public class NgiMapParser extends VMapParser {
 	private static VMapPolyline fromNgiPolygon(
 			VMapElementLayer layer, 
 			NgiPolygonElement polygon, 
-			Grs80Projection projection
+			Grs80Projection projection,
+			GeographicProjection worldProjection
 	) {
 		Vector2DH[][] vertexList = new Vector2DH[polygon.vertexData.length][];
 		
@@ -101,7 +117,7 @@ public class NgiMapParser extends VMapParser {
 			
 			for(int i = 0; i < size; ++i) {
 				NgiVertex vertex = polygon.vertexData[0].getVertex(i);
-				vertexList[j][i] = projectGrs80CoordToBteCoord(projection, vertex.getAxis(0), vertex.getAxis(1));
+				vertexList[j][i] = projectGrs80CoordToWorldCoord(projection, worldProjection, vertex.getAxis(0), vertex.getAxis(1));
 			}
 		}
 		
@@ -114,14 +130,15 @@ public class NgiMapParser extends VMapParser {
 	private static VMapPolyline fromNgiLine(
 			VMapElementLayer layer, 
 			NgiLineElement line, 
-			Grs80Projection projection
+			Grs80Projection projection,
+			GeographicProjection worldProjection
 	) {
 		int size = line.lineData.getSize();
 		Vector2DH[] vertexList = new Vector2DH[size];
 		
 		for(int i = 0; i < size; ++i) {
 			NgiVertex vertex = line.lineData.getVertex(i);
-			vertexList[i] = projectGrs80CoordToBteCoord(projection, vertex.getAxis(0), vertex.getAxis(1));
+			vertexList[i] = projectGrs80CoordToWorldCoord(projection, worldProjection, vertex.getAxis(0), vertex.getAxis(1));
 		}
 		
 		if(layer.getType() == VMapElementType.등고선) { return new VMapContour(layer, vertexList, line.rowData); }
@@ -133,9 +150,10 @@ public class NgiMapParser extends VMapParser {
 	private static VMapPoint fromNgiPoint(
 			VMapElementLayer layer, 
 			NgiPointElement point, 
-			Grs80Projection projection
+			Grs80Projection projection,
+			GeographicProjection worldProjection
 	) {
-		Vector2DH vpoint = projectGrs80CoordToBteCoord(projection, point.position.getAxis(0), point.position.getAxis(1));
+		Vector2DH vpoint = projectGrs80CoordToWorldCoord(projection, worldProjection, point.position.getAxis(0), point.position.getAxis(1));
 		
 		if(layer.getType() == VMapElementType.표고점) { return new VMapElevationPoint(layer, vpoint, point.rowData); }
 		else { return new VMapPoint(layer, vpoint, point.rowData); }
@@ -144,7 +162,17 @@ public class NgiMapParser extends VMapParser {
 	
 	
 	public static void main(String[] args) throws IOException {
-		VMapParserResult result = new NgiMapParser().parse(new File("test/376081986.ngi"));
+		
+		String BTE_GEN_JSON =
+				"{" +
+					"\"projection\":\"bteairocean\"," +
+					"\"orentation\":\"upright\"," +
+					"\"scaleX\":7318261.522857145," +
+					"\"scaleY\":7318261.522857145" +
+				"}";
+		GeographicProjection BTE = EarthGeneratorSettings.parse(BTE_GEN_JSON).projection();
+		
+		VMapParserResult result = new NgiMapParser().parse(new File("test/376081986.ngi"), BTE);
 		for(VMapElementLayer layer : result.getElementLayers()) {
 			System.out.println(layer.getType() + ": " + layer.size());
 			for(VMapElement element : layer) {

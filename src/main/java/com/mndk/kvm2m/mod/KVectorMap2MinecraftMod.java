@@ -19,7 +19,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 		modid = KVectorMap2MinecraftMod.MODID, 
 		version = KVectorMap2MinecraftMod.VERSION, 
 		acceptableRemoteVersions = "*",
-		dependencies = "required-after:worldedit"
+		dependencies = "required-after:worldedit;required-after:terraplusplus"
 )
 public class KVectorMap2MinecraftMod {
 

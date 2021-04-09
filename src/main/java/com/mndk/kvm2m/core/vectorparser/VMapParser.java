@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.List;
 
 import com.mndk.kvm2m.core.projection.Grs80Projection;
-import com.mndk.kvm2m.core.projection.Projections;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vectormap.VMapParserResult;
 import com.mndk.kvm2m.core.vectormap.VMapUtils;
@@ -13,20 +12,21 @@ import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.kvm2m.core.vectormap.elem.point.VMapElevationPoint;
 import com.mndk.kvm2m.core.vectormap.elem.poly.VMapContour;
 
+import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
 
 public abstract class VMapParser {
-
-	public abstract VMapParserResult parse(File mapFile) throws IOException;
 	
-	protected static Vector2DH projectGrs80CoordToBteCoord(Grs80Projection projection, double x, double y) {
+	public abstract VMapParserResult parse(File mapFile, GeographicProjection worldProjection) throws IOException;
+	
+	protected static Vector2DH projectGrs80CoordToWorldCoord(Grs80Projection projection, GeographicProjection worldProjection, double x, double y) {
 		double[] geoCoordinate = projection.toGeo(x, y), bteCoordinate;
 		try {
-			bteCoordinate = Projections.BTE.fromGeo(geoCoordinate[0], geoCoordinate[1]);
+			bteCoordinate = worldProjection.fromGeo(geoCoordinate[0], geoCoordinate[1]);
 		} catch(OutOfProjectionBoundsException exception) {
 			throw new RuntimeException(exception); // wcpgw lmao
 		}
-		return new Vector2DH(bteCoordinate[0] * Projections.BTE.metersPerUnit(), -bteCoordinate[1] * Projections.BTE.metersPerUnit());
+		return new Vector2DH(bteCoordinate[0], bteCoordinate[1]);
 	}
 	
 	

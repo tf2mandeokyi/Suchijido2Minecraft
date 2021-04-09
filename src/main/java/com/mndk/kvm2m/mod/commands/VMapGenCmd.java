@@ -71,9 +71,9 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 	
 	
 	
-	public VMapParserResult fileDataToParserResult(File file) throws CommandException {
+	public VMapParserResult fileDataToParserResult(File file, GeographicProjection worldProjection) throws CommandException {
 		try {
-			return parser.parse(file);
+			return parser.parse(file, worldProjection);
 		} catch(FileNotFoundException exception) {
 			throw new CommandException("File does not exist!");
 		} catch(IOException exception) {
@@ -104,6 +104,11 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 		
 		try {
 			
+			EntityPlayerMP player = commandSenderToPlayer(sender);
+			World world = server.getEntityWorld();
+			@SuppressWarnings("unused")
+			GeographicProjection projection = getWorldProjection(world);
+			
 			KVectorMap2MinecraftMod.broadcastMessage("§dParsing files...");
 			
 			VMapParserResult result = new VMapParserResult();
@@ -130,16 +135,11 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 						throw new CommandException("Invalid extension!");
 					
 					isEmpty = false;
-					result.append(this.fileDataToParserResult(file));
+					result.append(this.fileDataToParserResult(file, projection));
 				}
 			}
 			
 			if(isEmpty) throw new CommandException("No Files are given!");
-			
-			EntityPlayerMP player = commandSenderToPlayer(sender);
-			World world = server.getEntityWorld();
-			@SuppressWarnings("unused")
-			GeographicProjection projection = getWorldProjection(world);
 			FlatRegion worldEditRegion = options.containsKey("generate-all") ? INFINITE_REGION : validateWorldEditRegion(world, player);
 			
 			VMapToMinecraft.generateTasks(world, worldEditRegion, result, options);
