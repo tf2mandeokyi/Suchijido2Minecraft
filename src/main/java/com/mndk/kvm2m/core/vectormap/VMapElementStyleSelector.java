@@ -65,7 +65,7 @@ public class VMapElementStyleSelector {
 			case 하천중심선:
 			case 등심선: 
 				return new VMapElementStyle(Blocks.LAPIS_BLOCK, 0);
-			case 하천경계:
+			case 실폭하천:
 			case 호수:
 			case 해안선:
 				return new VMapElementStyle(Blocks.WATER, 0);
