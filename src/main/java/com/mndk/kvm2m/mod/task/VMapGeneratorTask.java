@@ -4,5 +4,6 @@ public interface VMapGeneratorTask {
 	
 	void doTask();
 	String getBroadcastMessage();
+	int getSize();
 	
 }

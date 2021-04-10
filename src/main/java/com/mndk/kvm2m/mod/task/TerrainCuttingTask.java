@@ -30,4 +30,9 @@ public class TerrainCuttingTask implements VMapGeneratorTask {
 		return "§dCutting surface...";
 	}
 
+	@Override
+	public int getSize() {
+		return triangleList.size();
+	}
+
 }

@@ -59,11 +59,8 @@ public class VMapParserResult {
 			}
 		}
 		this.elevationPointList.addAll(other.elevationPointList);
-		Collections.sort(this.layerList, (l1, l2) -> {
-			if(l1.getType().ordinal() > l2.getType().ordinal()) return 1;
-			else if(l1.getType().ordinal() < l2.getType().ordinal()) return -1;
-			return 0;
-		});
+		
+		Collections.sort(this.layerList);
 	}
 	
 	public VMapElementLayer getLayer(VMapElementType type) {

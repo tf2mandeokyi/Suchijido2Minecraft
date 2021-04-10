@@ -15,12 +15,14 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 public class ServerTickRepeater {
 
 	private static final List<VMapGeneratorTask> tasks = new ArrayList<>();
+	private static int size = 0, current = 0, lastPercent = -1;
 	
 	private static boolean alreadySentDoneMessage = true;
 	
 	public static void addTask(VMapGeneratorTask task) {
 		synchronized(tasks) {
 			tasks.add(task);
+			size += task.getSize();
 		}
 	}
 	
@@ -30,15 +32,23 @@ public class ServerTickRepeater {
 			if(!tasks.isEmpty()) {
 				alreadySentDoneMessage = false;
 				VMapGeneratorTask task = tasks.get(0);
-				KVectorMap2MinecraftMod.broadcastMessage(task.getBroadcastMessage());
+				// KVectorMap2MinecraftMod.broadcastMessage(task.getBroadcastMessage());
 				task.doTask();
+				current += task.getSize();
 				tasks.remove(0);
+				
+				int currentPercent = (int) Math.floor(current / (double) size * 100);
+				if(lastPercent != currentPercent) {
+					KVectorMap2MinecraftMod.broadcastMessage("§d" + currentPercent + "% Done.");
+					lastPercent = currentPercent;
+				}
 			}
 			else {
 				if(!alreadySentDoneMessage) {
 					KVectorMap2MinecraftMod.broadcastMessage("§dDone!");
 					System.gc();
 					alreadySentDoneMessage = true;
+					size = 0; current = 0;
 				}
 			}
 		}

@@ -175,6 +175,7 @@ public class NgiMapParser extends VMapParser {
 		VMapParserResult result = new VMapParserResult();
 		result.append(new NgiMapParser().parse(new File("test/376081986.ngi"), BTE));
 		result.append(new NgiMapParser().parse(new File("test/377052193.ngi"), BTE));
+		result.append(new NgiMapParser().parse(new File("test/376082465.ngi"), BTE));
 		for(VMapElementLayer layer : result.getElementLayers()) {
 			System.out.println(layer.getType() + ": " + layer.size());
 			/*for(VMapElement element : layer) {

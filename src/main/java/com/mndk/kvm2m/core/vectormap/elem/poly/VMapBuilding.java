@@ -60,19 +60,17 @@ public class VMapBuilding extends VMapPolyline {
 	
 	
 	@Override
-	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList) {
+	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList, IntegerBoundingBox limitBox) {
 		
 		VMapElementStyle style = VMapElementStyleSelector.getStyle(this);
 		if(style == null) return; if(style.state == null) return;
 		
 		int buildingHeight = style.y;
 		
-		IntegerBoundingBox box = this.getBoundingBox().getIntersectionArea(new IntegerBoundingBox(region));
-		
 		int y = this.getMaxTerrainHeight(triangleList) + buildingHeight - 1;
 		
-		for(int z = box.zmin; z <= box.zmax; ++z) {
-			for(int x = box.xmin; x <= box.xmax; ++x) {
+		for(int z = limitBox.zmin; z <= limitBox.zmax; ++z) {
+			for(int x = limitBox.xmin; x <= limitBox.xmax; ++x) {
 				if(!region.contains(new Vector(x, region.getMinimumY(), z)) || !this.containsPoint(new Vector2DH(x+.5, z+.5))) continue;
 				w.setBlockState(new BlockPos(x, y, z), style.state);
 			}

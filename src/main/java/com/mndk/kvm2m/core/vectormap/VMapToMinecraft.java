@@ -8,6 +8,7 @@ import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.mndk.kvm2m.mod.event.ServerTickRepeater;
 import com.mndk.kvm2m.mod.task.TerrainCuttingTask;
+import com.mndk.kvm2m.mod.task.TerrainFillingTask;
 import com.mndk.kvm2m.mod.task.TerrainGenerationTask;
 import com.mndk.kvm2m.mod.task.VMapElemLayerGenTask;
 import com.sk89q.worldedit.regions.FlatRegion;
@@ -24,6 +25,9 @@ public class VMapToMinecraft {
 		ServerTickRepeater.addTask(new TerrainGenerationTask(triangleList, world, worldEditRegion));
 		if(!options.containsKey("no-cutting")) {
 			ServerTickRepeater.addTask(new TerrainCuttingTask(triangleList, world, worldEditRegion));
+		}
+		if(!options.containsKey("no-filling")) {
+			ServerTickRepeater.addTask(new TerrainFillingTask(triangleList, world, worldEditRegion));
 		}
 		
 		if(!options.containsKey("terrain-only")) {

@@ -6,7 +6,7 @@ import java.util.List;
 import com.mndk.kvm2m.core.vectormap.VMapElementType;
 
 @SuppressWarnings("serial")
-public class VMapElementLayer extends HashSet<VMapElement> {
+public class VMapElementLayer extends HashSet<VMapElement> implements Comparable<VMapElementLayer> {
 
 	private final VMapElementType type;
 	private final String[] dataColumns;
@@ -34,6 +34,12 @@ public class VMapElementLayer extends HashSet<VMapElement> {
 			}
 		}
 		return -1;
+	}
+
+	@Override
+	public int compareTo(VMapElementLayer o) {
+		if(this.type.getPriority() != o.type.getPriority()) return this.type.getPriority() - o.type.getPriority();
+		else return this.getType().compareTo(o.getType());
 	}
 	
 }

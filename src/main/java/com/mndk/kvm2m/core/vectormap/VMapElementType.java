@@ -95,15 +95,15 @@ public enum VMapElementType {
 	목장("D004", Category.식생),
 	
 	// E타입 - 수계
-	하천경계("E001", Category.수계),
-	하천중심선("E002", Category.수계),
-	실폭하천("E003", Category.수계),
-	유수방향("E004", Category.수계),
-	호수("E005", Category.수계),
-	용수로("E006", Category.수계),
-	폭포("E007", Category.수계),
-	해안선("E008", Category.수계),
-	등심선("E009", Category.수계),
+	하천경계("E001", Category.수계, -1),
+	하천중심선("E002", Category.수계, -1),
+	실폭하천("E003", Category.수계, -1),
+	유수방향("E004", Category.수계, -1),
+	호수("E005", Category.수계, -1),
+	용수로("E006", Category.수계, -1),
+	폭포("E007", Category.수계, -1),
+	해안선("E008", Category.수계, -1),
+	등심선("E009", Category.수계, -1),
 	
 	// F타입 - 지형
 	등고선("F001", Category.지형),
@@ -142,10 +142,16 @@ public enum VMapElementType {
 	
 	final String layerHeader;
 	private final Category category;
+	private final int priority;
 	
 	private VMapElementType(String layerHeader, Category category) {
+		this(layerHeader, category, 0);
+	}
+	
+	private VMapElementType(String layerHeader, Category category, int priority) {
 		this.layerHeader = layerHeader;
 		this.category = category;
+		this.priority = priority;
 	}
 	
 	public static VMapElementType getTypeFromLayerName(String layerName) {
@@ -159,5 +165,9 @@ public enum VMapElementType {
 	
 	public Category getCategory() {
 		return category;
+	}
+	
+	public int getPriority() {
+		return priority;
 	}
 }

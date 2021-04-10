@@ -21,4 +21,8 @@ public class IntegerBoundingBox {
 		
 		return new IntegerBoundingBox(xmin, zmin, xmax, zmax);
 	}
+	
+	public boolean isValid() {
+		return xmin <= xmax && zmin <= zmax;
+	}
 }

@@ -82,12 +82,26 @@ public class Triangle {
 	
 	
 	
+	private static final IBlockState AIR_STATE = Blocks.AIR.getDefaultState();
 	public void removeTerrainAbove(World world, FlatRegion region) {
 		for(int z = minZ; z <= maxZ; ++z)  for(int x = minX; x <= maxX; ++x) {
 			if(this.contains(x + .5, z + .5) == null || !region.contains(new Vector(x, region.getMinimumY(), z))) continue;
 			int height = (int) Math.round(interpolateY(x, z));
 			for(int y = height + 1; world.getBlockState(new BlockPos(x, y, z)).getBlock() != Blocks.AIR; y++) {
-				world.setBlockState(new BlockPos(x, y, z), Blocks.AIR.getDefaultState());
+				world.setBlockState(new BlockPos(x, y, z), AIR_STATE);
+			}
+		}
+	}
+
+
+
+	private static final IBlockState DIRT_STATE = Blocks.DIRT.getDefaultState();
+	public void fillBlocksBelow(World world, FlatRegion region) {
+		for(int z = minZ; z <= maxZ; ++z)  for(int x = minX; x <= maxX; ++x) {
+			if(this.contains(x + .5, z + .5) == null || !region.contains(new Vector(x, region.getMinimumY(), z))) continue;
+			int height = (int) Math.round(interpolateY(x, z));
+			for(int y = height - 1; world.getBlockState(new BlockPos(x, y, z)).getBlock() != Blocks.STONE; y--) {
+				world.setBlockState(new BlockPos(x, y, z), DIRT_STATE);
 			}
 		}
 	}

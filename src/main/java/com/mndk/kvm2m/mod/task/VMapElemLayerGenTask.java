@@ -33,4 +33,9 @@ public class VMapElemLayerGenTask implements VMapGeneratorTask {
 		return "§dGenerating object layer \"" + elementLayer.getType() + "\" (" + elementLayer.size() + ")...";
 	}
 
+	@Override
+	public int getSize() {
+		return elementLayer.size();
+	}
+
 }
