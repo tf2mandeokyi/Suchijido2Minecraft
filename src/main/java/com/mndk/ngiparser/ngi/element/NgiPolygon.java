@@ -1,17 +1,17 @@
 package com.mndk.ngiparser.ngi.element;
 
 import com.mndk.ngiparser.ngi.NgiLayer;
-import com.mndk.ngiparser.ngi.vertex.NgiVertexList;
+import com.mndk.ngiparser.ngi.vertex.NgiVectorList;
 
-public class NgiPolygonElement extends NgiElement<NgiPolygonElement.Attr> {
+public class NgiPolygon extends NgiRecord<NgiPolygon.Attr> {
 	
-	public NgiPolygonElement(NgiLayer parent) {
+	public NgiPolygon(NgiLayer parent) {
 		super(parent);
 	}
 	
-	public NgiVertexList[] vertexData;
+	public NgiVectorList[] vertexData;
 	
-	public static class Attr implements NgiElement.Attr {
+	public static class Attr implements NgiRecord.Attr {
 		public String lineType;
 		public int thickness;
 		public int lineColor;

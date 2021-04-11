@@ -1,18 +1,18 @@
 package com.mndk.ngiparser.ngi.element;
 
 import com.mndk.ngiparser.ngi.NgiLayer;
-import com.mndk.ngiparser.ngi.vertex.NgiVertex;
+import com.mndk.ngiparser.ngi.vertex.NgiVector;
 
-public class NgiTextElement extends NgiElement<NgiTextElement.Attr> {
+public class NgiText extends NgiRecord<NgiText.Attr> {
 	
-	public NgiTextElement(NgiLayer parent) {
+	public NgiText(NgiLayer parent) {
 		super(parent);
 	}
 	
 	public String text;
-	public NgiVertex position;
+	public NgiVector position;
 	
-	public static class Attr implements NgiElement.Attr {
+	public static class Attr implements NgiRecord.Attr {
 		public String fontName;
 		public double fontSize;
 		public int color;

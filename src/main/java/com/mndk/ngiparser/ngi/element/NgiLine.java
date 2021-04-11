@@ -1,17 +1,17 @@
 package com.mndk.ngiparser.ngi.element;
 
 import com.mndk.ngiparser.ngi.NgiLayer;
-import com.mndk.ngiparser.ngi.vertex.NgiVertexList;
+import com.mndk.ngiparser.ngi.vertex.NgiVectorList;
 
-public class NgiLineElement extends NgiElement<NgiLineElement.Attr> {
+public class NgiLine extends NgiRecord<NgiLine.Attr> {
 	
-	public NgiLineElement(NgiLayer parent) {
+	public NgiLine(NgiLayer parent) {
 		super(parent);
 	}
 	
-	public NgiVertexList lineData;
+	public NgiVectorList lineData;
 	
-	public static class Attr implements NgiElement.Attr {
+	public static class Attr implements NgiRecord.Attr {
 		public String type;
 		public int thickness;
 		public int color;

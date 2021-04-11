@@ -20,11 +20,11 @@ import com.mndk.ngiparser.NgiParser;
 import com.mndk.ngiparser.nda.NdaDataColumn;
 import com.mndk.ngiparser.ngi.NgiLayer;
 import com.mndk.ngiparser.ngi.NgiParserResult;
-import com.mndk.ngiparser.ngi.element.NgiElement;
-import com.mndk.ngiparser.ngi.element.NgiLineElement;
-import com.mndk.ngiparser.ngi.element.NgiPointElement;
-import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
-import com.mndk.ngiparser.ngi.vertex.NgiVertex;
+import com.mndk.ngiparser.ngi.element.NgiRecord;
+import com.mndk.ngiparser.ngi.element.NgiLine;
+import com.mndk.ngiparser.ngi.element.NgiPoint;
+import com.mndk.ngiparser.ngi.element.NgiPolygon;
+import com.mndk.ngiparser.ngi.vertex.NgiVector;
 
 import net.buildtheearth.terraplusplus.generator.EarthGeneratorSettings;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
@@ -68,8 +68,8 @@ public class NgiMapParser extends VMapParser {
 		}
 		VMapElementLayer elementLayer = new VMapElementLayer(type, layerColumns);
 		
-		Collection<NgiElement<?>> ngiElements = ngiLayer.data.values();
-		for(NgiElement<?> ngiElement : ngiElements) {
+		Collection<NgiRecord<?>> ngiElements = ngiLayer.data.values();
+		for(NgiRecord<?> ngiElement : ngiElements) {
 			VMapElement element = fromNgiElement(elementLayer, ngiElement, projection, worldProjection);
 			if(element == null) continue;
 			elementLayer.add(element);
@@ -86,18 +86,18 @@ public class NgiMapParser extends VMapParser {
 	
 	private static VMapElement fromNgiElement(
 			VMapElementLayer layer,
-			NgiElement<?> ngiElement,
+			NgiRecord<?> ngiElement,
 			Grs80Projection projection,
 			GeographicProjection worldProjection
 	) {
-		if(ngiElement instanceof NgiPolygonElement) {
-			return fromNgiPolygon(layer, (NgiPolygonElement) ngiElement, projection, worldProjection);
+		if(ngiElement instanceof NgiPolygon) {
+			return fromNgiPolygon(layer, (NgiPolygon) ngiElement, projection, worldProjection);
 		}
-		else if(ngiElement instanceof NgiLineElement) {
-			return fromNgiLine(layer, (NgiLineElement) ngiElement, projection, worldProjection);
+		else if(ngiElement instanceof NgiLine) {
+			return fromNgiLine(layer, (NgiLine) ngiElement, projection, worldProjection);
 		}
-		else if(ngiElement instanceof NgiPointElement) {
-			return fromNgiPoint(layer, (NgiPointElement) ngiElement, projection, worldProjection);
+		else if(ngiElement instanceof NgiPoint) {
+			return fromNgiPoint(layer, (NgiPoint) ngiElement, projection, worldProjection);
 		}
 		return null;
 	}
@@ -105,7 +105,7 @@ public class NgiMapParser extends VMapParser {
 	
 	private static VMapPolyline fromNgiPolygon(
 			VMapElementLayer layer, 
-			NgiPolygonElement polygon, 
+			NgiPolygon polygon, 
 			Grs80Projection projection,
 			GeographicProjection worldProjection
 	) {
@@ -116,7 +116,7 @@ public class NgiMapParser extends VMapParser {
 			vertexList[j] = new Vector2DH[size];
 			
 			for(int i = 0; i < size; ++i) {
-				NgiVertex vertex = polygon.vertexData[0].getVertex(i);
+				NgiVector vertex = polygon.vertexData[0].getVertex(i);
 				vertexList[j][i] = projectGrs80CoordToWorldCoord(projection, worldProjection, vertex.getAxis(0), vertex.getAxis(1));
 			}
 		}
@@ -129,7 +129,7 @@ public class NgiMapParser extends VMapParser {
 	
 	private static VMapPolyline fromNgiLine(
 			VMapElementLayer layer, 
-			NgiLineElement line, 
+			NgiLine line, 
 			Grs80Projection projection,
 			GeographicProjection worldProjection
 	) {
@@ -137,7 +137,7 @@ public class NgiMapParser extends VMapParser {
 		Vector2DH[] vertexList = new Vector2DH[size];
 		
 		for(int i = 0; i < size; ++i) {
-			NgiVertex vertex = line.lineData.getVertex(i);
+			NgiVector vertex = line.lineData.getVertex(i);
 			vertexList[i] = projectGrs80CoordToWorldCoord(projection, worldProjection, vertex.getAxis(0), vertex.getAxis(1));
 		}
 		
@@ -149,7 +149,7 @@ public class NgiMapParser extends VMapParser {
 	
 	private static VMapPoint fromNgiPoint(
 			VMapElementLayer layer, 
-			NgiPointElement point, 
+			NgiPoint point, 
 			Grs80Projection projection,
 			GeographicProjection worldProjection
 	) {

@@ -2,11 +2,11 @@ package com.mndk.ngiparser.ngi.vertex;
 
 import scala.actors.threadpool.Arrays;
 
-public class NgiVertexList {
+public class NgiVectorList {
 	
-	final NgiVertex[] list;
+	final NgiVector[] list;
 	
-	public NgiVertexList(NgiVertex[] list) {
+	public NgiVectorList(NgiVector[] list) {
 		this.list = list;
 	}
 	
@@ -14,7 +14,7 @@ public class NgiVertexList {
 		return list.length;
 	}
 	
-	public NgiVertex getVertex(int n) {
+	public NgiVector getVertex(int n) {
 		return list[n];
 	}
 	

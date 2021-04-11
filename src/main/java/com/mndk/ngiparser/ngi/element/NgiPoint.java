@@ -1,17 +1,17 @@
 package com.mndk.ngiparser.ngi.element;
 
 import com.mndk.ngiparser.ngi.NgiLayer;
-import com.mndk.ngiparser.ngi.vertex.NgiVertex;
+import com.mndk.ngiparser.ngi.vertex.NgiVector;
 
-public class NgiPointElement extends NgiElement<NgiPointElement.Attr> {
+public class NgiPoint extends NgiRecord<NgiPoint.Attr> {
 	
-	public NgiPointElement(NgiLayer parent) {
+	public NgiPoint(NgiLayer parent) {
 		super(parent);
 	}
 	
-	public NgiVertex position;
+	public NgiVector position;
 	
-	public static class Attr implements NgiElement.Attr {
+	public static class Attr implements NgiRecord.Attr {
 		public String type;
 		public double unknownFloat;
 		public int color;

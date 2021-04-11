@@ -3,19 +3,19 @@ package com.mndk.ngiparser.ngi;
 import java.util.Map;
 
 import com.mndk.ngiparser.nda.NdaDataColumn;
-import com.mndk.ngiparser.ngi.element.NgiLineElement;
-import com.mndk.ngiparser.ngi.element.NgiPointElement;
-import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
-import com.mndk.ngiparser.ngi.element.NgiTextElement;
+import com.mndk.ngiparser.ngi.element.NgiLine;
+import com.mndk.ngiparser.ngi.element.NgiPoint;
+import com.mndk.ngiparser.ngi.element.NgiPolygon;
+import com.mndk.ngiparser.ngi.element.NgiText;
 
 public class NgiHeader {
 	public int version;
 	public int dimensions;
 	public Boundary bound;
-	public Map<Integer, NgiPointElement.Attr> pointAttributes;
-	public Map<Integer, NgiLineElement.Attr> lineAttributes;
-	public Map<Integer, NgiPolygonElement.Attr> polygonAttributes;
-	public Map<Integer, NgiTextElement.Attr> textAttributes;
+	public Map<Integer, NgiPoint.Attr> pointAttributes;
+	public Map<Integer, NgiLine.Attr> lineAttributes;
+	public Map<Integer, NgiPolygon.Attr> polygonAttributes;
+	public Map<Integer, NgiText.Attr> textAttributes;
 	
 	public NdaDataColumn[] columns;
 

@@ -2,11 +2,11 @@ package com.mndk.ngiparser.ngi.vertex;
 
 import scala.actors.threadpool.Arrays;
 
-public class NgiVertex {
+public class NgiVector {
 
 	final double[] array;
 	
-	public NgiVertex(double[] array) {
+	public NgiVector(double[] array) {
 		this.array = array;
 	}
 	

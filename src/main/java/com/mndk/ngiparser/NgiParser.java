@@ -19,13 +19,13 @@ import com.mndk.ngiparser.ngi.NgiHeader;
 import com.mndk.ngiparser.ngi.NgiLayer;
 import com.mndk.ngiparser.ngi.NgiParserResult;
 import com.mndk.ngiparser.ngi.NgiSyntaxErrorException;
-import com.mndk.ngiparser.ngi.element.NgiElement;
-import com.mndk.ngiparser.ngi.element.NgiLineElement;
-import com.mndk.ngiparser.ngi.element.NgiPointElement;
-import com.mndk.ngiparser.ngi.element.NgiPolygonElement;
-import com.mndk.ngiparser.ngi.element.NgiTextElement;
-import com.mndk.ngiparser.ngi.vertex.NgiVertex;
-import com.mndk.ngiparser.ngi.vertex.NgiVertexList;
+import com.mndk.ngiparser.ngi.element.NgiRecord;
+import com.mndk.ngiparser.ngi.element.NgiLine;
+import com.mndk.ngiparser.ngi.element.NgiPoint;
+import com.mndk.ngiparser.ngi.element.NgiPolygon;
+import com.mndk.ngiparser.ngi.element.NgiText;
+import com.mndk.ngiparser.ngi.vertex.NgiVector;
+import com.mndk.ngiparser.ngi.vertex.NgiVectorList;
 
 public class NgiParser {
 
@@ -185,16 +185,16 @@ public class NgiParser {
 					this.readNgiGeometricMetadata(result);
 					break;
 				case "$POINT_REPRESENT":
-					result.pointAttributes = this.readNgiHeaderAttributes(new NgiPointElement.Attr());
+					result.pointAttributes = this.readNgiHeaderAttributes(new NgiPoint.Attr());
 					break;
 				case "$LINE_REPRESENT":
-					result.lineAttributes = this.readNgiHeaderAttributes(new NgiLineElement.Attr());
+					result.lineAttributes = this.readNgiHeaderAttributes(new NgiLine.Attr());
 					break;
 				case "$REGION_REPRESENT":
-					result.polygonAttributes = this.readNgiHeaderAttributes(new NgiPolygonElement.Attr());
+					result.polygonAttributes = this.readNgiHeaderAttributes(new NgiPolygon.Attr());
 					break;
 				case "$TEXT_REPRESENT":
-					result.textAttributes = this.readNgiHeaderAttributes(new NgiTextElement.Attr());
+					result.textAttributes = this.readNgiHeaderAttributes(new NgiText.Attr());
 					break;
 				case "<END>":
 					break headerLoop;
@@ -205,7 +205,7 @@ public class NgiParser {
 	
 	
 
-	private <T extends NgiElement.Attr> Map<Integer, T> readNgiHeaderAttributes(T newAttrInstance) throws IOException {
+	private <T extends NgiRecord.Attr> Map<Integer, T> readNgiHeaderAttributes(T newAttrInstance) throws IOException {
 		Map<Integer, T> attributes = new HashMap<>();
 		while(ngiReader.ready()) {
 			String line = ngiReader.readLine();
@@ -287,12 +287,12 @@ public class NgiParser {
 	
 
 	private void readNgiData(NgiLayer layer) throws IOException {
-		Map<Integer, NgiElement<?>> result = new HashMap<>();
+		Map<Integer, NgiRecord<?>> result = new HashMap<>();
 		while(ngiReader.ready()) {
 			String line = ngiReader.readLine();
 			if(line.startsWith("$RECORD")) {
 				int recordIndex = Integer.parseInt(line.substring(line.indexOf(" ") + 1));
-				NgiElement<?> element = readNgiRecord(layer);
+				NgiRecord<?> element = readNgiRecord(layer);
 				result.put(recordIndex, element);
 				this.result.addElement(recordIndex, element);
 			}
@@ -308,7 +308,7 @@ public class NgiParser {
 			String line = ndaReader.readLine();
 			if(line.startsWith("$RECORD")) {
 				int recordIndex = Integer.parseInt(line.substring(line.indexOf(" ") + 1));
-				NgiElement<?> element = result.getElement(recordIndex);
+				NgiRecord<?> element = result.getElement(recordIndex);
 				String nextLine = ndaReader.readLine();
 				Object[] row = parseDataParametersToObject(nextLine);
 				element.rowData = row;
@@ -319,17 +319,17 @@ public class NgiParser {
 
 	
 
-	private NgiElement<?> readNgiRecord(NgiLayer layer) throws IOException {
+	private NgiRecord<?> readNgiRecord(NgiLayer layer) throws IOException {
 		
 		String type = ngiReader.readLine(), line;
 		int dimensions = layer.header.dimensions;
 		
 		int vertexCount, attributeIndex;
-		NgiVertex[] vertexListTemp;
+		NgiVector[] vertexListTemp;
 		double[] vertexTemp;
 		
 		if(type.startsWith("TEXT")) {
-			NgiTextElement textElement = new NgiTextElement(layer);
+			NgiText textElement = new NgiText(layer);
 			textElement.text = type.substring(6, type.length() - 2);
 			vertexTemp = new double[dimensions];
 
@@ -337,7 +337,7 @@ public class NgiParser {
 			for(int d = 0; d < dimensions; ++d) {
 				vertexTemp[d] = Double.parseDouble(pointStringArr[d]);
 			}
-			textElement.position = new NgiVertex(vertexTemp);
+			textElement.position = new NgiVector(vertexTemp);
 			
 			line = ngiReader.readLine();
 			if(!line.startsWith("TEXTGATTR")) throw new NgiSyntaxErrorException();
@@ -348,14 +348,14 @@ public class NgiParser {
 		
 		switch(type) {
 			case "POINT":
-				NgiPointElement pointElement = new NgiPointElement(layer);
+				NgiPoint pointElement = new NgiPoint(layer);
 				vertexTemp = new double[dimensions];
 
 				String[] pointStringArr = ngiReader.readLine().split(" ");
 				for(int d = 0; d < dimensions; ++d) {
 					vertexTemp[d] = Double.parseDouble(pointStringArr[d]);
 				}
-				pointElement.position = new NgiVertex(vertexTemp);
+				pointElement.position = new NgiVector(vertexTemp);
 				
 				line = ngiReader.readLine();
 				if(!line.startsWith("SYMBOLGATTR")) throw new NgiSyntaxErrorException();
@@ -365,9 +365,9 @@ public class NgiParser {
 				return pointElement;
 				
 			case "LINESTRING":
-				NgiLineElement lineElement = new NgiLineElement(layer);
+				NgiLine lineElement = new NgiLine(layer);
 				vertexCount = Integer.parseInt(ngiReader.readLine());
-				vertexListTemp = new NgiVertex[vertexCount];
+				vertexListTemp = new NgiVector[vertexCount];
 				
 				for(int v = 0; v < vertexCount; ++v) {
 					vertexTemp = new double[dimensions];
@@ -376,9 +376,9 @@ public class NgiParser {
 					for(int d = 0; d < dimensions; ++d) {
 						vertexTemp[d] = Double.parseDouble(vertexStringArr[d]);
 					}
-					vertexListTemp[v] = new NgiVertex(vertexTemp);
+					vertexListTemp[v] = new NgiVector(vertexTemp);
 				}
-				lineElement.lineData = new NgiVertexList(vertexListTemp);
+				lineElement.lineData = new NgiVectorList(vertexListTemp);
 				
 				line = ngiReader.readLine();
 				if(!line.startsWith("LINEGATTR")) throw new NgiSyntaxErrorException();
@@ -388,16 +388,16 @@ public class NgiParser {
 				return lineElement;
 				
 			case "POLYGON":
-				NgiPolygonElement polygonElement = new NgiPolygonElement(layer);
+				NgiPolygon polygonElement = new NgiPolygon(layer);
 				
 				line = ngiReader.readLine();
 				if(!line.startsWith("NUMPARTS")) throw new NgiSyntaxErrorException();
 				int numParts = Integer.parseInt(line.substring(9));
-				polygonElement.vertexData = new NgiVertexList[numParts];
+				polygonElement.vertexData = new NgiVectorList[numParts];
 				
 				for(int p = 0; p < numParts; ++p) {
 					vertexCount = Integer.parseInt(ngiReader.readLine());
-					vertexListTemp = new NgiVertex[vertexCount];
+					vertexListTemp = new NgiVector[vertexCount];
 					
 					for(int v = 0; v < vertexCount; ++v) {
 						vertexTemp = new double[dimensions];
@@ -407,10 +407,10 @@ public class NgiParser {
 							vertexTemp[d] = Double.parseDouble(vertexStringArr[d]);
 						}
 						
-						vertexListTemp[v] = new NgiVertex(vertexTemp);
+						vertexListTemp[v] = new NgiVector(vertexTemp);
 					}
 					
-					polygonElement.vertexData[p] = new NgiVertexList(vertexListTemp);
+					polygonElement.vertexData[p] = new NgiVectorList(vertexListTemp);
 				}
 				line = ngiReader.readLine();
 				
@@ -524,8 +524,8 @@ public class NgiParser {
 			NgiLayer layer = entry.getValue();
 			if(!layer.name.startsWith("F001")) continue;
 			System.out.println(layer.name);
-			for(Map.Entry<Integer, NgiElement<?>> entry1 : layer.data.entrySet()) {
-				NgiElement<?> value = entry1.getValue();
+			for(Map.Entry<Integer, NgiRecord<?>> entry1 : layer.data.entrySet()) {
+				NgiRecord<?> value = entry1.getValue();
 				System.out.println(entry1.getKey() + ": " + value.getRowData("등고수치"));
 			}
 		}

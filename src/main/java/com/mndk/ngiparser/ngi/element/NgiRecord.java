@@ -2,13 +2,13 @@ package com.mndk.ngiparser.ngi.element;
 
 import com.mndk.ngiparser.ngi.NgiLayer;
 
-public class NgiElement<T extends NgiElement.Attr> {
+public class NgiRecord<T extends NgiRecord.Attr> {
 	
 	public final NgiLayer parent;
 	public Object[] rowData;
 	public T attribute;
 	
-	public NgiElement(NgiLayer parent) {
+	public NgiRecord(NgiLayer parent) {
 		this.parent = parent;
 	}
 	
