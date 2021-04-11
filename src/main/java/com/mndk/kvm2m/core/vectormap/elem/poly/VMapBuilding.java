@@ -34,7 +34,8 @@ public class VMapBuilding extends VMapPolyline {
 	@Override
 	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
 		
-		VMapElementStyle style = VMapElementStyleSelector.getStyle(this);
+		VMapElementStyle[] styles = VMapElementStyleSelector.getStyle(this);
+		VMapElementStyle style = styles != null ? styles[0] : null;
 		if(style == null) return; if(style.state == null) return;
 		
 		int buildingHeight = style.y;
@@ -62,7 +63,8 @@ public class VMapBuilding extends VMapPolyline {
 	@Override
 	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList, IntegerBoundingBox limitBox) {
 		
-		VMapElementStyle style = VMapElementStyleSelector.getStyle(this);
+		VMapElementStyle[] styles = VMapElementStyleSelector.getStyle(this);
+		VMapElementStyle style = styles != null ? styles[0] : null;
 		if(style == null) return; if(style.state == null) return;
 		
 		int buildingHeight = style.y;

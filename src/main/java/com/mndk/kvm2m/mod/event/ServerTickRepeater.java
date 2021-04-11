@@ -32,7 +32,8 @@ public class ServerTickRepeater {
 			if(!tasks.isEmpty()) {
 				alreadySentDoneMessage = false;
 				VMapGeneratorTask task = tasks.get(0);
-				// KVectorMap2MinecraftMod.broadcastMessage(task.getBroadcastMessage());
+				String msg = task.getBroadcastMessage();
+				if(msg != null) KVectorMap2MinecraftMod.broadcastMessage(msg);
 				task.doTask();
 				current += task.getSize();
 				tasks.remove(0);
@@ -47,6 +48,7 @@ public class ServerTickRepeater {
 				if(!alreadySentDoneMessage) {
 					KVectorMap2MinecraftMod.broadcastMessage("§dDone!");
 					System.gc();
+					tasks.clear();
 					alreadySentDoneMessage = true;
 					size = 0; current = 0;
 				}

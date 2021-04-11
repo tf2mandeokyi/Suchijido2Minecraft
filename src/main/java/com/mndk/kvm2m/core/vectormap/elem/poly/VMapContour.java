@@ -10,6 +10,6 @@ public class VMapContour extends VMapPolyline {
 	
 	public VMapContour(VMapElementLayer parent, Vector2DH[] vertexes, Object[] rowData) {
 		super(parent, vertexes, rowData, false);
-		this.elevation = VMapElementStyleSelector.getStyle(this).y;
+		this.elevation = VMapElementStyleSelector.getStyle(this)[0].y;
 	}
 }

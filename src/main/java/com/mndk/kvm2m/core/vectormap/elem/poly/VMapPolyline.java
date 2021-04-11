@@ -9,7 +9,6 @@ import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector.VMapElementStyle;
-import com.mndk.kvm2m.core.vectormap.VMapElementType;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.sk89q.worldedit.Vector;
@@ -111,9 +110,9 @@ public class VMapPolyline extends VMapElement {
 		IntegerBoundingBox box = this.getBoundingBox().getIntersectionArea(new IntegerBoundingBox(region));
 		if(!box.isValid()) return;
 			
-		if(!this.isClosed() || this.parent.getType() == VMapElementType.건물) { // TODO
+		//if(!this.isClosed() || this.parent.getType() == VMapElementType.건물) { // TODO
 			this.generateOutline(region, w, triangleList);
-		}
+		//}
 		
 		if(this.isClosed()) {
 			this.fillBlocks(region, w, triangleList, box);
@@ -123,21 +122,24 @@ public class VMapPolyline extends VMapElement {
 	
 	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
 		
-		VMapElementStyle style = VMapElementStyleSelector.getStyle(this);
-		if(style == null) return; if(style.state == null) return;
-		
-		LineGenerator lineGenerator = new LineGenerator(
-				(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)) + style.y, 
-				w, region, style.state
-		);
-		
-		for(int j = 0; j < vertexList.length; ++j) {
-			Vector2DH[] temp = vertexList[j];
-			for(int i = 0; i < temp.length - 1; ++i) {
-				lineGenerator.generateLine(temp[i], temp[i+1]);
-			}
-			if(this.isClosed()) {
-				lineGenerator.generateLine(temp[temp.length-1], temp[0]);
+		VMapElementStyle[] styles = VMapElementStyleSelector.getStyle(this);
+		if(styles == null) return;
+		for(VMapElementStyle style : styles) {
+			if(style == null) continue; if(style.state == null) continue;
+			
+			LineGenerator lineGenerator = new LineGenerator(
+					(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)) + style.y, 
+					w, region, style.state
+			);
+			
+			for(int j = 0; j < vertexList.length; ++j) {
+				Vector2DH[] temp = vertexList[j];
+				for(int i = 0; i < temp.length - 1; ++i) {
+					lineGenerator.generateLine(temp[i], temp[i+1]);
+				}
+				if(this.isClosed()) {
+					lineGenerator.generateLine(temp[temp.length-1], temp[0]);
+				}
 			}
 		}
 	}
@@ -145,14 +147,17 @@ public class VMapPolyline extends VMapElement {
 	
 	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList, IntegerBoundingBox limitBox) {
 		
-		VMapElementStyle style = VMapElementStyleSelector.getStyle(this);
-		if(style == null) return; if(style.state == null) return;
-		
-		for(int z = limitBox.zmin; z <= limitBox.zmax; ++z) {
-			for(int x = limitBox.xmin; x <= limitBox.xmax; ++x) {
-				if(!region.contains(new Vector(x, region.getMinimumY(), z)) || !this.containsPoint(new Vector2DH(x+.5, z+.5))) continue;
-				int y = (int) Math.round(triangleList.interpolateHeight(x, z)) + style.y;
-				w.setBlockState(new BlockPos(x, y, z), style.state);
+		VMapElementStyle[] styles = VMapElementStyleSelector.getStyle(this);
+		if(styles == null) return;
+		for(VMapElementStyle style : styles) {
+			if(style == null) continue; if(style.state == null) continue;
+			
+			for(int z = limitBox.zmin; z <= limitBox.zmax; ++z) {
+				for(int x = limitBox.xmin; x <= limitBox.xmax; ++x) {
+					if(!region.contains(new Vector(x, region.getMinimumY(), z)) || !this.containsPoint(new Vector2DH(x+.5, z+.5))) continue;
+					int y = (int) Math.round(triangleList.interpolateHeight(x, z)) + style.y;
+					w.setBlockState(new BlockPos(x, y, z), style.state);
+				}
 			}
 		}
 	}

@@ -4,13 +4,17 @@ import java.util.List;
 import java.util.Map;
 
 import com.mndk.kvm2m.core.util.delaunator.FastDelaunayTriangulator;
+import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
+import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.mndk.kvm2m.mod.event.ServerTickRepeater;
 import com.mndk.kvm2m.mod.task.TerrainCuttingTask;
 import com.mndk.kvm2m.mod.task.TerrainFillingTask;
 import com.mndk.kvm2m.mod.task.TerrainGenerationTask;
+import com.mndk.kvm2m.mod.task.TerrainTrianglesGenTask;
 import com.mndk.kvm2m.mod.task.VMapElemLayerGenTask;
+import com.mndk.kvm2m.mod.task.VMapElemsGenTask;
 import com.sk89q.worldedit.regions.FlatRegion;
 
 import net.minecraft.world.World;
@@ -20,26 +24,94 @@ public class VMapToMinecraft {
 	
 	public static void generateTasks(World world, FlatRegion worldEditRegion, VMapParserResult result, Map<String, String> options) throws VMapParserException {
 		
-		// Schedule triangles generation task based on contour lines with delaunay triangulate algorithm
-		TriangleList triangleList = FastDelaunayTriangulator.from(result.getElevationPoints()).getTriangleList();
-		ServerTickRepeater.addTask(new TerrainGenerationTask(triangleList, world, worldEditRegion));
-		if(!options.containsKey("no-cutting")) {
-			ServerTickRepeater.addTask(new TerrainCuttingTask(triangleList, world, worldEditRegion));
-		}
-		if(!options.containsKey("no-filling")) {
-			ServerTickRepeater.addTask(new TerrainFillingTask(triangleList, world, worldEditRegion));
-		}
+		String elementPerTickStr = options.get("element-per-tick");
 		
-		if(!options.containsKey("terrain-only")) {
-			List<VMapElementLayer> totalElements = result.getElementLayers();
+		if(elementPerTickStr != null) {
+			int elementsPerTick = assertInteger(elementPerTickStr, "The value of \"element-per-tick\" should be an integer!");
 			
-			if(!totalElements.isEmpty()) {
-				for(VMapElementLayer elementLayer : totalElements) {
-					ServerTickRepeater.addTask(new VMapElemLayerGenTask(elementLayer, world, worldEditRegion, triangleList));
+			generateTasksPerTick(elementsPerTick, world, worldEditRegion, result, options);
+		}
+		else {
+			List<VMapElementLayer> layerList = result.getElementLayers();
+			TriangleList triangleList = FastDelaunayTriangulator.from(result.getElevationPoints()).getTriangleList();
+			
+			// Schedule triangles generation task based on contour lines with delaunay triangulate algorithm
+			ServerTickRepeater.addTask(new TerrainGenerationTask(triangleList, world, worldEditRegion));
+			if(!options.containsKey("no-cutting")) {
+				ServerTickRepeater.addTask(new TerrainCuttingTask(triangleList, world, worldEditRegion));
+			}
+			if(!options.containsKey("no-filling")) {
+				ServerTickRepeater.addTask(new TerrainFillingTask(triangleList, world, worldEditRegion));
+			}
+			
+			if(!options.containsKey("terrain-only")) {
+				if(!layerList.isEmpty()) {
+					for(VMapElementLayer elementLayer : layerList) {
+						ServerTickRepeater.addTask(new VMapElemLayerGenTask(elementLayer, world, worldEditRegion, triangleList));
+					}
 				}
 			}
 		}
 		
+	}
+	
+	
+	
+	private static void generateTasksPerTick(
+			int elementsPerTick,
+			World world,
+			FlatRegion worldEditRegion,
+			VMapParserResult result,
+			Map<String, String> options
+	) throws VMapParserException {
+		
+		if(elementsPerTick <= 0) throw new VMapParserException("The value of \"element-per-tick\" should be bigger than 0!");
+		
+		Triangle[] triangleArray = new Triangle[elementsPerTick];
+		int i = 0;
+
+		List<VMapElementLayer> layerList;
+		TriangleList triangleList = FastDelaunayTriangulator.from(result.getElevationPoints()).getTriangleList();
+		boolean cutTerrain = !options.containsKey("no-cutting"), fillTerrain = !options.containsKey("no-filling");
+		
+		for(Triangle triangle : triangleList) {
+			if(triangle == null) continue;
+			triangleArray[i++] = triangle;
+			if(i == elementsPerTick) {
+				ServerTickRepeater.addTask(new TerrainTrianglesGenTask(triangleArray, world, worldEditRegion, cutTerrain, fillTerrain));
+				i = 0;
+				triangleArray = new Triangle[elementsPerTick];
+			}
+		}
+		ServerTickRepeater.addTask(new TerrainTrianglesGenTask(triangleArray, world, worldEditRegion, cutTerrain, fillTerrain));
+
+		i = 0;
+		if(!options.containsKey("terrain-only")) {
+			layerList = result.getElementLayers();
+			VMapElement[] mapElementArray = new VMapElement[elementsPerTick];
+			
+			for(VMapElementLayer elementLayer : layerList) {
+				for(VMapElement element : elementLayer) {
+					if(element == null) continue;
+					mapElementArray[i++] = element;
+					if(i == elementsPerTick) {
+						ServerTickRepeater.addTask(new VMapElemsGenTask(mapElementArray, world, worldEditRegion, triangleList));
+						i = 0;
+						mapElementArray = new VMapElement[elementsPerTick];
+					}
+				}
+			}
+			ServerTickRepeater.addTask(new VMapElemsGenTask(mapElementArray, world, worldEditRegion, triangleList));
+			i = 0;
+			mapElementArray = new VMapElement[elementsPerTick];
+		}
+	}
+	
+	
+	
+	private static int assertInteger(String value, String errorMessage) throws VMapParserException {
+		try { return Integer.parseInt(value); } 
+		catch(NumberFormatException e) { throw new VMapParserException(errorMessage); }
 	}
 
 }

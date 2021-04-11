@@ -10,7 +10,7 @@ public class VMapElevationPoint extends VMapPoint {
 	
 	public VMapElevationPoint(VMapElementLayer layer, Vector2DH point, Object[] rowData) {
 		super(layer, point, rowData);
-		this.y = VMapElementStyleSelector.getStyle(this).y;
+		this.y = VMapElementStyleSelector.getStyle(this)[0].y;
 	}
 	
 	public Vector2DH toVector() {

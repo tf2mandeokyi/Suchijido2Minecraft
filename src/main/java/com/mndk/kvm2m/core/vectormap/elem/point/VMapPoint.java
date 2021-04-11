@@ -34,13 +34,16 @@ public class VMapPoint extends VMapElement {
 	@Override
 	public void generateBlocks(FlatRegion region, World world, TriangleList triangles) {
 
-		VMapElementStyle style = VMapElementStyleSelector.getStyle(this);
-		if(style == null) return; if(style.state == null) return;
-		
-		if(region.contains(point.withHeight(region.getMinimumY()).toIntegerWorldEditVector())) {
+		VMapElementStyle[] styles = VMapElementStyleSelector.getStyle(this);
+		if(styles == null) return;
+		for(VMapElementStyle style : styles) {
+			if(style == null) return; if(style.state == null) return;
 			
-			Vector2DH p = point.withHeight(triangles.interpolateHeight((int) Math.floor(point.x), (int) Math.floor(point.z)) + style.y);
-			world.setBlockState(new BlockPos(p.x, p.height, p.z), style.state);
+			if(region.contains(point.withHeight(region.getMinimumY()).toIntegerWorldEditVector())) {
+				
+				Vector2DH p = point.withHeight(triangles.interpolateHeight((int) Math.floor(point.x), (int) Math.floor(point.z)) + style.y);
+				world.setBlockState(new BlockPos(p.x, p.height, p.z), style.state);
+			}
 		}
 	}
 	
