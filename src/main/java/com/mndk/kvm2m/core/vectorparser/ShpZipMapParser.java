@@ -1,51 +1,20 @@
 package com.mndk.kvm2m.core.vectorparser;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
-
-import org.geotools.data.FileDataStore;
-import org.geotools.data.FileDataStoreFinder;
-import org.geotools.data.shapefile.ShapefileDataStore;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.feature.FeatureIterator;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.MultiLineString;
-import org.locationtech.jts.geom.MultiPolygon;
-import org.locationtech.jts.geom.Point;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.mndk.kvm2m.core.projection.Grs80Projection;
-import com.mndk.kvm2m.core.util.delaunator.FastDelaunayTriangulator;
-import com.mndk.kvm2m.core.util.file.DirectoryManager;
-import com.mndk.kvm2m.core.util.file.ZipManager;
-import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vectormap.VMapElementType;
-import com.mndk.kvm2m.core.vectormap.VMapParserException;
 import com.mndk.kvm2m.core.vectormap.VMapParserResult;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
-import com.mndk.kvm2m.core.vectormap.elem.point.VMapElevationPoint;
-import com.mndk.kvm2m.core.vectormap.elem.point.VMapPoint;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VMapBuilding;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VMapContour;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VMapPolyline;
-
-import net.buildtheearth.terraplusplus.generator.EarthGeneratorSettings;
-import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 
 public class ShpZipMapParser extends VMapParser {
 
 
 	@Override
-	public VMapParserResult parse(File mapFile, GeographicProjection worldProjection) throws IOException {
+	protected VMapParserResult getResult() throws IOException {
 		
 		VMapParserResult result = new VMapParserResult();
 	
 		// Set temporary destination directory
-		String mapFilePath = mapFile.getAbsolutePath();
+		/*String mapFilePath = mapFile.getAbsolutePath();
 		Grs80Projection projection = getProjFromFileName(mapFile);
 		if(projection == null) throw new VMapParserException("Invalid projection!");
 		File zipDestination = new File(mapFilePath.substring(0, mapFilePath.lastIndexOf(".zip")) + "/");
@@ -115,12 +84,19 @@ public class ShpZipMapParser extends VMapParser {
 			DirectoryManager.deleteDirectory(zipDestination);
 		}
 		
-		
+		*/
 		return result;
 		
 	}
+
+	@Override
+	protected Grs80Projection getTargetProjection() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 	
+	/*
 	
 	private static VMapElement fromFeature(
 			VMapElementLayer layer,
@@ -221,5 +197,5 @@ public class ShpZipMapParser extends VMapParser {
 		VMapParserResult result = new ShpZipMapParser().parse(new File("test/.asdf/37612030.zip"), BTE);
 		System.out.println(result.getElevationPoints().size());
 		FastDelaunayTriangulator.from(result.getElevationPoints());
-	}
+	}*/
 }

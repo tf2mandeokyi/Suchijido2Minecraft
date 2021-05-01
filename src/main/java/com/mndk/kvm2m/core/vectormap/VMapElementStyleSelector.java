@@ -1,7 +1,8 @@
 package com.mndk.kvm2m.core.vectormap;
 
+import com.mndk.kvm2m.core.vectormap.elem.VMapBuilding;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VMapBuilding;
+import com.mndk.kvm2m.core.vectormap.elem.VMapPolyline;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockColored;
@@ -42,10 +43,13 @@ public class VMapElementStyleSelector {
 			
 			// B types
 			case 건물:
-				Object floorCount = element.getDataByColumn("층수");
-				if(floorCount instanceof Integer) height = (Integer) element.getDataByColumn("층수") * VMapBuilding.FLOOR_HEIGHT;
-				else height = (int) Math.round((Double) element.getDataByColumn("층수")) * VMapBuilding.FLOOR_HEIGHT;
-				return singleStyle(Blocks.STONE, height);
+				if(((VMapPolyline) element).shouldBeFilled()) {
+					Object floorCount = element.getDataByColumn("층수");
+					if(floorCount instanceof Integer) height = (Integer) element.getDataByColumn("층수") * VMapBuilding.FLOOR_HEIGHT;
+					else height = (int) Math.round((Double) element.getDataByColumn("층수")) * VMapBuilding.FLOOR_HEIGHT;
+					return singleStyle(Blocks.STONE, height);
+				}
+				else return singleStyle(Blocks.BRICK_BLOCK, 0);
 			case 담장:
 				return singleStyle(Blocks.OAK_FENCE, 1);
 			
@@ -79,7 +83,7 @@ public class VMapElementStyleSelector {
 				return singleStyle(Blocks.END_BRICKS, 1);
 			case 옹벽:
 				height = (int) Math.round((Double) element.getDataByColumn("높이"));
-				return singleStyle(Blocks.BRICK_BLOCK, height);
+				return singleStyle(Blocks.END_BRICKS, height);
 				
 			// G types
 			case 기타경계:

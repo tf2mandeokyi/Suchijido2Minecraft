@@ -4,14 +4,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
 
+import com.mndk.kvm2m.core.util.KeyRestrictedMap;
 import com.mndk.kvm2m.core.vectormap.VMapParserException;
 import com.mndk.kvm2m.core.vectormap.VMapParserResult;
 import com.mndk.kvm2m.core.vectormap.VMapToMinecraft;
@@ -48,6 +51,14 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 
 	static final int MAX_AXIS = 30000000;
 	static final FlatRegion INFINITE_REGION = new CuboidRegion(new Vector(-MAX_AXIS, 0, -MAX_AXIS), new Vector(MAX_AXIS, 0, MAX_AXIS));
+	static final Set<String> ALLOWED_OPTIONS = new HashSet<>(Arrays.asList(new String[] {
+			"generate-all",
+			"element-per-tick",
+			"no-cutting",
+			"no-filling",
+			"terrain-only",
+			"no-building-shells"
+	}));
 	
 	
 	
@@ -96,7 +107,7 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 			World world = server.getEntityWorld();
 			GeographicProjection projection = getWorldProjection(world);
 			
-			Map<String, String> options = new HashMap<>();
+			Map<String, String> options = new KeyRestrictedMap<>(ALLOWED_OPTIONS);
 			
 			for(String fileName : args) {
 				if(fileName.startsWith("--")) {
@@ -122,16 +133,18 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 					if(file.isDirectory()) {
 						File[] files = file.listFiles((dir, name) -> name.endsWith(this.extension));
 						for(File child : files) {
-							VMapParserResult parserResult = this.parser.parse(child, projection);
+							VMapParserResult parserResult = this.parser.parse(child, projection, options);
 							result.append(parserResult);
 						}
 					}
 					else {
-						if(!file.isFile())
+						if(!file.isFile()) {
 							throw new CommandException("File \"" + fileName + "\" does not exist!");
-						if(!FilenameUtils.isExtension(fileName, this.extension))
+						}
+						if(!FilenameUtils.isExtension(fileName, this.extension)) {
 							throw new CommandException("Invalid extension!");
-						VMapParserResult parserResult = this.parser.parse(file, projection);
+						}
+						VMapParserResult parserResult = this.parser.parse(file, projection, options);
 						result.append(parserResult);
 					}
 					
@@ -143,12 +156,15 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 			
 			VMapToMinecraft.generateTasks(world, worldEditRegion, result, options);
 			
-		} catch(FileNotFoundException exception) {
+		}
+		catch(FileNotFoundException exception) {
 			throw new CommandException("File does not exist!");
-		} catch(VMapParserException exception) {
+		}
+		catch(VMapParserException | IllegalArgumentException exception) {
 			KVectorMap2MinecraftMod.logger.error(exception);
 			throw new CommandException(exception.getMessage());
-		} catch(IOException exception) {
+		}
+		catch(IOException exception) {
 			throw new CommandException("An unexpected error occured while parsing vector map.");
 		}
 	}

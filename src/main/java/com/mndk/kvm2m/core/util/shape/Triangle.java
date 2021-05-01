@@ -75,7 +75,7 @@ public class Triangle {
 	public void rasterize(World world, FlatRegion region, IBlockState blockState) {
 		for(int z = minZ; z <= maxZ; ++z)  for(int x = minX; x <= maxX; ++x) {
 			if(this.contains(x + .5, z + .5) == null || !region.contains(new Vector(x, region.getMinimumY(), z))) continue;
-			int height = (int) Math.round(interpolateY(x, z));
+			int height = (int) Math.round(interpolateY(x + .5, z + .5));
 			world.setBlockState(new BlockPos(x, height, z), blockState);
 		}
 	}
@@ -86,7 +86,7 @@ public class Triangle {
 	public void removeTerrainAbove(World world, FlatRegion region) {
 		for(int z = minZ; z <= maxZ; ++z)  for(int x = minX; x <= maxX; ++x) {
 			if(this.contains(x + .5, z + .5) == null || !region.contains(new Vector(x, region.getMinimumY(), z))) continue;
-			int height = (int) Math.round(interpolateY(x, z));
+			int height = (int) Math.round(interpolateY(x + .5, z + .5));
 			for(int y = height + 1; world.getBlockState(new BlockPos(x, y, z)).getBlock() != Blocks.AIR; y++) {
 				world.setBlockState(new BlockPos(x, y, z), AIR_STATE);
 			}
@@ -99,7 +99,7 @@ public class Triangle {
 	public void fillBlocksBelow(World world, FlatRegion region) {
 		for(int z = minZ; z <= maxZ; ++z)  for(int x = minX; x <= maxX; ++x) {
 			if(this.contains(x + .5, z + .5) == null || !region.contains(new Vector(x, region.getMinimumY(), z))) continue;
-			int height = (int) Math.round(interpolateY(x, z));
+			int height = (int) Math.round(interpolateY(x + .5, z + .5));
 			for(int y = height - 1; world.getBlockState(new BlockPos(x, y, z)).getBlock() != Blocks.STONE; y--) {
 				world.setBlockState(new BlockPos(x, y, z), DIRT_STATE);
 			}

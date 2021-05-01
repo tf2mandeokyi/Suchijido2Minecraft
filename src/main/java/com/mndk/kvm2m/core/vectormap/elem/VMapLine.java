@@ -1,91 +1,70 @@
-package com.mndk.kvm2m.core.vectormap.elem.poly;
+package com.mndk.kvm2m.core.vectormap.elem;
 
 import java.util.Map;
 
 import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.util.math.VectorMath;
 import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector.VMapElementStyle;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
-import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
 
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class VMapPolyline extends VMapElement {
+public class VMapLine extends VMapElement {
 
 	
 	private Vector2DH[][] vertexList;
-	private final boolean closed;
+	private boolean isClosed;
 
 	
-	private VMapPolyline(VMapElementLayer parent, Map<String, Object> dataRow, boolean closed) {
+	private VMapLine(VMapElementLayer parent, Map<String, Object> dataRow, boolean isClosed) {
 		super(parent, dataRow);
-		this.closed = closed;
+		this.isClosed = isClosed;
 	}
 
 	
-	private VMapPolyline(VMapElementLayer parent, Object[] dataRow, boolean closed) {
+	private VMapLine(VMapElementLayer parent, Object[] dataRow, boolean isClosed) {
 		super(parent, dataRow);
-		this.closed = closed;
+		this.isClosed = isClosed;
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[] vertexes, Map<String, Object> dataRow, boolean closed) {
-		this(parent, dataRow, closed);
+	public VMapLine(VMapElementLayer parent, Vector2DH[] vertexes, Map<String, Object> dataRow, boolean isClosed) {
+		this(parent, dataRow, isClosed);
 		this.vertexList = new Vector2DH[][] {vertexes};
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[] vertexes, Object[] dataRow, boolean closed) {
-		this(parent, dataRow, closed);
+	public VMapLine(VMapElementLayer parent, Vector2DH[] vertexes, Object[] dataRow, boolean isClosed) {
+		this(parent, dataRow, isClosed);
 		this.vertexList = new Vector2DH[][] {vertexes};
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertexes, Map<String, Object> dataRow, boolean closed) {
-		this(parent, dataRow, closed);
+	public VMapLine(VMapElementLayer parent, Vector2DH[][] vertexes, Map<String, Object> dataRow, boolean isClosed) {
+		this(parent, dataRow, isClosed);
 		this.vertexList = vertexes;
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertexes, Object[] dataRow, boolean closed) {
-		this(parent, dataRow, closed);
+	public VMapLine(VMapElementLayer parent, Vector2DH[][] vertexes, Object[] dataRow, boolean isClosed) {
+		this(parent, dataRow, isClosed);
 		this.vertexList = vertexes;
 		this.getBoundingBox();
 	}
 	
 	
-	public boolean containsPoint(Vector2DH point) {
-		
-		for(int k = 0; k < vertexList.length; ++k) {
-			boolean inside = false;
-			Vector2DH[] temp = vertexList[k];
-			for(int i = 0, j = temp.length - 1; i < temp.length; j = i++) {
-				if(VectorMath.checkRayXIntersection(point, temp[i], temp[j])) {
-					inside = !inside;
-				}
-			}
-			if(inside) return true;
-		}
-		return false;
-	}
-	
-	
-	public VMapPolyline merge(VMapPolyline other) {
+	public VMapPolyline merge(VMapLine other) {
 		Vector2DH[][] newVertexList = new Vector2DH[this.vertexList.length + other.vertexList.length][];
 		System.arraycopy(this.vertexList, 0, newVertexList, 0, this.vertexList.length);
 		System.arraycopy(other.vertexList, 0, newVertexList, this.vertexList.length, other.vertexList.length);
 		
-		return new VMapPolyline(this.parent, newVertexList, this.dataRow, this.closed);
+		return new VMapPolyline(this.parent, newVertexList, this.dataRow, this.isClosed);
 	}
 	
 	
@@ -110,18 +89,6 @@ public class VMapPolyline extends VMapElement {
 		IntegerBoundingBox box = this.getBoundingBox().getIntersectionArea(new IntegerBoundingBox(region));
 		if(!box.isValid()) return;
 			
-		//if(!this.isClosed() || this.parent.getType() == VMapElementType.건물) { // TODO
-			this.generateOutline(region, w, triangleList);
-		//}
-		
-		if(this.isClosed()) {
-			this.fillBlocks(region, w, triangleList, box);
-		}
-	}
-	
-	
-	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
-		
 		VMapElementStyle[] styles = VMapElementStyleSelector.getStyle(this);
 		if(styles == null) return;
 		for(VMapElementStyle style : styles) {
@@ -143,24 +110,6 @@ public class VMapPolyline extends VMapElement {
 			}
 		}
 	}
-	
-	
-	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList, IntegerBoundingBox limitBox) {
-		
-		VMapElementStyle[] styles = VMapElementStyleSelector.getStyle(this);
-		if(styles == null) return;
-		for(VMapElementStyle style : styles) {
-			if(style == null) continue; if(style.state == null) continue;
-			
-			for(int z = limitBox.zmin; z <= limitBox.zmax; ++z) {
-				for(int x = limitBox.xmin; x <= limitBox.xmax; ++x) {
-					if(!region.contains(new Vector(x, region.getMinimumY(), z)) || !this.containsPoint(new Vector2DH(x+.5, z+.5))) continue;
-					int y = (int) Math.round(triangleList.interpolateHeight(x, z)) + style.y;
-					w.setBlockState(new BlockPos(x, y, z), style.state);
-				}
-			}
-		}
-	}
 
 	
 	public Vector2DH[][] getVertexList() {
@@ -169,7 +118,6 @@ public class VMapPolyline extends VMapElement {
 	
 	
 	public boolean isClosed() {
-		return closed;
+		return this.isClosed;
 	}
-	
 }

@@ -518,15 +518,14 @@ public class NgiParser {
 	
 	
 	public static void main(String[] args) throws IOException {
-		Map<Integer, NgiLayer> layers = NgiParser.parse("377052193.ngi", "MS949", true).getLayers();
+		Map<Integer, NgiLayer> layers = NgiParser.parse("test/377052193.ngi", "MS949", true).getLayers();
 		System.out.println(layers.size());
 		for(Map.Entry<Integer, NgiLayer> entry : layers.entrySet()) {
 			NgiLayer layer = entry.getValue();
-			if(!layer.name.startsWith("F001")) continue;
-			System.out.println(layer.name);
+			if(!layer.name.startsWith("B001")) continue;
 			for(Map.Entry<Integer, NgiRecord<?>> entry1 : layer.data.entrySet()) {
 				NgiRecord<?> value = entry1.getValue();
-				System.out.println(entry1.getKey() + ": " + value.getRowData("등고수치"));
+				System.out.println(value.getRowData("명칭") + ": " + value.getRowData("층수"));
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.vectormap.elem.poly;
+package com.mndk.kvm2m.core.vectormap.elem;
 
 import java.util.Map;
 
@@ -8,7 +8,6 @@ import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector.VMapElementStyle;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
 
@@ -53,7 +52,7 @@ public class VMapBuilding extends VMapPolyline {
 			for(int i = 0; i < temp.length - 1; ++i) {
 				lineGenerator.generateLineWithMaxHeight(temp[i], temp[i+1], maxHeight);
 			}
-			if(this.isClosed()) {
+			if(this.shouldBeFilled()) {
 				lineGenerator.generateLineWithMaxHeight(temp[temp.length-1], temp[0], maxHeight);
 			}
 		}
@@ -94,7 +93,7 @@ public class VMapBuilding extends VMapPolyline {
 			for(int i = 0; i < temp.length - 1; ++i) {
 				yMax = yMax < (yTemp = lineGenerator.getMaxHeightOfTheLine(temp[i], temp[i+1])) ? yTemp : yMax;
 			}
-			if(this.isClosed()) {
+			if(this.shouldBeFilled()) {
 				yMax = yMax < (yTemp = lineGenerator.getMaxHeightOfTheLine(temp[temp.length-1], temp[0])) ? yTemp : yMax;
 			}
 		}

@@ -1,8 +1,7 @@
-package com.mndk.kvm2m.core.vectormap.elem.poly;
+package com.mndk.kvm2m.core.vectormap.elem;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 
 public class VMapContour extends VMapPolyline {
 

@@ -594,6 +594,4 @@ public class FastDelaunayTriangulator {
 		arr[i] = arr[j];
 		arr[j] = tmp;
 	}
-	
-	
 }

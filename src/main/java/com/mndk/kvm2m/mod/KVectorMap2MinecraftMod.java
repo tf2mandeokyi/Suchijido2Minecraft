@@ -5,7 +5,6 @@ import java.io.File;
 import org.apache.logging.log4j.Logger;
 
 import com.mndk.kvm2m.core.vectorparser.NgiMapParser;
-import com.mndk.kvm2m.core.vectorparser.ShpZipMapParser;
 import com.mndk.kvm2m.mod.commands.VMapGenCmd;
 
 import net.minecraft.command.ICommand;
@@ -28,7 +27,7 @@ public class KVectorMap2MinecraftMod {
 
 	private static final ICommand[] serverCommands = {
 			new VMapGenCmd<>("genngimap", "ngi", new NgiMapParser()),
-			new VMapGenCmd<>("genshpzipmap", "zip", new ShpZipMapParser())
+			// new VMapGenCmd<>("genshpzipmap", "zip", new ShpZipMapParser())
 	};
 
 	public static Logger logger;

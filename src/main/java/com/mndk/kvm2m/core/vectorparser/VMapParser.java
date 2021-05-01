@@ -2,25 +2,46 @@ package com.mndk.kvm2m.core.vectorparser;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Map;
 
 import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vectormap.VMapParserResult;
 import com.mndk.kvm2m.core.vectormap.VMapUtils;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
-import com.mndk.kvm2m.core.vectormap.elem.point.VMapElevationPoint;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VMapContour;
 
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
 
 public abstract class VMapParser {
 	
-	public abstract VMapParserResult parse(File mapFile, GeographicProjection worldProjection) throws IOException;
 	
-	protected static Vector2DH projectGrs80CoordToWorldCoord(Grs80Projection projection, GeographicProjection worldProjection, double x, double y) {
-		double[] geoCoordinate = projection.toGeo(x, y), bteCoordinate;
+	
+	protected File mapFile;
+	protected GeographicProjection worldProjection;
+	protected Grs80Projection targetProjection;
+	protected Map<String, String> options;
+	
+	
+	
+	public final VMapParserResult parse(File mapFile, GeographicProjection worldProjection, Map<String, String> options) throws IOException {
+		
+		this.mapFile = mapFile;
+		this.worldProjection = worldProjection;
+		this.options = options;
+		this.targetProjection = this.getTargetProjection();
+		return getResult();
+		
+	}
+	
+	
+	
+	protected abstract VMapParserResult getResult() throws IOException;
+	protected abstract Grs80Projection getTargetProjection();
+	
+	
+	
+	protected Vector2DH targetProjToWorldProjCoord(double x, double y) {
+		double[] geoCoordinate = this.targetProjection.toGeo(x, y), bteCoordinate;
 		try {
 			bteCoordinate = worldProjection.fromGeo(geoCoordinate[0], geoCoordinate[1]);
 		} catch(OutOfProjectionBoundsException exception) {
@@ -30,13 +51,14 @@ public abstract class VMapParser {
 	}
 	
 	
+	
 	protected static Grs80Projection getProjFromFileName(File file) {
 		String fileName = file.getName();
 		return VMapUtils.getProjectionFromMapId(fileName.substring(0, fileName.length() - 4));
 	}
 	
 	
-	protected static void extractElevationPoints(VMapElement element, List<Vector2DH> elevPoints) {
+	/*protected static void extractElevationPoints(VMapElement element, List<Vector2DH> elevPoints) {
 		if(element instanceof VMapContour) {
 			VMapContour contour = (VMapContour) element;
 			for(Vector2DH[] va : contour.getVertexList()) for(Vector2DH v : va) {
@@ -47,6 +69,6 @@ public abstract class VMapParser {
 			VMapElevationPoint elevPoint = (VMapElevationPoint) element;
 			elevPoints.add(elevPoint.toVector());
 		}
-	}
+	}*/
 	
 }

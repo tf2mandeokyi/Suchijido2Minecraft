@@ -5,9 +5,11 @@ import java.util.Collections;
 import java.util.List;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
+import com.mndk.kvm2m.core.vectormap.elem.VMapContour;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
-import com.mndk.kvm2m.core.vectormap.elem.poly.VMapPolyline;
+import com.mndk.kvm2m.core.vectormap.elem.VMapElevationPoint;
+import com.mndk.kvm2m.core.vectormap.elem.VMapPolyline;
 
 public class VMapParserResult {
 	
@@ -68,5 +70,59 @@ public class VMapParserResult {
 			if(layer.getType() == type) return layer;
 		}
 		return null;
+	}
+	
+	public boolean containsLayer(VMapElementType type) {
+		return getLayer(type) != null;
+	}
+	
+	public void extractElevationPoints() {
+		
+		// Find all contour lines
+		if(this.containsLayer(VMapElementType.등고선)) for(VMapElement element : this.getLayer(VMapElementType.등고선)) {
+			if(!(element instanceof VMapContour)) continue;
+			VMapContour contour = (VMapContour) element;
+			for(Vector2DH[] va : contour.getVertexList()) for(Vector2DH v : va) {
+				this.elevationPointList.add(v.withHeight(contour.elevation));
+			}
+		}
+		
+		// Find all elevation points, but filter out points which are on both roads and rivers
+		if(this.containsLayer(VMapElementType.표고점)) for(VMapElement elevElement : this.getLayer(VMapElementType.표고점)) {
+				
+			if(!(elevElement instanceof VMapElevationPoint)) continue;
+			VMapElevationPoint elevationPoint = (VMapElevationPoint) elevElement;
+			boolean onRoad = false, onRiver = false;
+			
+			// Iterate all roads
+			if(this.containsLayer(VMapElementType.도로경계)) for(VMapElement roadElement : this.getLayer(VMapElementType.도로경계)) {
+				
+				if(!(roadElement instanceof VMapPolyline)) continue;
+				VMapPolyline road = (VMapPolyline) roadElement;
+				
+				// Exclude line-roads
+				if(!road.shouldBeFilled()) continue;
+				
+				if(road.containsPoint(elevationPoint.toVector())) {
+					onRoad = true; break;
+				}
+			}
+			
+			// Iterate all rivers
+			if(this.containsLayer(VMapElementType.실폭하천)) for(VMapElement riverElement : this.getLayer(VMapElementType.실폭하천)) {
+				
+				if(!(riverElement instanceof VMapPolyline)) continue;
+				VMapPolyline road = (VMapPolyline) riverElement;
+				
+				// Exclude line-roads
+				if(!road.shouldBeFilled()) continue;
+				
+				if(road.containsPoint(elevationPoint.toVector())) {
+					onRiver = true; break;
+				}
+			}
+			
+			if(!onRiver || !onRoad) this.elevationPointList.add(elevationPoint.toVector());
+		}
 	}
 }
