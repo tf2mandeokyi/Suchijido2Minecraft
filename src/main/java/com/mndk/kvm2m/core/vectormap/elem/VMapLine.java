@@ -15,17 +15,17 @@ import net.minecraft.world.World;
 public class VMapLine extends VMapElement {
 
 	
-	private Vector2DH[][] vertexList;
+	protected Vector2DH[][] vertexList;
 	private boolean isClosed;
 
 	
-	private VMapLine(VMapElementLayer parent, Map<String, Object> dataRow, boolean isClosed) {
+	protected VMapLine(VMapElementLayer parent, Map<String, Object> dataRow, boolean isClosed) {
 		super(parent, dataRow);
 		this.isClosed = isClosed;
 	}
 
 	
-	private VMapLine(VMapElementLayer parent, Object[] dataRow, boolean isClosed) {
+	protected VMapLine(VMapElementLayer parent, Object[] dataRow, boolean isClosed) {
 		super(parent, dataRow);
 		this.isClosed = isClosed;
 	}
@@ -84,11 +84,17 @@ public class VMapLine extends VMapElement {
 	
 	
 	@Override
-	public final void generateBlocks(FlatRegion region, World w, TriangleList triangleList) {
+	public void generateBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
 		IntegerBoundingBox box = this.getBoundingBox().getIntersectionArea(new IntegerBoundingBox(region));
 		if(!box.isValid()) return;
 			
+		this.generateOutline(region, w, triangleList);
+	}
+	
+	
+	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
+		
 		VMapElementStyle[] styles = VMapElementStyleSelector.getStyle(this);
 		if(styles == null) return;
 		for(VMapElementStyle style : styles) {

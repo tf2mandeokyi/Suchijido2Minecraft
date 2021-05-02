@@ -3,7 +3,7 @@ package com.mndk.kvm2m.core.vectormap.elem;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector;
 
-public class VMapContour extends VMapPolyline {
+public class VMapContour extends VMapLine {
 
 	public final int elevation;
 	

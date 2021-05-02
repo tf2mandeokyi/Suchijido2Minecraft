@@ -16,6 +16,7 @@ import com.mndk.kvm2m.core.vectormap.elem.VMapContour;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElevationPoint;
+import com.mndk.kvm2m.core.vectormap.elem.VMapLine;
 import com.mndk.kvm2m.core.vectormap.elem.VMapPoint;
 import com.mndk.kvm2m.core.vectormap.elem.VMapPolyline;
 import com.mndk.ngiparser.NgiParser;
@@ -53,7 +54,8 @@ public class NgiMapParser extends VMapParser {
 		
 	}
 	
-	@Override public Grs80Projection getTargetProjection() { return getProjFromFileName(this.mapFile); }
+	@Override
+	public Grs80Projection getTargetProjection() { return getProjFromFileName(this.mapFile); }
 	
 	
 	
@@ -96,7 +98,7 @@ public class NgiMapParser extends VMapParser {
 	}
 	
 	
-	private VMapPolyline fromNgiPolygon(VMapElementLayer layer, NgiPolygon polygon) {
+	private VMapElement fromNgiPolygon(VMapElementLayer layer, NgiPolygon polygon) {
 		Vector2DH[][] vertexList = new Vector2DH[polygon.vertexData.length][];
 		
 		for(int j = 0; j < polygon.vertexData.length; ++j) {
@@ -110,10 +112,10 @@ public class NgiMapParser extends VMapParser {
 		}
 		
 		if(layer.getType() == VMapElementType.건물) {
-			if(options.containsKey("no-building-shells")) { 
-				return new VMapPolyline(layer, vertexList, polygon.rowData, false);
+			if(options.containsKey("gen-building-shells")) { 
+				return new VMapBuilding(layer, vertexList, polygon.rowData);
 			} else {
-				return new VMapBuilding(layer, vertexList, polygon.rowData); 
+				return new VMapLine(layer, vertexList, polygon.rowData, true);
 			}
 		}
 		else { return new VMapPolyline(layer, vertexList, polygon.rowData, true); }
@@ -121,7 +123,7 @@ public class NgiMapParser extends VMapParser {
 	
 	
 	
-	private VMapPolyline fromNgiLine(VMapElementLayer layer, NgiLine line) {
+	private VMapLine fromNgiLine(VMapElementLayer layer, NgiLine line) {
 		int size = line.lineData.getSize();
 		Vector2DH[] vertexList = new Vector2DH[size];
 		
@@ -131,7 +133,7 @@ public class NgiMapParser extends VMapParser {
 		}
 		
 		if(layer.getType() == VMapElementType.등고선) { return new VMapContour(layer, vertexList, line.rowData); }
-		else { return new VMapPolyline(layer, vertexList, line.rowData, false); }
+		else { return new VMapLine(layer, vertexList, line.rowData, false); }
 	}
 	
 	

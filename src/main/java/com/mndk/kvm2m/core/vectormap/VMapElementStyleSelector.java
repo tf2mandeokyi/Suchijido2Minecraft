@@ -2,7 +2,6 @@ package com.mndk.kvm2m.core.vectormap;
 
 import com.mndk.kvm2m.core.vectormap.elem.VMapBuilding;
 import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
-import com.mndk.kvm2m.core.vectormap.elem.VMapPolyline;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockColored;
@@ -43,7 +42,7 @@ public class VMapElementStyleSelector {
 			
 			// B types
 			case 건물:
-				if(((VMapPolyline) element).shouldBeFilled()) {
+				if(element instanceof VMapBuilding) {
 					Object floorCount = element.getDataByColumn("층수");
 					if(floorCount instanceof Integer) height = (Integer) element.getDataByColumn("층수") * VMapBuilding.FLOOR_HEIGHT;
 					else height = (int) Math.round((Double) element.getDataByColumn("층수")) * VMapBuilding.FLOOR_HEIGHT;

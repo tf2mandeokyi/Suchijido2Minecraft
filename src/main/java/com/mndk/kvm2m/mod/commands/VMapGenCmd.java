@@ -57,7 +57,7 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 			"no-cutting",
 			"no-filling",
 			"terrain-only",
-			"no-building-shells"
+			"gen-building-shells"
 	}));
 	
 	
