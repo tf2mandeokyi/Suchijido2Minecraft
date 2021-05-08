@@ -1,14 +1,14 @@
 package com.mndk.shapefile.dbf;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 
+import com.mndk.shapefile.util.AutoCloseableIterator;
 import com.mndk.shapefile.util.ShapefileCustomInputStream;
 
-public class DBaseDataIterator implements Iterator<DBaseRecord>, Iterable<DBaseRecord>, Closeable, AutoCloseable {
+public class DBaseDataIterator implements AutoCloseableIterator<DBaseRecord> {
 	
 	private final ShapefileCustomInputStream is;
 	private final DBaseHeader header;
@@ -26,7 +26,7 @@ public class DBaseDataIterator implements Iterator<DBaseRecord>, Iterable<DBaseR
 
 	@Override
 	public boolean hasNext() {
-		return index != header.recordCount - 1;
+		return index < header.recordCount;
 	}
 
 	@Override

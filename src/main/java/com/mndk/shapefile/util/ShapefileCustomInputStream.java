@@ -54,5 +54,11 @@ public class ShapefileCustomInputStream extends InputStream {
 	public double readDoubleLittle() throws IOException {
 		return Double.longBitsToDouble(readLongLittle());
 	}
+	
+	@Override
+	public void close() throws IOException {
+		parent.close();
+		super.close();
+	}
 
 }

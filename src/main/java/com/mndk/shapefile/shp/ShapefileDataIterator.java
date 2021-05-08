@@ -1,19 +1,19 @@
 package com.mndk.shapefile.shp;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 
+import com.mndk.shapefile.util.AutoCloseableIterator;
 import com.mndk.shapefile.util.ShapefileCustomInputStream;
 
-public class ShapefileDataIterator implements Iterator<ShapefileRecord>, Iterable<ShapefileRecord>, Closeable, AutoCloseable {
+public class ShapefileDataIterator implements AutoCloseableIterator<ShapefileRecord> {
 	
 	
 	private final ShapefileCustomInputStream is;
 	private final ShapefileHeader header;
-	private final int fileLength;
+	private final int contentLength;
 	private int totalLength;
 	
 	
@@ -24,7 +24,7 @@ public class ShapefileDataIterator implements Iterator<ShapefileRecord>, Iterabl
 		
 		this.header = new ShapefileHeader(is);
 
-		this.fileLength = header.fileLength;
+		this.contentLength = header.fileLength;
 		
 		// File length includes its header (50 * 16-bit word) - set 50 as an initial to the total length
 		this.totalLength = 50;
@@ -35,7 +35,7 @@ public class ShapefileDataIterator implements Iterator<ShapefileRecord>, Iterabl
 	
 	@Override
 	public boolean hasNext() {
-		return totalLength < fileLength;
+		return totalLength < contentLength;
 	}
 
 	

@@ -5,16 +5,20 @@ import com.mndk.shapefile.shp.ShapefileRecord;
 
 public class ShpDbfRecord {
 
-	public final ShapefileRecord shapeRecord;
-	public final DBaseRecord dBaseRecord;
+	public final ShapefileRecord shape;
+	public final DBaseRecord dBase;
 	
-	public ShpDbfRecord(ShapefileRecord shapeRecord, DBaseRecord dBaseRecord) {
-		this.shapeRecord = shapeRecord;
-		this.dBaseRecord = dBaseRecord;
+	public ShpDbfRecord(ShapefileRecord shape, DBaseRecord dBase) {
+		this.shape = shape;
+		this.dBase = dBase;
 	}
 	
-	public ShapefileRecord getShape() {
-		return shapeRecord;
+	@Override
+	public String toString() {
+		return "ShpDbfRecord{"
+				+ "\n  Shape=" + shape
+				+ "\n  Data=" + dBase
+				+ "\n}";
 	}
 	
 }

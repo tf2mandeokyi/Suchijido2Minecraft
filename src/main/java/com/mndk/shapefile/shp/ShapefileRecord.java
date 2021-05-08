@@ -28,7 +28,11 @@ public abstract class ShapefileRecord {
 		int[] parts;
 		ShapeVector[] points, polylines[];
 		
-		ShapeType type = ShapeType.getType(is.readIntLittle());
+		int typeId = is.readIntLittle();
+		ShapeType type = ShapeType.getType(typeId);
+		if(type == null) {
+			throw new IOException("Unknown shape type: " + typeId);
+		}
 		switch(type) {
 			case NULL:
 				return new Null(recordNumber);
