@@ -5,11 +5,13 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mndk.shapefile.util.Endian;
+import com.mndk.shapefile.util.EndianInputStream;
 
 public class ShapefileParser {
 	
-	public static ShapefileData read(InputStream is) throws IOException {
+	public static ShapefileData read(InputStream input) throws IOException {
+		
+		EndianInputStream is = new EndianInputStream(input);
 		
 		// Read shape file header
 		ShapefileHeader header = new ShapefileHeader(is);
@@ -23,8 +25,8 @@ public class ShapefileParser {
 		
 		while(totalLength < fileLength) {
 			
-			int recordNumber = Endian.readIntegerBig(is);
-			int recordLength = Endian.readIntegerBig(is);
+			int recordNumber = is.readIntBig();
+			int recordLength = is.readIntBig();
 			
 			ShapeRecord record = ShapeRecord.from(recordNumber, recordLength, is);
 			records.add(record);

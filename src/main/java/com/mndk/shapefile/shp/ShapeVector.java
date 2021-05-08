@@ -1,9 +1,8 @@
 package com.mndk.shapefile.shp;
 
 import java.io.IOException;
-import java.io.InputStream;
 
-import com.mndk.shapefile.util.Endian;
+import com.mndk.shapefile.util.EndianInputStream;
 
 public class ShapeVector {
 	
@@ -13,9 +12,9 @@ public class ShapeVector {
 		this.x = x; this.y = y;
 	}
 	
-	public ShapeVector(InputStream is) throws IOException {
-		this.x = Endian.readDoubleLittle(is);
-		this.y = Endian.readDoubleLittle(is);
+	public ShapeVector(EndianInputStream is) throws IOException {
+		this.x = is.readDoubleLittle();
+		this.y = is.readDoubleLittle();
 	}
 
 	@Override

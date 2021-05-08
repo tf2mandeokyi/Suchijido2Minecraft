@@ -1,34 +1,33 @@
 package com.mndk.shapefile.shp;
 
 import java.io.IOException;
-import java.io.InputStream;
 
-import com.mndk.shapefile.util.Endian;
+import com.mndk.shapefile.util.EndianInputStream;
 
 public class ShapefileHeader {
 	
 	public int fileLength;
 	public int version;
 	public ShapeType type;
-	public BoundingBoxXYZM boundingBox;
+	public ShapefileBoundingBoxXYZM boundingBox;
 	
-	public ShapefileHeader(InputStream is) throws IOException {
+	public ShapefileHeader(EndianInputStream is) throws IOException {
 		
-		int fileCode = Endian.readIntegerBig(is);
+		int fileCode = is.readIntBig();
 		if(fileCode != 0x0000270a) {
 			throw new IOException("File code does not match 0x0000270a");
 		}
 		
-		/*int unused1 = */ Endian.readIntegerBig(is);
-		/*int unused2 = */ Endian.readIntegerBig(is);
-		/*int unused3 = */ Endian.readIntegerBig(is);
-		/*int unused4 = */ Endian.readIntegerBig(is);
-		/*int unused5 = */ Endian.readIntegerBig(is);
+		/*int unused1 = */ is.readIntBig();
+		/*int unused2 = */ is.readIntBig();
+		/*int unused3 = */ is.readIntBig();
+		/*int unused4 = */ is.readIntBig();
+		/*int unused5 = */ is.readIntBig();
 		
-		this.fileLength = Endian.readIntegerBig(is);
-		this.version = Endian.readIntegerLittle(is);
-		this.type = ShapeType.getType(Endian.readIntegerLittle(is));
-		this.boundingBox = new BoundingBoxXYZM(is);
+		this.fileLength = is.readIntBig();
+		this.version = is.readIntLittle();
+		this.type = ShapeType.getType(is.readIntLittle());
+		this.boundingBox = new ShapefileBoundingBoxXYZM(is);
 		
 	}
 	

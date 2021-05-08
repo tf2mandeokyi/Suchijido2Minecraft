@@ -1,10 +1,9 @@
 package com.mndk.shapefile.shp;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 
-import com.mndk.shapefile.util.Endian;
+import com.mndk.shapefile.util.EndianInputStream;
 
 public abstract class ShapeRecord {
 	
@@ -22,30 +21,30 @@ public abstract class ShapeRecord {
 	
 	
 	
-	public static ShapeRecord from(int recordNumber, int recordLength, InputStream is) throws IOException {
+	public static ShapeRecord from(int recordNumber, int recordLength, EndianInputStream is) throws IOException {
 		
-		BoundingBoxXY bbox;
+		ShapefileBoundingBoxXY bbox;
 		int numParts, numPoints;
 		int[] parts;
 		ShapeVector[] points, polylines[];
 		
-		ShapeType type = ShapeType.getType(Endian.readIntegerLittle(is));
+		ShapeType type = ShapeType.getType(is.readIntLittle());
 		switch(type) {
 			case NULL:
 				return new Null(recordNumber);
 			case POINT: 
-				return new Point(recordNumber, Endian.readDoubleLittle(is), Endian.readDoubleLittle(is));
+				return new Point(recordNumber, is.readDoubleLittle(), is.readDoubleLittle());
 			case MULTIPOINT:
-				bbox = new BoundingBoxXY(is);
-				numPoints = Endian.readIntegerLittle(is); points = new ShapeVector[numPoints];
+				bbox = new ShapefileBoundingBoxXY(is);
+				numPoints = is.readIntLittle(); points = new ShapeVector[numPoints];
 				for(int i = 0; i < numPoints; i++) points[i] = new ShapeVector(is);
 				return new MultiPoint(recordNumber, bbox, points);
 			case POLYLINE:
-				bbox = new BoundingBoxXY(is);
-				numParts = Endian.readIntegerLittle(is);  
-				numPoints = Endian.readIntegerLittle(is); 
+				bbox = new ShapefileBoundingBoxXY(is);
+				numParts = is.readIntLittle();  
+				numPoints = is.readIntLittle(); 
 				parts = new int[numParts]; for(int j = 0; j < numParts; j++) {
-					parts[j] = Endian.readIntegerLittle(is);
+					parts[j] = is.readIntLittle();
 				}
 				points = new ShapeVector[numPoints]; for(int i = 0; i < numPoints; i++) {
 					points[i] = new ShapeVector(is);
@@ -53,11 +52,11 @@ public abstract class ShapeRecord {
 				polylines = getPolylinesWithPartsAndPoints(parts, points);
 				return new PolyLine(recordNumber, bbox, polylines);
 			case POLYGON:
-				bbox = new BoundingBoxXY(is);
-				numParts = Endian.readIntegerLittle(is);  
-				numPoints = Endian.readIntegerLittle(is); 
+				bbox = new ShapefileBoundingBoxXY(is);
+				numParts = is.readIntLittle();  
+				numPoints = is.readIntLittle(); 
 				parts = new int[numParts]; for(int j = 0; j < numParts; j++) {
-					parts[j] = Endian.readIntegerLittle(is);
+					parts[j] = is.readIntLittle();
 				}
 				points = new ShapeVector[numPoints]; for(int i = 0; i < numPoints; i++) {
 					points[i] = new ShapeVector(is);
@@ -127,9 +126,9 @@ public abstract class ShapeRecord {
 	
 	
 	public static class MultiPoint extends ShapeRecord {
-		public final BoundingBoxXY bbox;
+		public final ShapefileBoundingBoxXY bbox;
 		public final ShapeVector[] points;
-		MultiPoint(int number, BoundingBoxXY bbox, ShapeVector[] points) {
+		MultiPoint(int number, ShapefileBoundingBoxXY bbox, ShapeVector[] points) {
 			super(number, ShapeType.MULTIPOINT);
 			this.bbox = bbox;
 			this.points = points;
@@ -142,9 +141,9 @@ public abstract class ShapeRecord {
 	
 	
 	public static class PolyLine extends ShapeRecord {
-		public final BoundingBoxXY bbox;
+		public final ShapefileBoundingBoxXY bbox;
 		public final ShapeVector[][] points;
-		PolyLine(int number, BoundingBoxXY bbox, ShapeVector[][] points) {
+		PolyLine(int number, ShapefileBoundingBoxXY bbox, ShapeVector[][] points) {
 			super(number, ShapeType.POLYLINE);
 			this.bbox = bbox;
 			this.points = points;
@@ -157,9 +156,9 @@ public abstract class ShapeRecord {
 	
 	
 	public static class Polygon extends ShapeRecord {
-		public final BoundingBoxXY bbox;
+		public final ShapefileBoundingBoxXY bbox;
 		public final ShapeVector[][] points;
-		Polygon(int number, BoundingBoxXY bbox, ShapeVector[][] points) {
+		Polygon(int number, ShapefileBoundingBoxXY bbox, ShapeVector[][] points) {
 			super(number, ShapeType.POLYGON);
 			this.bbox = bbox;
 			this.points = points;
