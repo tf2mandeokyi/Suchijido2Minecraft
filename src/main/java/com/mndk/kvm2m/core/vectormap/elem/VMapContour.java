@@ -8,7 +8,7 @@ public class VMapContour extends VMapLine {
 	public final int elevation;
 	
 	public VMapContour(VMapElementLayer parent, Vector2DH[] vertexes, Object[] rowData) {
-		super(parent, vertexes, rowData, false);
+		super(parent, new Vector2DH[][] {vertexes}, rowData, false);
 		this.elevation = VMapElementStyleSelector.getStyle(this)[0].y;
 	}
 }

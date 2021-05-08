@@ -2,7 +2,7 @@ package com.mndk.kvm2m.core.vectormap.elem;
 
 import java.util.Map;
 
-import com.mndk.kvm2m.core.util.LineGenerator;
+import com.mndk.kvm2m.core.util.EdgeGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
@@ -39,21 +39,22 @@ public class VMapBuilding extends VMapPolyline {
 		
 		int buildingHeight = style.y;
 		
-		LineGenerator lineGenerator = new LineGenerator(
+		int maxHeight = this.getMaxTerrainHeight(triangleList) + buildingHeight;
+		
+		EdgeGenerator lineGenerator = new EdgeGenerator.BuildingWall(
 				(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)),
-				w, region, style.state
+				w, region, style.state, maxHeight
 		);
 		
-		int maxHeight = this.getMaxTerrainHeight(triangleList) + buildingHeight;
 		
 		Vector2DH[][] vertexList = this.getVertexList();
 		for(int j = 0; j < vertexList.length; ++j) {
 			Vector2DH[] temp = vertexList[j];
 			for(int i = 0; i < temp.length - 1; ++i) {
-				lineGenerator.generateLineWithMaxHeight(temp[i], temp[i+1], maxHeight);
+				lineGenerator.generate(temp[i], temp[i+1]);
 			}
 			if(this.shouldBeFilled()) {
-				lineGenerator.generateLineWithMaxHeight(temp[temp.length-1], temp[0], maxHeight);
+				lineGenerator.generate(temp[temp.length-1], temp[0]);
 			}
 		}
 	}
@@ -82,19 +83,18 @@ public class VMapBuilding extends VMapPolyline {
 	private int getMaxTerrainHeight(TriangleList triangleList) {
 		
 		int yMax = -10000, yTemp;
-		LineGenerator lineGenerator = new LineGenerator(
-				(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)), 
-				null, null, null
+		EdgeGenerator.MeasureHeight heightMeasurer = new EdgeGenerator.MeasureHeight(
+				(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z))
 		);
 		
 		Vector2DH[][] vertexList = this.getVertexList();
 		for(int j = 0; j < vertexList.length; ++j) {
 			Vector2DH[] temp = vertexList[j];
 			for(int i = 0; i < temp.length - 1; ++i) {
-				yMax = yMax < (yTemp = lineGenerator.getMaxHeightOfTheLine(temp[i], temp[i+1])) ? yTemp : yMax;
+				yMax = yMax < (yTemp = heightMeasurer.getMaxHeight(temp[i], temp[i+1])) ? yTemp : yMax;
 			}
 			if(this.shouldBeFilled()) {
-				yMax = yMax < (yTemp = lineGenerator.getMaxHeightOfTheLine(temp[temp.length-1], temp[0])) ? yTemp : yMax;
+				yMax = yMax < (yTemp = heightMeasurer.getMaxHeight(temp[temp.length-1], temp[0])) ? yTemp : yMax;
 			}
 		}
 		

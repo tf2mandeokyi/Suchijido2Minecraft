@@ -2,7 +2,7 @@ package com.mndk.kvm2m.core.vectormap.elem;
 
 import java.util.Map;
 
-import com.mndk.kvm2m.core.util.LineGenerator;
+import com.mndk.kvm2m.core.util.EdgeGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
@@ -28,20 +28,6 @@ public class VMapLine extends VMapElement {
 	protected VMapLine(VMapElementLayer parent, Object[] dataRow, boolean isClosed) {
 		super(parent, dataRow);
 		this.isClosed = isClosed;
-	}
-	
-	
-	public VMapLine(VMapElementLayer parent, Vector2DH[] vertexes, Map<String, Object> dataRow, boolean isClosed) {
-		this(parent, dataRow, isClosed);
-		this.vertexList = new Vector2DH[][] {vertexes};
-		this.getBoundingBox();
-	}
-	
-	
-	public VMapLine(VMapElementLayer parent, Vector2DH[] vertexes, Object[] dataRow, boolean isClosed) {
-		this(parent, dataRow, isClosed);
-		this.vertexList = new Vector2DH[][] {vertexes};
-		this.getBoundingBox();
 	}
 	
 	
@@ -100,7 +86,7 @@ public class VMapLine extends VMapElement {
 		for(VMapElementStyle style : styles) {
 			if(style == null) continue; if(style.state == null) continue;
 			
-			LineGenerator lineGenerator = new LineGenerator(
+			EdgeGenerator lineGenerator = new EdgeGenerator.TerrainLine(
 					(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)) + style.y, 
 					w, region, style.state
 			);
@@ -108,10 +94,10 @@ public class VMapLine extends VMapElement {
 			for(int j = 0; j < vertexList.length; ++j) {
 				Vector2DH[] temp = vertexList[j];
 				for(int i = 0; i < temp.length - 1; ++i) {
-					lineGenerator.generateLine(temp[i], temp[i+1]);
+					lineGenerator.generate(temp[i], temp[i+1]);
 				}
 				if(this.isClosed()) {
-					lineGenerator.generateLine(temp[temp.length-1], temp[0]);
+					lineGenerator.generate(temp[temp.length-1], temp[0]);
 				}
 			}
 		}

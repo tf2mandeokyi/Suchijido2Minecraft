@@ -32,20 +32,6 @@ public class VMapPolyline extends VMapLine {
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[] vertexes, Map<String, Object> dataRow, boolean doFill) {
-		this(parent, dataRow, doFill);
-		this.vertexList = new Vector2DH[][] {vertexes};
-		this.getBoundingBox();
-	}
-	
-	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[] vertexes, Object[] dataRow, boolean doFill) {
-		this(parent, dataRow, doFill);
-		this.vertexList = new Vector2DH[][] {vertexes};
-		this.getBoundingBox();
-	}
-	
-	
 	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertexes, Map<String, Object> dataRow, boolean doFill) {
 		this(parent, dataRow, doFill);
 		this.vertexList = vertexes;

@@ -19,6 +19,7 @@ import com.mndk.kvm2m.core.vectormap.elem.VMapElevationPoint;
 import com.mndk.kvm2m.core.vectormap.elem.VMapLine;
 import com.mndk.kvm2m.core.vectormap.elem.VMapPoint;
 import com.mndk.kvm2m.core.vectormap.elem.VMapPolyline;
+import com.mndk.kvm2m.core.vectormap.elem.VMapWall;
 import com.mndk.ngiparser.NgiParser;
 import com.mndk.ngiparser.nda.NdaDataColumn;
 import com.mndk.ngiparser.ngi.NgiLayer;
@@ -133,7 +134,8 @@ public class NgiMapParser extends VMapParser {
 		}
 		
 		if(layer.getType() == VMapElementType.등고선) { return new VMapContour(layer, vertexList, line.rowData); }
-		else { return new VMapLine(layer, vertexList, line.rowData, false); }
+		else if(layer.getType() == VMapElementType.옹벽) { return new VMapWall(layer, new Vector2DH[][] {vertexList}, line.rowData, false); }
+		else { return new VMapLine(layer, new Vector2DH[][] {vertexList}, line.rowData, false); }
 	}
 	
 	
