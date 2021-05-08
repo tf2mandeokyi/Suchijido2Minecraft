@@ -2,13 +2,16 @@ package com.mndk.shapefile.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
-public class EndianInputStream extends InputStream {
+public class ShapefileCustomInputStream extends InputStream {
 
 	private final InputStream parent;
+	private final Charset charset;
 	
-	public EndianInputStream(InputStream parent) {
+	public ShapefileCustomInputStream(InputStream parent, Charset charset) {
 		this.parent = parent;
+		this.charset = charset;
 	}
 	
 	@Override
@@ -16,8 +19,24 @@ public class EndianInputStream extends InputStream {
 		return parent.read();
 	}
 	
+	public byte[] readBytes(int byteCount) throws IOException {
+		byte[] result = new byte[byteCount];
+		for(int i = 0; i < byteCount; i++) {
+			result[i] = (byte) read();
+		}
+		return result;
+	}
+	
+	public String readString(int byteCount) throws IOException {
+		return new String(readBytes(byteCount), charset);
+	}
+	
 	public short readShortBig() throws IOException {
 		return (short) ((read() << 8) + read());
+	}
+	
+	public short readShortLittle() throws IOException {
+		return (short) (read() + (read() << 8));
 	}
 
 	public int readIntBig() throws IOException {

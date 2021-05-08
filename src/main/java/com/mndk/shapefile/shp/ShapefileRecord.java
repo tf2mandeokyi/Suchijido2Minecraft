@@ -3,9 +3,9 @@ package com.mndk.shapefile.shp;
 import java.io.IOException;
 import java.util.Arrays;
 
-import com.mndk.shapefile.util.EndianInputStream;
+import com.mndk.shapefile.util.ShapefileCustomInputStream;
 
-public abstract class ShapeRecord {
+public abstract class ShapefileRecord {
 	
 	
 	
@@ -14,14 +14,14 @@ public abstract class ShapeRecord {
 	
 	
 	
-	protected ShapeRecord(int number, ShapeType type) {
+	protected ShapefileRecord(int number, ShapeType type) {
 		this.number = number;
 		this.type = type;
 	}
 	
 	
 	
-	public static ShapeRecord from(int recordNumber, int recordLength, EndianInputStream is) throws IOException {
+	public static ShapefileRecord from(int recordNumber, int recordLength, ShapefileCustomInputStream is) throws IOException {
 		
 		ShapefileBoundingBoxXY bbox;
 		int numParts, numPoints;
@@ -100,7 +100,7 @@ public abstract class ShapeRecord {
 	
 	
 	
-	public static class Null extends ShapeRecord {
+	public static class Null extends ShapefileRecord {
 		Null(int number) {
 			super(number, ShapeType.NULL);
 		}
@@ -111,7 +111,7 @@ public abstract class ShapeRecord {
 	
 	
 	
-	public static class Point extends ShapeRecord {
+	public static class Point extends ShapefileRecord {
 		public final double x, y;
 		Point(int number, double x, double y) {
 			super(number, ShapeType.POINT);
@@ -125,7 +125,7 @@ public abstract class ShapeRecord {
 	
 	
 	
-	public static class MultiPoint extends ShapeRecord {
+	public static class MultiPoint extends ShapefileRecord {
 		public final ShapefileBoundingBoxXY bbox;
 		public final ShapeVector[] points;
 		MultiPoint(int number, ShapefileBoundingBoxXY bbox, ShapeVector[] points) {
@@ -140,7 +140,7 @@ public abstract class ShapeRecord {
 	
 	
 	
-	public static class PolyLine extends ShapeRecord {
+	public static class PolyLine extends ShapefileRecord {
 		public final ShapefileBoundingBoxXY bbox;
 		public final ShapeVector[][] points;
 		PolyLine(int number, ShapefileBoundingBoxXY bbox, ShapeVector[][] points) {
@@ -155,7 +155,7 @@ public abstract class ShapeRecord {
 	
 	
 	
-	public static class Polygon extends ShapeRecord {
+	public static class Polygon extends ShapefileRecord {
 		public final ShapefileBoundingBoxXY bbox;
 		public final ShapeVector[][] points;
 		Polygon(int number, ShapefileBoundingBoxXY bbox, ShapeVector[][] points) {

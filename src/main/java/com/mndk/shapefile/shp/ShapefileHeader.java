@@ -2,7 +2,7 @@ package com.mndk.shapefile.shp;
 
 import java.io.IOException;
 
-import com.mndk.shapefile.util.EndianInputStream;
+import com.mndk.shapefile.util.ShapefileCustomInputStream;
 
 public class ShapefileHeader {
 	
@@ -11,7 +11,7 @@ public class ShapefileHeader {
 	public ShapeType type;
 	public ShapefileBoundingBoxXYZM boundingBox;
 	
-	public ShapefileHeader(EndianInputStream is) throws IOException {
+	public ShapefileHeader(ShapefileCustomInputStream is) throws IOException {
 		
 		int fileCode = is.readIntBig();
 		if(fileCode != 0x0000270a) {

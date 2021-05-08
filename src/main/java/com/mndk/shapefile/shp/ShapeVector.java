@@ -2,7 +2,7 @@ package com.mndk.shapefile.shp;
 
 import java.io.IOException;
 
-import com.mndk.shapefile.util.EndianInputStream;
+import com.mndk.shapefile.util.ShapefileCustomInputStream;
 
 public class ShapeVector {
 	
@@ -12,7 +12,7 @@ public class ShapeVector {
 		this.x = x; this.y = y;
 	}
 	
-	public ShapeVector(EndianInputStream is) throws IOException {
+	public ShapeVector(ShapefileCustomInputStream is) throws IOException {
 		this.x = is.readDoubleLittle();
 		this.y = is.readDoubleLittle();
 	}

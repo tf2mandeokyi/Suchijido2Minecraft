@@ -2,13 +2,13 @@ package com.mndk.shapefile.shp;
 
 import java.io.IOException;
 
-import com.mndk.shapefile.util.EndianInputStream;
+import com.mndk.shapefile.util.ShapefileCustomInputStream;
 
 public class ShapefileBoundingBoxXYZM extends ShapefileBoundingBoxXY {
 
 	public final double zmin, zmax, mmin, mmax;
 	
-	public ShapefileBoundingBoxXYZM(EndianInputStream is) throws IOException {
+	public ShapefileBoundingBoxXYZM(ShapefileCustomInputStream is) throws IOException {
 		super(is);
 		this.zmin = is.readDoubleLittle(); this.zmax = is.readDoubleLittle();
 		this.mmin = is.readDoubleLittle(); this.mmax = is.readDoubleLittle();
