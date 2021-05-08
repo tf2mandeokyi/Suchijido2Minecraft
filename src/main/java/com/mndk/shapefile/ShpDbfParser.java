@@ -5,6 +5,6 @@ package com.mndk.shapefile;
  *  - It's too big. (Makes the mod up to 12~13 MB)
  *  - gt-shapefile somehow doesn't work ;(
  */
-public class ShapefileParser {
+public class ShpDbfParser {
 
 }

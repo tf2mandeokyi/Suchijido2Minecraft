@@ -5,15 +5,15 @@ import java.io.InputStream;
 
 import com.mndk.shapefile.util.Endian;
 
-public class ShpVector {
+public class ShapeVector {
 	
 	public final double x, y;
 	
-	public ShpVector(double x, double y) {
+	public ShapeVector(double x, double y) {
 		this.x = x; this.y = y;
 	}
 	
-	public ShpVector(InputStream is) throws IOException {
+	public ShapeVector(InputStream is) throws IOException {
 		this.x = Endian.readDoubleLittle(is);
 		this.y = Endian.readDoubleLittle(is);
 	}

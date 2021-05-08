@@ -5,14 +5,14 @@ import java.io.InputStream;
 
 import com.mndk.shapefile.util.Endian;
 
-public class ShpHeader {
+public class ShapefileHeader {
 	
 	public int fileLength;
 	public int version;
 	public ShapeType type;
-	public ShpBoundingBoxXYZM boundingBox;
+	public BoundingBoxXYZM boundingBox;
 	
-	public ShpHeader(InputStream is) throws IOException {
+	public ShapefileHeader(InputStream is) throws IOException {
 		
 		int fileCode = Endian.readIntegerBig(is);
 		if(fileCode != 0x0000270a) {
@@ -28,7 +28,7 @@ public class ShpHeader {
 		this.fileLength = Endian.readIntegerBig(is);
 		this.version = Endian.readIntegerLittle(is);
 		this.type = ShapeType.getType(Endian.readIntegerLittle(is));
-		this.boundingBox = new ShpBoundingBoxXYZM(is);
+		this.boundingBox = new BoundingBoxXYZM(is);
 		
 	}
 	

@@ -5,17 +5,17 @@ import java.io.InputStream;
 
 import com.mndk.shapefile.util.Endian;
 
-public class ShpBoundingBoxXYZM extends ShpBoundingBoxXY {
+public class BoundingBoxXYZM extends BoundingBoxXY {
 
 	public final double zmin, zmax, mmin, mmax;
 	
-	public ShpBoundingBoxXYZM(InputStream is) throws IOException {
+	public BoundingBoxXYZM(InputStream is) throws IOException {
 		super(is);
 		this.zmin = Endian.readDoubleLittle(is); this.zmax = Endian.readDoubleLittle(is);
 		this.mmin = Endian.readDoubleLittle(is); this.mmax = Endian.readDoubleLittle(is);
 	}
 	
-	public ShpBoundingBoxXYZM(double xmin, double ymin, double zmin, double mmin, double xmax, double ymax, double zmax, double mmax) {
+	public BoundingBoxXYZM(double xmin, double ymin, double zmin, double mmin, double xmax, double ymax, double zmax, double mmax) {
 		super(xmin, ymin, xmax, ymax);
 		this.zmin = zmin; this.zmax = zmax; this.mmin = mmin; this.mmax = mmax;
 	}

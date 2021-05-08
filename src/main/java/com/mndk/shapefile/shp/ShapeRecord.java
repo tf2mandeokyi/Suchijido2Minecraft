@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 import com.mndk.shapefile.util.Endian;
 
-public abstract class ShpRecord {
+public abstract class ShapeRecord {
 	
 	
 	
@@ -15,19 +15,19 @@ public abstract class ShpRecord {
 	
 	
 	
-	protected ShpRecord(int number, ShapeType type) {
+	protected ShapeRecord(int number, ShapeType type) {
 		this.number = number;
 		this.type = type;
 	}
 	
 	
 	
-	public static ShpRecord from(int recordNumber, int recordLength, InputStream is) throws IOException {
+	public static ShapeRecord from(int recordNumber, int recordLength, InputStream is) throws IOException {
 		
-		ShpBoundingBoxXY bbox;
+		BoundingBoxXY bbox;
 		int numParts, numPoints;
 		int[] parts;
-		ShpVector[] points, polylines[];
+		ShapeVector[] points, polylines[];
 		
 		ShapeType type = ShapeType.getType(Endian.readIntegerLittle(is));
 		switch(type) {
@@ -36,31 +36,31 @@ public abstract class ShpRecord {
 			case POINT: 
 				return new Point(recordNumber, Endian.readDoubleLittle(is), Endian.readDoubleLittle(is));
 			case MULTIPOINT:
-				bbox = new ShpBoundingBoxXY(is);
-				numPoints = Endian.readIntegerLittle(is); points = new ShpVector[numPoints];
-				for(int i = 0; i < numPoints; i++) points[i] = new ShpVector(is);
+				bbox = new BoundingBoxXY(is);
+				numPoints = Endian.readIntegerLittle(is); points = new ShapeVector[numPoints];
+				for(int i = 0; i < numPoints; i++) points[i] = new ShapeVector(is);
 				return new MultiPoint(recordNumber, bbox, points);
 			case POLYLINE:
-				bbox = new ShpBoundingBoxXY(is);
+				bbox = new BoundingBoxXY(is);
 				numParts = Endian.readIntegerLittle(is);  
 				numPoints = Endian.readIntegerLittle(is); 
 				parts = new int[numParts]; for(int j = 0; j < numParts; j++) {
 					parts[j] = Endian.readIntegerLittle(is);
 				}
-				points = new ShpVector[numPoints]; for(int i = 0; i < numPoints; i++) {
-					points[i] = new ShpVector(is);
+				points = new ShapeVector[numPoints]; for(int i = 0; i < numPoints; i++) {
+					points[i] = new ShapeVector(is);
 				}
 				polylines = getPolylinesWithPartsAndPoints(parts, points);
 				return new PolyLine(recordNumber, bbox, polylines);
 			case POLYGON:
-				bbox = new ShpBoundingBoxXY(is);
+				bbox = new BoundingBoxXY(is);
 				numParts = Endian.readIntegerLittle(is);  
 				numPoints = Endian.readIntegerLittle(is); 
 				parts = new int[numParts]; for(int j = 0; j < numParts; j++) {
 					parts[j] = Endian.readIntegerLittle(is);
 				}
-				points = new ShpVector[numPoints]; for(int i = 0; i < numPoints; i++) {
-					points[i] = new ShpVector(is);
+				points = new ShapeVector[numPoints]; for(int i = 0; i < numPoints; i++) {
+					points[i] = new ShapeVector(is);
 				}
 				polylines = getPolylinesWithPartsAndPoints(parts, points);
 				return new Polygon(recordNumber, bbox, polylines);
@@ -80,8 +80,8 @@ public abstract class ShpRecord {
 	
 	
 	
-	private static ShpVector[][] getPolylinesWithPartsAndPoints(int[] parts, ShpVector[] points) {
-		ShpVector[] tempLine, result[] = new ShpVector[parts.length][];
+	private static ShapeVector[][] getPolylinesWithPartsAndPoints(int[] parts, ShapeVector[] points) {
+		ShapeVector[] tempLine, result[] = new ShapeVector[parts.length][];
 		int start, end;
 		for(int j = 0; j < parts.length; j++) {
 			start = parts[j];
@@ -91,7 +91,7 @@ public abstract class ShpRecord {
 			else {
 				end = points.length;
 			}
-			result[j] = tempLine = new ShpVector[end - start];
+			result[j] = tempLine = new ShapeVector[end - start];
 			for(int i = start; i < end; i++) {
 				tempLine[i - start] = points[i];
 			}
@@ -101,7 +101,7 @@ public abstract class ShpRecord {
 	
 	
 	
-	public static class Null extends ShpRecord {
+	public static class Null extends ShapeRecord {
 		Null(int number) {
 			super(number, ShapeType.NULL);
 		}
@@ -112,7 +112,7 @@ public abstract class ShpRecord {
 	
 	
 	
-	public static class Point extends ShpRecord {
+	public static class Point extends ShapeRecord {
 		public final double x, y;
 		Point(int number, double x, double y) {
 			super(number, ShapeType.POINT);
@@ -126,10 +126,10 @@ public abstract class ShpRecord {
 	
 	
 	
-	public static class MultiPoint extends ShpRecord {
-		public final ShpBoundingBoxXY bbox;
-		public final ShpVector[] points;
-		MultiPoint(int number, ShpBoundingBoxXY bbox, ShpVector[] points) {
+	public static class MultiPoint extends ShapeRecord {
+		public final BoundingBoxXY bbox;
+		public final ShapeVector[] points;
+		MultiPoint(int number, BoundingBoxXY bbox, ShapeVector[] points) {
 			super(number, ShapeType.MULTIPOINT);
 			this.bbox = bbox;
 			this.points = points;
@@ -141,10 +141,10 @@ public abstract class ShpRecord {
 	
 	
 	
-	public static class PolyLine extends ShpRecord {
-		public final ShpBoundingBoxXY bbox;
-		public final ShpVector[][] points;
-		PolyLine(int number, ShpBoundingBoxXY bbox, ShpVector[][] points) {
+	public static class PolyLine extends ShapeRecord {
+		public final BoundingBoxXY bbox;
+		public final ShapeVector[][] points;
+		PolyLine(int number, BoundingBoxXY bbox, ShapeVector[][] points) {
 			super(number, ShapeType.POLYLINE);
 			this.bbox = bbox;
 			this.points = points;
@@ -156,10 +156,10 @@ public abstract class ShpRecord {
 	
 	
 	
-	public static class Polygon extends ShpRecord {
-		public final ShpBoundingBoxXY bbox;
-		public final ShpVector[][] points;
-		Polygon(int number, ShpBoundingBoxXY bbox, ShpVector[][] points) {
+	public static class Polygon extends ShapeRecord {
+		public final BoundingBoxXY bbox;
+		public final ShapeVector[][] points;
+		Polygon(int number, BoundingBoxXY bbox, ShapeVector[][] points) {
 			super(number, ShapeType.POLYGON);
 			this.bbox = bbox;
 			this.points = points;
