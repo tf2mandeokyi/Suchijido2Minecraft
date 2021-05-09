@@ -1,9 +1,9 @@
-package com.mndk.kvm2m.core.vectormap.elem;
+package com.mndk.kvm2m.core.vmap.elem;
 
 import java.util.HashSet;
 import java.util.List;
 
-import com.mndk.kvm2m.core.vectormap.VMapElementType;
+import com.mndk.kvm2m.core.vmap.VMapElementType;
 
 @SuppressWarnings("serial")
 public class VMapElementLayer extends HashSet<VMapElement> implements Comparable<VMapElementLayer> {

@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.vectormap.elem;
+package com.mndk.kvm2m.core.vmap.elem;
 
 import java.util.Map;
 

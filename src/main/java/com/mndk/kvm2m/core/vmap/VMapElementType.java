@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.vectormap;
+package com.mndk.kvm2m.core.vmap;
 
 // TODO translate this
 public enum VMapElementType {
@@ -154,7 +154,8 @@ public enum VMapElementType {
 		this.priority = priority;
 	}
 	
-	public static VMapElementType getTypeFromLayerName(String layerName) {
+	public static VMapElementType fromLayerName(String layerName) {
+		if(layerName == null) return null;
 		for(VMapElementType t : values()) {
 			if(layerName.startsWith(t.layerHeader)) {
 				return t;

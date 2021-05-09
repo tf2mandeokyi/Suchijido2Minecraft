@@ -1,7 +1,8 @@
-package com.mndk.kvm2m.core.vectormap.elem;
+package com.mndk.kvm2m.core.vmap.elem.point;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector;
+import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
+import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
 
 public class VMapElevationPoint extends VMapPoint {
 	

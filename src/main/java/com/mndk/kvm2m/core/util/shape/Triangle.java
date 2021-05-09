@@ -82,26 +82,24 @@ public class Triangle {
 	
 	
 	
-	private static final IBlockState AIR_STATE = Blocks.AIR.getDefaultState();
 	public void removeTerrainAbove(World world, FlatRegion region) {
 		for(int z = minZ; z <= maxZ; ++z)  for(int x = minX; x <= maxX; ++x) {
 			if(this.contains(x + .5, z + .5) == null || !region.contains(new Vector(x, region.getMinimumY(), z))) continue;
 			int height = (int) Math.round(interpolateY(x + .5, z + .5));
 			for(int y = height + 1; world.getBlockState(new BlockPos(x, y, z)).getBlock() != Blocks.AIR; y++) {
-				world.setBlockState(new BlockPos(x, y, z), AIR_STATE);
+				world.setBlockState(new BlockPos(x, y, z), Blocks.AIR.getDefaultState());
 			}
 		}
 	}
 
 
 
-	private static final IBlockState DIRT_STATE = Blocks.DIRT.getDefaultState();
 	public void fillBlocksBelow(World world, FlatRegion region) {
 		for(int z = minZ; z <= maxZ; ++z)  for(int x = minX; x <= maxX; ++x) {
 			if(this.contains(x + .5, z + .5) == null || !region.contains(new Vector(x, region.getMinimumY(), z))) continue;
 			int height = (int) Math.round(interpolateY(x + .5, z + .5));
 			for(int y = height - 1; world.getBlockState(new BlockPos(x, y, z)).getBlock() != Blocks.STONE; y--) {
-				world.setBlockState(new BlockPos(x, y, z), DIRT_STATE);
+				world.setBlockState(new BlockPos(x, y, z), Blocks.DIRT.getDefaultState());
 			}
 		}
 	}
@@ -128,9 +126,64 @@ public class Triangle {
 	
 	
 	
+	private static double side(Vector2DH p, Vector2DH q, Vector2DH a, Vector2DH b) {
+	    double z1 = (b.x - a.x) * (p.z - a.z) - (p.x - a.x) * (b.z - a.z);
+	    double z2 = (b.x - a.x) * (q.z - a.z) - (q.x - a.x) * (b.z - a.z);
+	    return z1 * z2;
+	}
+	
+	
+	
+	public boolean checkIntersection(Vector2DH p0, Vector2DH p1) {
+		/* Check whether segment is outside one of the three half-planes
+	     * delimited by the triangle. */
+		double f1 = side(p0, v3, v1, v2), f2 = side(p1, v3, v1, v2);
+		double f3 = side(p0, v1, v2, v3), f4 = side(p1, v1, v2, v3);
+		double f5 = side(p0, v2, v3, v1), f6 = side(p1, v2, v3, v1);
+	    /* Check whether triangle is totally inside one of the two half-planes
+	     * delimited by the segment. */
+		double f7 = side(v1, v2, p0, p1);
+		double f8 = side(v2, v3, p0, p1);
+
+	    /* If segment is strictly outside triangle, or triangle is strictly
+	     * apart from the line, we're not intersecting */
+	    if ((f1 < 0 && f2 < 0) || (f3 < 0 && f4 < 0) || (f5 < 0 && f6 < 0)
+	          || (f7 > 0 && f8 > 0))
+	        return false;
+
+	    /* If segment is aligned with one of the edges, we're overlapping */
+	    if ((f1 == 0 && f2 == 0) || (f3 == 0 && f4 == 0) || (f5 == 0 && f6 == 0))
+	        return false;
+
+	    /* If segment is outside but not strictly, or triangle is apart but
+	     * not strictly, we're touching */
+	    if ((f1 <= 0 && f2 <= 0) || (f3 <= 0 && f4 <= 0) || (f5 <= 0 && f6 <= 0)
+	          || (f7 >= 0 && f8 >= 0))
+	        return false;
+
+	    /* If both segment points are strictly inside the triangle, we
+	     * are not intersecting either */
+	    if (f1 > 0 && f2 > 0 && f3 > 0 && f4 > 0 && f5 > 0 && f6 > 0)
+	        return false;
+
+	    /* Otherwise we're intersecting with at least one edge */
+	    return true;
+	}
+	
+	
+	
 	@Override
 	public String toString() {
 		return "Triangle[" + v1 + ", " + v2 + ", " + v3 + "]";
+	}
+
+
+
+	@Override
+	public boolean equals(Object o) {
+		if(!(o instanceof Triangle)) return false;
+		Triangle t = (Triangle) o;
+		return this.v1.xyequals(t.v1) && this.v2.xyequals(t.v2) && this.v3.xyequals(t.v3);
 	}
 	
 }

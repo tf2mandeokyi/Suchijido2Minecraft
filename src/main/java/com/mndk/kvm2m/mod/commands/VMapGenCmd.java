@@ -15,10 +15,10 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FilenameUtils;
 
 import com.mndk.kvm2m.core.util.KeyRestrictedMap;
-import com.mndk.kvm2m.core.vectormap.VMapParserException;
-import com.mndk.kvm2m.core.vectormap.VMapParserResult;
-import com.mndk.kvm2m.core.vectormap.VMapToMinecraft;
 import com.mndk.kvm2m.core.vectorparser.VMapParser;
+import com.mndk.kvm2m.core.vmap.VMapParserException;
+import com.mndk.kvm2m.core.vmap.VMapParserResult;
+import com.mndk.kvm2m.core.vmap.VMapToMinecraft;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.mojang.authlib.GameProfile;
 import com.sk89q.worldedit.IncompleteRegionException;
@@ -52,12 +52,15 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 	static final int MAX_AXIS = 30000000;
 	static final FlatRegion INFINITE_REGION = new CuboidRegion(new Vector(-MAX_AXIS, 0, -MAX_AXIS), new Vector(MAX_AXIS, 0, MAX_AXIS));
 	static final Set<String> ALLOWED_OPTIONS = new HashSet<>(Arrays.asList(new String[] {
-			"generate-all",
-			"element-per-tick",
-			"no-cutting",
-			"no-filling",
-			"terrain-only",
-			"gen-building-shells"
+			"generate-all", // Generate all of the map data regardless of worldedit selection
+			"element-per-tick", // Number of elements to be generated in each tick. Without this option will generate a layer per tick.
+			"no-terrain", // Terrain won't be generated with this option.
+			"no-cutting", // Terrain won't be cut with this option.
+			"no-filling", // Terrain won't be filled with tis option.
+			"terrain-only", // Map data objects won't be generated with this opiton.
+			"gen-building-shells", // Building shells will be generated with this option.
+			"draw-contour", // Contours will be drawn with this option.
+			"layer-only" // Accepts only one layer. (The input is the layer name. e.g. A0010000)
 	}));
 	
 	

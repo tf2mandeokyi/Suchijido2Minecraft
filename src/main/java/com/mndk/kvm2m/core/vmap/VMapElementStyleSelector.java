@@ -1,7 +1,7 @@
-package com.mndk.kvm2m.core.vectormap;
+package com.mndk.kvm2m.core.vmap;
 
-import com.mndk.kvm2m.core.vectormap.elem.VMapBuilding;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
+import com.mndk.kvm2m.core.vmap.elem.VMapElement;
+import com.mndk.kvm2m.core.vmap.elem.poly.VMapBuilding;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockColored;
@@ -75,9 +75,9 @@ public class VMapElementStyleSelector {
 				
 			// F types
 			case 등고선:
-				return singleStyle(null, (int) Math.round((Double) element.getDataByColumn("등고수치")));
+				return singleStyle(Blocks.DIAMOND_BLOCK, (int) Math.round((Double) element.getDataByColumn("등고수치")));
 			case 표고점:
-				return singleStyle(null, (int) Math.round((Double) element.getDataByColumn("수치")));
+				return singleStyle(Blocks.DIAMOND_BLOCK, (int) Math.round((Double) element.getDataByColumn("수치")));
 			case 절토:
 				return singleStyle(Blocks.END_BRICKS, 1);
 			case 옹벽:

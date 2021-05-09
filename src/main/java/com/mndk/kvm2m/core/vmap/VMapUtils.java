@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.vectormap;
+package com.mndk.kvm2m.core.vmap;
 
 import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.projection.Projections;

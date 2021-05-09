@@ -6,8 +6,8 @@ import java.util.Map;
 
 import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vectormap.VMapParserResult;
-import com.mndk.kvm2m.core.vectormap.VMapUtils;
+import com.mndk.kvm2m.core.vmap.VMapParserResult;
+import com.mndk.kvm2m.core.vmap.VMapUtils;
 
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
@@ -36,7 +36,6 @@ public abstract class VMapParser {
 	
 	
 	protected abstract VMapParserResult getResult() throws IOException;
-	protected abstract Grs80Projection getTargetProjection();
 	
 	
 	
@@ -55,6 +54,12 @@ public abstract class VMapParser {
 	protected static Grs80Projection getProjFromFileName(File file) {
 		String fileName = file.getName();
 		return VMapUtils.getProjectionFromMapId(fileName.substring(0, fileName.length() - 4));
+	}
+	
+	
+	
+	public Grs80Projection getTargetProjection() {
+		return getProjFromFileName(this.mapFile);
 	}
 	
 	

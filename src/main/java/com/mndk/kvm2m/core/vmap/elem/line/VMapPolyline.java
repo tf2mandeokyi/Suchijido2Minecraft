@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.vectormap.elem;
+package com.mndk.kvm2m.core.vmap.elem.line;
 
 import java.util.Map;
 
@@ -6,51 +6,54 @@ import com.mndk.kvm2m.core.util.EdgeGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector;
-import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector.VMapElementStyle;
+import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
+import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
+import com.mndk.kvm2m.core.vmap.elem.VMapElement;
+import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
+import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
 import com.sk89q.worldedit.regions.FlatRegion;
 
 import net.minecraft.world.World;
 
-public class VMapLine extends VMapElement {
+public class VMapPolyline extends VMapElement {
 
 	
 	protected Vector2DH[][] vertexList;
 	private boolean isClosed;
 
 	
-	protected VMapLine(VMapElementLayer parent, Map<String, Object> dataRow, boolean isClosed) {
+	protected VMapPolyline(VMapElementLayer parent, Map<String, Object> dataRow, boolean isClosed) {
 		super(parent, dataRow);
 		this.isClosed = isClosed;
 	}
 
 	
-	protected VMapLine(VMapElementLayer parent, Object[] dataRow, boolean isClosed) {
+	protected VMapPolyline(VMapElementLayer parent, Object[] dataRow, boolean isClosed) {
 		super(parent, dataRow);
 		this.isClosed = isClosed;
 	}
 	
 	
-	public VMapLine(VMapElementLayer parent, Vector2DH[][] vertexes, Map<String, Object> dataRow, boolean isClosed) {
+	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertexes, Map<String, Object> dataRow, boolean isClosed) {
 		this(parent, dataRow, isClosed);
 		this.vertexList = vertexes;
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapLine(VMapElementLayer parent, Vector2DH[][] vertexes, Object[] dataRow, boolean isClosed) {
+	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertexes, Object[] dataRow, boolean isClosed) {
 		this(parent, dataRow, isClosed);
 		this.vertexList = vertexes;
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapPolyline merge(VMapLine other) {
+	public VMapPolygon merge(VMapPolyline other) {
 		Vector2DH[][] newVertexList = new Vector2DH[this.vertexList.length + other.vertexList.length][];
 		System.arraycopy(this.vertexList, 0, newVertexList, 0, this.vertexList.length);
 		System.arraycopy(other.vertexList, 0, newVertexList, this.vertexList.length, other.vertexList.length);
 		
-		return new VMapPolyline(this.parent, newVertexList, this.dataRow, this.isClosed);
+		return new VMapPolygon(this.parent, newVertexList, this.dataRow, this.isClosed);
 	}
 	
 	

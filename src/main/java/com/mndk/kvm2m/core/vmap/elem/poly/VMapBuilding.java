@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.vectormap.elem;
+package com.mndk.kvm2m.core.vmap.elem.poly;
 
 import java.util.Map;
 
@@ -6,15 +6,16 @@ import com.mndk.kvm2m.core.util.EdgeGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector;
-import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector.VMapElementStyle;
+import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
+import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
+import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class VMapBuilding extends VMapPolyline {
+public class VMapBuilding extends VMapPolygon {
 	
 	
 	public static final int FLOOR_HEIGHT = 4;

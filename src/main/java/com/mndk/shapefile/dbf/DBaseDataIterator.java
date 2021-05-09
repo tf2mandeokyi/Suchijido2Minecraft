@@ -10,9 +10,12 @@ import com.mndk.shapefile.util.ShapefileCustomInputStream;
 
 public class DBaseDataIterator implements AutoCloseableIterator<DBaseRecord> {
 	
+	
 	private final ShapefileCustomInputStream is;
 	private final DBaseHeader header;
 	private int index;
+	
+	
 	
 	public DBaseDataIterator(InputStream input, Charset charset) throws IOException {
 		
@@ -24,11 +27,21 @@ public class DBaseDataIterator implements AutoCloseableIterator<DBaseRecord> {
 		
 	}
 
+	
+	
+	public DBaseHeader getHeader() {
+		return header;
+	}
+	
+	
+	
 	@Override
 	public boolean hasNext() {
 		return index < header.recordCount;
 	}
 
+	
+	
 	@Override
 	public DBaseRecord next() {
 		try {
@@ -40,10 +53,14 @@ public class DBaseDataIterator implements AutoCloseableIterator<DBaseRecord> {
 		}
 	}
 
+	
+	
 	@Override
 	public void close() throws IOException {
 		is.close();
 	}
+	
+	
 
 	@Override
 	public Iterator<DBaseRecord> iterator() {

@@ -79,4 +79,8 @@ public class Vector2DH {
 		return x == v.x && height == v.height && z == v.z;
 	}
 	
+	public boolean xyequals(Vector2DH v) {
+		return x == v.x && z == v.z;
+	}
+	
 }

@@ -1,20 +1,21 @@
-package com.mndk.kvm2m.core.vectormap;
+package com.mndk.kvm2m.core.vmap;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vectormap.elem.VMapContour;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElevationPoint;
-import com.mndk.kvm2m.core.vectormap.elem.VMapPolyline;
+import com.mndk.kvm2m.core.vmap.elem.VMapElement;
+import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
+import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
+import com.mndk.kvm2m.core.vmap.elem.point.VMapElevationPoint;
+import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
 
 public class VMapParserResult {
 	
-	private VMapPolyline boundary;
+	private VMapPolygon boundary;
 	private List<VMapElementLayer> layerList;
+	@Deprecated
 	private List<Vector2DH> elevationPointList;
 	
 	public VMapParserResult() {
@@ -22,11 +23,11 @@ public class VMapParserResult {
 		this.elevationPointList = new ArrayList<>();
 	}
 	
-	public VMapPolyline getBoundary() {
+	public VMapPolygon getBoundary() {
 		return boundary;
 	}
 	
-	public void setBoundary(VMapPolyline boundary) {
+	public void setBoundary(VMapPolygon boundary) {
 		this.boundary = boundary;
 	}
 	
@@ -38,6 +39,7 @@ public class VMapParserResult {
 		this.layerList.add(elementLayer);
 	}
 	
+	@Deprecated
 	public List<Vector2DH> getElevationPoints() {
 		return elevationPointList;
 	}
@@ -97,8 +99,8 @@ public class VMapParserResult {
 			// Iterate all roads
 			if(this.containsLayer(VMapElementType.도로경계)) for(VMapElement roadElement : this.getLayer(VMapElementType.도로경계)) {
 				
-				if(!(roadElement instanceof VMapPolyline)) continue;
-				VMapPolyline road = (VMapPolyline) roadElement;
+				if(!(roadElement instanceof VMapPolygon)) continue;
+				VMapPolygon road = (VMapPolygon) roadElement;
 				
 				// Exclude line-roads
 				if(!road.shouldBeFilled()) continue;
@@ -111,8 +113,8 @@ public class VMapParserResult {
 			// Iterate all rivers
 			if(this.containsLayer(VMapElementType.실폭하천)) for(VMapElement riverElement : this.getLayer(VMapElementType.실폭하천)) {
 				
-				if(!(riverElement instanceof VMapPolyline)) continue;
-				VMapPolyline road = (VMapPolyline) riverElement;
+				if(!(riverElement instanceof VMapPolygon)) continue;
+				VMapPolygon road = (VMapPolygon) riverElement;
 				
 				// Exclude line-roads
 				if(!road.shouldBeFilled()) continue;

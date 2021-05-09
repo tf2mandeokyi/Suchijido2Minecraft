@@ -14,9 +14,9 @@ public class DBaseRecord {
 	
 	
 	
-	DBaseHeader parent;
-	Object[] data;
-	boolean active;
+	public DBaseHeader parent;
+	public Object[] data;
+	public boolean active;
 	
 	
 	

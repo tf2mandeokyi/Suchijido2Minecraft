@@ -8,7 +8,9 @@ import java.nio.charset.Charset;
 import java.util.Iterator;
 
 import com.mndk.shapefile.dbf.DBaseDataIterator;
+import com.mndk.shapefile.dbf.DBaseHeader;
 import com.mndk.shapefile.shp.ShapefileDataIterator;
+import com.mndk.shapefile.shp.ShapefileHeader;
 import com.mndk.shapefile.util.AutoCloseableIterator;
 
 /*
@@ -33,6 +35,18 @@ public class ShpDbfDataIterator implements AutoCloseableIterator<ShpDbfRecord> {
 		
 	}
 
+	
+	
+	public ShapefileHeader getShapefileHeader() {
+		return shpIterator.getHeader();
+	}
+	
+	
+	
+	public DBaseHeader getDBaseHeader() {
+		return dBaseIterator.getHeader();
+	}
+	
 	
 	
 	@Override

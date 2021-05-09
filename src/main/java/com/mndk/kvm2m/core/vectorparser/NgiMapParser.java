@@ -7,19 +7,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vectormap.VMapElementType;
-import com.mndk.kvm2m.core.vectormap.VMapParserResult;
-import com.mndk.kvm2m.core.vectormap.elem.VMapBuilding;
-import com.mndk.kvm2m.core.vectormap.elem.VMapContour;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElementLayer;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElevationPoint;
-import com.mndk.kvm2m.core.vectormap.elem.VMapLine;
-import com.mndk.kvm2m.core.vectormap.elem.VMapPoint;
-import com.mndk.kvm2m.core.vectormap.elem.VMapPolyline;
-import com.mndk.kvm2m.core.vectormap.elem.VMapWall;
+import com.mndk.kvm2m.core.vmap.VMapElementType;
+import com.mndk.kvm2m.core.vmap.VMapParserResult;
+import com.mndk.kvm2m.core.vmap.elem.VMapElement;
+import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
+import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
+import com.mndk.kvm2m.core.vmap.elem.line.VMapPolyline;
+import com.mndk.kvm2m.core.vmap.elem.line.VMapWall;
+import com.mndk.kvm2m.core.vmap.elem.point.VMapElevationPoint;
+import com.mndk.kvm2m.core.vmap.elem.point.VMapPoint;
+import com.mndk.kvm2m.core.vmap.elem.poly.VMapBuilding;
+import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
 import com.mndk.ngiparser.NgiParser;
 import com.mndk.ngiparser.nda.NdaDataColumn;
 import com.mndk.ngiparser.ngi.NgiLayer;
@@ -55,13 +54,10 @@ public class NgiMapParser extends VMapParser {
 		
 	}
 	
-	@Override
-	public Grs80Projection getTargetProjection() { return getProjFromFileName(this.mapFile); }
-	
 	
 	
 	private VMapElementLayer fromNgiLayer(NgiLayer ngiLayer, List<Vector2DH> elevPoints) {
-		VMapElementType type = VMapElementType.getTypeFromLayerName(ngiLayer.name);
+		VMapElementType type = VMapElementType.fromLayerName(ngiLayer.name);
 		
 		NdaDataColumn[] columns = ngiLayer.header.columns;
 		String[] layerColumns = new String[columns.length];
@@ -72,7 +68,7 @@ public class NgiMapParser extends VMapParser {
 		
 		Collection<NgiRecord<?>> ngiElements = ngiLayer.data.values();
 		for(NgiRecord<?> ngiElement : ngiElements) {
-			VMapElement element = fromNgiElement(elementLayer, ngiElement);
+			VMapElement element = fromElement(elementLayer, ngiElement);
 			if(element == null) continue;
 			elementLayer.add(element);
 		}
@@ -82,24 +78,22 @@ public class NgiMapParser extends VMapParser {
 	
 	
 	
-
-	
-	
-	private VMapElement fromNgiElement(VMapElementLayer layer, NgiRecord<?> ngiElement) {
+	private VMapElement fromElement(VMapElementLayer layer, NgiRecord<?> ngiElement) {
 		if(ngiElement instanceof NgiPolygon) {
-			return fromNgiPolygon(layer, (NgiPolygon) ngiElement);
+			return fromPolygon(layer, (NgiPolygon) ngiElement);
 		}
 		else if(ngiElement instanceof NgiLine) {
-			return fromNgiLine(layer, (NgiLine) ngiElement);
+			return fromLine(layer, (NgiLine) ngiElement);
 		}
 		else if(ngiElement instanceof NgiPoint) {
-			return fromNgiPoint(layer, (NgiPoint) ngiElement);
+			return fromPoint(layer, (NgiPoint) ngiElement);
 		}
 		return null;
 	}
 	
 	
-	private VMapElement fromNgiPolygon(VMapElementLayer layer, NgiPolygon polygon) {
+	
+	private VMapElement fromPolygon(VMapElementLayer layer, NgiPolygon polygon) {
 		Vector2DH[][] vertexList = new Vector2DH[polygon.vertexData.length][];
 		
 		for(int j = 0; j < polygon.vertexData.length; ++j) {
@@ -116,15 +110,15 @@ public class NgiMapParser extends VMapParser {
 			if(options.containsKey("gen-building-shells")) { 
 				return new VMapBuilding(layer, vertexList, polygon.rowData);
 			} else {
-				return new VMapLine(layer, vertexList, polygon.rowData, true);
+				return new VMapPolyline(layer, vertexList, polygon.rowData, true);
 			}
 		}
-		else { return new VMapPolyline(layer, vertexList, polygon.rowData, true); }
+		else { return new VMapPolygon(layer, vertexList, polygon.rowData, true); }
 	}
 	
+
 	
-	
-	private VMapLine fromNgiLine(VMapElementLayer layer, NgiLine line) {
+	private VMapPolyline fromLine(VMapElementLayer layer, NgiLine line) {
 		int size = line.lineData.getSize();
 		Vector2DH[] vertexList = new Vector2DH[size];
 		
@@ -135,12 +129,12 @@ public class NgiMapParser extends VMapParser {
 		
 		if(layer.getType() == VMapElementType.등고선) { return new VMapContour(layer, vertexList, line.rowData); }
 		else if(layer.getType() == VMapElementType.옹벽) { return new VMapWall(layer, new Vector2DH[][] {vertexList}, line.rowData, false); }
-		else { return new VMapLine(layer, new Vector2DH[][] {vertexList}, line.rowData, false); }
+		else { return new VMapPolyline(layer, new Vector2DH[][] {vertexList}, line.rowData, false); }
 	}
 	
 	
 	
-	private VMapPoint fromNgiPoint(VMapElementLayer layer, NgiPoint point) {
+	private VMapPoint fromPoint(VMapElementLayer layer, NgiPoint point) {
 		Vector2DH vpoint = this.targetProjToWorldProjCoord(point.position.getAxis(0), point.position.getAxis(1));
 		
 		if(layer.getType() == VMapElementType.표고점) { return new VMapElevationPoint(layer, vpoint, point.rowData); }

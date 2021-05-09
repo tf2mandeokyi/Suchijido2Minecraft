@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.vectormap.elem;
+package com.mndk.kvm2m.core.vmap.elem.poly;
 
 import java.util.Map;
 
@@ -6,40 +6,42 @@ import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.math.VectorMath;
 import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector;
-import com.mndk.kvm2m.core.vectormap.VMapElementStyleSelector.VMapElementStyle;
+import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
+import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
+import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
+import com.mndk.kvm2m.core.vmap.elem.line.VMapPolyline;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class VMapPolyline extends VMapLine {
+public class VMapPolygon extends VMapPolyline {
 
 	
 	private final boolean doFill;
 
 	
-	private VMapPolyline(VMapElementLayer parent, Map<String, Object> dataRow, boolean doFill) {
+	private VMapPolygon(VMapElementLayer parent, Map<String, Object> dataRow, boolean doFill) {
 		super(parent, dataRow, true);
 		this.doFill = doFill;
 	}
 
 	
-	private VMapPolyline(VMapElementLayer parent, Object[] dataRow, boolean doFill) {
+	private VMapPolygon(VMapElementLayer parent, Object[] dataRow, boolean doFill) {
 		super(parent, dataRow, true);
 		this.doFill = doFill;
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertexes, Map<String, Object> dataRow, boolean doFill) {
+	public VMapPolygon(VMapElementLayer parent, Vector2DH[][] vertexes, Map<String, Object> dataRow, boolean doFill) {
 		this(parent, dataRow, doFill);
 		this.vertexList = vertexes;
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertexes, Object[] dataRow, boolean doFill) {
+	public VMapPolygon(VMapElementLayer parent, Vector2DH[][] vertexes, Object[] dataRow, boolean doFill) {
 		this(parent, dataRow, doFill);
 		this.vertexList = vertexes;
 		this.getBoundingBox();
@@ -62,12 +64,12 @@ public class VMapPolyline extends VMapLine {
 	}
 	
 	
-	public VMapPolyline merge(VMapPolyline other) {
+	public VMapPolygon merge(VMapPolygon other) {
 		Vector2DH[][] newVertexList = new Vector2DH[this.vertexList.length + other.vertexList.length][];
 		System.arraycopy(this.vertexList, 0, newVertexList, 0, this.vertexList.length);
 		System.arraycopy(other.vertexList, 0, newVertexList, this.vertexList.length, other.vertexList.length);
 		
-		return new VMapPolyline(this.parent, newVertexList, this.dataRow, this.doFill);
+		return new VMapPolygon(this.parent, newVertexList, this.dataRow, this.doFill);
 	}
 	
 	

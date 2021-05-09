@@ -1,7 +1,7 @@
 package com.mndk.kvm2m.mod.task;
 
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vectormap.elem.VMapElement;
+import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.sk89q.worldedit.regions.FlatRegion;
 
 import net.minecraft.world.World;

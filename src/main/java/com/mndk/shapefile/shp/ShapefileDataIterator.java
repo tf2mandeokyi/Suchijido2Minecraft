@@ -33,6 +33,12 @@ public class ShapefileDataIterator implements AutoCloseableIterator<ShapefileRec
 
 	
 	
+	public ShapefileHeader getHeader() {
+		return header;
+	}
+	
+	
+	
 	@Override
 	public boolean hasNext() {
 		return totalLength < contentLength;

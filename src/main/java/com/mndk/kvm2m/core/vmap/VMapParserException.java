@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.vectormap;
+package com.mndk.kvm2m.core.vmap;
 
 import java.io.IOException;
 
