@@ -4,8 +4,10 @@ The mod that imports Korean vector map files (such as .ngi and .shp) to Minecraf
 
 ## Info
 ### Required mods
- * [Terra++](https://github.com/BuildTheEarth/terraplusplus)
- * [WorldEdit](https://github.com/EngineHub/WorldEdit)
+ * [Terra++](https://www.curseforge.com/minecraft/mc-mods/terraplusplus)
+   * [CubicChunks](https://www.curseforge.com/minecraft/mc-mods/opencubicchunks)
+   * [CubicWorldGen](https://www.curseforge.com/minecraft/mc-mods/cubicworldgen)
+ * [WorldEdit](https://www.curseforge.com/minecraft/mc-mods/worldedit)
 
 ### Supported file types
  * .ngi
@@ -21,7 +23,7 @@ The mod that imports Korean vector map files (such as .ngi and .shp) to Minecraf
 1. Download vector map data files [from one of those portals](#vector-map-data-portals)
 2. Put downloaded files at:
     * Singleplayer: `.../.minecraft/kvecmap_files/`
-    * Multiplayer: `/path/to/server_file/kvecmap_files/`
+    * Multiplayer: `/path/to/server/file/kvecmap_files/`
 3. Select the region you want the mod to generate with WorldEdit wand.
 4. Type the command `/gen<extension_name>map <data_file_name> ...`
 
