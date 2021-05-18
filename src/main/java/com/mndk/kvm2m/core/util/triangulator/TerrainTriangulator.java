@@ -48,7 +48,8 @@ public class TerrainTriangulator {
 	}
 	
 	
-	
+
+	@Deprecated
 	public static TriangleList generate_(List<VMapContour> contours, List<Vector2DH> elevationPoints) {
 		
 		TriangleList result = new TriangleList();

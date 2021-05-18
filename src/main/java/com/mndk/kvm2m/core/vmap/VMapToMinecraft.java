@@ -33,7 +33,6 @@ public class VMapToMinecraft {
 		}
 		else {
 			List<VMapElementLayer> layerList = result.getElementLayers();
-			//TriangleList triangleList = FastDelaunayTriangulator.from(result.getElevationPoints()).getTriangleList();
 			
 			TriangleList triangleList = TerrainTriangulator.generate(result);
 			
