@@ -6,15 +6,15 @@ import com.mndk.kvm2m.core.projection.Projections;
 public class VMapUtils {
 
 	public static Grs80Projection getProjectionFromMapId(String fileName) {
-		char number = fileName.charAt(2);
-		if(number == '5') {
-			return Projections.GRS80_WEST;
-		} else if(number == '6' || number == '7') {
+		//char number = fileName.charAt(2);
+		//if(number == '5') {
+		//	return Projections.GRS80_WEST;
+		//} else if(number == '6' || number == '7') {
 			return Projections.GRS80_MIDDLE;
-		} else if(number == '8' || number == '9') {
-			return Projections.GRS80_EAST;
-		}
-		return null;
+		//} else if(number == '8' || number == '9') {
+		//	return Projections.GRS80_EAST;
+		//}
+		//return null;
 	}
 
 	public static int getScaleFromMapId(String id) {

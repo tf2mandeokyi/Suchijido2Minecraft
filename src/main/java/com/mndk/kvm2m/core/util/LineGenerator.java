@@ -10,7 +10,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public abstract class EdgeGenerator {
+public abstract class LineGenerator {
 	
 
 	public final BiFunction<Integer, Integer, Integer> getYFunction;
@@ -20,7 +20,7 @@ public abstract class EdgeGenerator {
 
 	
 	
-	public EdgeGenerator(BiFunction<Integer, Integer, Integer> getYFunction, World world, FlatRegion region, IBlockState state) {
+	public LineGenerator(BiFunction<Integer, Integer, Integer> getYFunction, World world, FlatRegion region, IBlockState state) {
 		this.getYFunction = getYFunction;
 		this.world = world;
 		this.region = region;
@@ -74,7 +74,7 @@ public abstract class EdgeGenerator {
 	
 	
 	
-	public static class TerrainLine extends EdgeGenerator {
+	public static class TerrainLine extends LineGenerator {
 		public TerrainLine(BiFunction<Integer, Integer, Integer> getYFunction, World world, FlatRegion region, IBlockState state) {
 			super(getYFunction, world, region, state);
 		}
@@ -89,7 +89,7 @@ public abstract class EdgeGenerator {
 	
 	
 	
-	public static class BuildingWall extends EdgeGenerator {
+	public static class BuildingWall extends LineGenerator {
 		
 		private int maxHeight;
 		
@@ -108,7 +108,7 @@ public abstract class EdgeGenerator {
 	
 	
 	
-	public static class TerrainWall extends EdgeGenerator {
+	public static class TerrainWall extends LineGenerator {
 		
 		private int height;
 		
@@ -127,7 +127,7 @@ public abstract class EdgeGenerator {
 	
 	
 	
-	public static class MeasureHeight extends EdgeGenerator {
+	public static class MeasureHeight extends LineGenerator {
 		
 		public MeasureHeight(BiFunction<Integer, Integer, Integer> getYFunction) {
 			super(getYFunction, null, null, null);

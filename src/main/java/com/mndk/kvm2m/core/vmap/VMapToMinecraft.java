@@ -3,9 +3,9 @@ package com.mndk.kvm2m.core.vmap;
 import java.util.List;
 import java.util.Map;
 
-import com.mndk.kvm2m.core.util.delaunator.DelaunayTriangulationTerrainGenerator;
 import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
+import com.mndk.kvm2m.core.util.triangulator.TerrainTriangulator;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
 import com.mndk.kvm2m.mod.event.ServerTickRepeater;
@@ -35,7 +35,7 @@ public class VMapToMinecraft {
 			List<VMapElementLayer> layerList = result.getElementLayers();
 			//TriangleList triangleList = FastDelaunayTriangulator.from(result.getElevationPoints()).getTriangleList();
 			
-			TriangleList triangleList = DelaunayTriangulationTerrainGenerator.generate(result);
+			TriangleList triangleList = TerrainTriangulator.generate(result);
 			
 			// Schedule triangles generation task based on contour lines with delaunay triangulate algorithm
 			if(!options.containsKey("no-terrain")) {
@@ -89,7 +89,7 @@ public class VMapToMinecraft {
 		int i = 0;
 
 		List<VMapElementLayer> layerList;
-		TriangleList triangleList = DelaunayTriangulationTerrainGenerator.generate(result);
+		TriangleList triangleList = TerrainTriangulator.generate(result);
 		boolean cutTerrain = !options.containsKey("no-cutting"), fillTerrain = !options.containsKey("no-filling");
 		
 		if(!options.containsKey("no-terrain")) {

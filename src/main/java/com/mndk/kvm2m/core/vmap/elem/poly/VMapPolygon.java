@@ -34,25 +34,25 @@ public class VMapPolygon extends VMapPolyline {
 	}
 	
 	
-	public VMapPolygon(VMapElementLayer parent, Vector2DH[][] vertexes, Map<String, Object> dataRow, boolean doFill) {
+	public VMapPolygon(VMapElementLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean doFill) {
 		this(parent, dataRow, doFill);
-		this.vertexList = vertexes;
+		this.vertices = vertices;
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapPolygon(VMapElementLayer parent, Vector2DH[][] vertexes, Object[] dataRow, boolean doFill) {
+	public VMapPolygon(VMapElementLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean doFill) {
 		this(parent, dataRow, doFill);
-		this.vertexList = vertexes;
+		this.vertices = vertices;
 		this.getBoundingBox();
 	}
 	
 	
 	public boolean containsPoint(Vector2DH point) {
 		
-		for(int k = 0; k < vertexList.length; ++k) {
+		for(int k = 0; k < vertices.length; ++k) {
 			boolean inside = false;
-			Vector2DH[] temp = vertexList[k];
+			Vector2DH[] temp = vertices[k];
 			for(int i = 0, j = temp.length - 1; i < temp.length; j = i++) {
 				if(VectorMath.checkRayXIntersection(point, temp[i], temp[j])) {
 					inside = !inside;
@@ -65,9 +65,9 @@ public class VMapPolygon extends VMapPolyline {
 	
 	
 	public VMapPolygon merge(VMapPolygon other) {
-		Vector2DH[][] newVertexList = new Vector2DH[this.vertexList.length + other.vertexList.length][];
-		System.arraycopy(this.vertexList, 0, newVertexList, 0, this.vertexList.length);
-		System.arraycopy(other.vertexList, 0, newVertexList, this.vertexList.length, other.vertexList.length);
+		Vector2DH[][] newVertexList = new Vector2DH[this.vertices.length + other.vertices.length][];
+		System.arraycopy(this.vertices, 0, newVertexList, 0, this.vertices.length);
+		System.arraycopy(other.vertices, 0, newVertexList, this.vertices.length, other.vertices.length);
 		
 		return new VMapPolygon(this.parent, newVertexList, this.dataRow, this.doFill);
 	}
@@ -107,6 +107,12 @@ public class VMapPolygon extends VMapPolyline {
 	
 	public boolean shouldBeFilled() {
 		return doFill;
+	}
+	
+	
+	@Override
+	public String toString() {
+		return "VMapPolygon{type=" + parent.getType() + ",vertexLen=" + vertices[0].length + "}";
 	}
 	
 }

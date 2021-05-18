@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
@@ -44,11 +43,9 @@ public class NgiMapParser extends VMapParser {
 		Collection<NgiLayer> layers = parseResult.getLayers().values();
 		for(NgiLayer layer : layers) {
 			if(layer.header.dimensions != 2) continue;
-			VMapElementLayer elementLayer = fromNgiLayer(layer, result.getElevationPoints());
+			VMapElementLayer elementLayer = fromNgiLayer(layer);
 			result.addElement(elementLayer);
 		}
-		
-		result.extractElevationPoints();
 		
 		return result;
 		
@@ -56,7 +53,7 @@ public class NgiMapParser extends VMapParser {
 	
 	
 	
-	private VMapElementLayer fromNgiLayer(NgiLayer ngiLayer, List<Vector2DH> elevPoints) {
+	private VMapElementLayer fromNgiLayer(NgiLayer ngiLayer) {
 		VMapElementType type = VMapElementType.fromLayerName(ngiLayer.name);
 		
 		NdaDataColumn[] columns = ngiLayer.header.columns;

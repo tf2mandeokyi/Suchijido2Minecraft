@@ -10,7 +10,9 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumDyeColor;
 
 public class VMapElementStyleSelector {
-
+	
+	
+	
 	public static VMapElementStyle[] getStyle(VMapElement element) {
 		
 		int height;
@@ -28,7 +30,7 @@ public class VMapElementStyleSelector {
 			case 승강장:
 				return singleStyle(Blocks.DOUBLE_STONE_SLAB, 1);
 			case 횡단보도: 
-				return singleStyle(Blocks.CONCRETE, 0);
+				return singleStyle(Blocks.WOOL, EnumDyeColor.WHITE, 0);
 			case 육교:
 				return singleStyle(Blocks.IRON_BLOCK, 3);
 			case 교량:
@@ -67,7 +69,7 @@ public class VMapElementStyleSelector {
 			// E types
 			/*case 하천중심선:
 			case 등심선: 
-				return singleStyle(Blocks.LAPIS_BLOCK, 0);*/
+				return singleStyle("LAPIS_BLOCK", 0);*/
 			case 실폭하천:
 			case 호수:
 			case 해안선:
@@ -96,27 +98,39 @@ public class VMapElementStyleSelector {
 		
 	}
 	
+	
+	
 	private static VMapElementStyle[] singleStyle(Block block, EnumDyeColor color, int height) {
 		return new VMapElementStyle[] {new VMapElementStyle(block, color, height)};
 	}
+	
+	
 	
 	private static VMapElementStyle[] singleStyle(Block block, int height) {
 		return new VMapElementStyle[] {new VMapElementStyle(block, height)};
 	}
 	
+	
+	
 	private static VMapElementStyle[] doubleStyle(Block block1, int height1, Block block2, int height2) {
 		return new VMapElementStyle[] {new VMapElementStyle(block1, height1), new VMapElementStyle(block2, height2)};
 	}
 	
+	
+	
 	public static class VMapElementStyle {
+		
 		public final IBlockState state;
 		public final int y;
+		
 		public VMapElementStyle(Block block, int height) {
 			this.state = block == null ? null : block.getDefaultState(); this.y = height;
 		}
+		
 		public VMapElementStyle(Block block, EnumDyeColor color, int height) {
 			this.state = block.getDefaultState().withProperty(BlockColored.COLOR, color); this.y = height;
 		}
+		
 	}
 	
 }

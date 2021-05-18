@@ -59,7 +59,7 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 			"no-filling", // Terrain won't be filled with tis option.
 			"terrain-only", // Map data objects won't be generated with this opiton.
 			"gen-building-shells", // Building shells will be generated with this option.
-			"draw-contour", // Contours will be drawn with this option.
+			"draw-contour", // Contours will be generated with this option.
 			"layer-only" // Accepts only one layer. (The input is the layer name. e.g. A0010000)
 	}));
 	

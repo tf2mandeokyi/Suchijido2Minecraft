@@ -2,7 +2,7 @@ package com.mndk.kvm2m.core.vmap.elem.poly;
 
 import java.util.Map;
 
-import com.mndk.kvm2m.core.util.EdgeGenerator;
+import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
@@ -42,7 +42,7 @@ public class VMapBuilding extends VMapPolygon {
 		
 		int maxHeight = this.getMaxTerrainHeight(triangleList) + buildingHeight;
 		
-		EdgeGenerator lineGenerator = new EdgeGenerator.BuildingWall(
+		LineGenerator lineGenerator = new LineGenerator.BuildingWall(
 				(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)),
 				w, region, style.state, maxHeight
 		);
@@ -84,7 +84,7 @@ public class VMapBuilding extends VMapPolygon {
 	private int getMaxTerrainHeight(TriangleList triangleList) {
 		
 		int yMax = -10000, yTemp;
-		EdgeGenerator.MeasureHeight heightMeasurer = new EdgeGenerator.MeasureHeight(
+		LineGenerator.MeasureHeight heightMeasurer = new LineGenerator.MeasureHeight(
 				(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z))
 		);
 		
@@ -100,6 +100,12 @@ public class VMapBuilding extends VMapPolygon {
 		}
 		
 		return yMax;
+	}
+	
+	
+	@Override
+	public String toString() {
+		return "VMapBuilding{vertexLen=" + vertices[0].length + ",height=" + VMapElementStyleSelector.getStyle(this)[0].y + "}";
 	}
 
 }

@@ -41,4 +41,10 @@ public abstract class VMapElement {
 	
 	
 	public abstract void generateBlocks(FlatRegion region, World world, TriangleList triangles);
+	
+	
+	@Override
+	public String toString() {
+		return "VMapElement{type=" + parent.getType() + "}";
+	}
 }

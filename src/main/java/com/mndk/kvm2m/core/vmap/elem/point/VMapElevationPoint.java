@@ -16,5 +16,10 @@ public class VMapElevationPoint extends VMapPoint {
 	public Vector2DH toVector() {
 		return this.getPosition().withHeight(this.y);
 	}
+	
+	@Override
+	public String toString() {
+		return "VMapElevationPoint{pos=" + this.toVector() + "}";
+	}
 
 }

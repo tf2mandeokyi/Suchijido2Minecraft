@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.util.delaunator;
+package com.mndk.kvm2m.core.util.triangulator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +16,7 @@ import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapContourList;
 import com.mndk.kvm2m.core.vmap.elem.point.VMapElevationPoint;
 
-public class DelaunayTriangulationTerrainGenerator {
+public class TerrainTriangulator {
 	
 	
 	public static TriangleList generate(VMapParserResult result) {
@@ -32,6 +32,24 @@ public class DelaunayTriangulationTerrainGenerator {
 	
 	
 	public static TriangleList generate(List<VMapContour> contours, List<Vector2DH> elevationPoints) {
+		Vector2DH[][] vertexes = new Vector2DH[contours.size()][];
+		
+		for(int i = 0; i < contours.size(); i++) {
+			VMapContour contour = contours.get(i);
+			Vector2DH[] vertex = contour.getVertexList()[0];
+			Vector2DH[] destination = vertexes[i] = new Vector2DH[vertex.length];
+			
+			for(int j = 0; j < vertex.length; j++) {
+				destination[j] = vertex[j].withHeight(contour.elevation);
+			}
+		}
+		
+		return new ConstraintDelaunayTriangulator(vertexes, elevationPoints.toArray(new Vector2DH[0])).getTriangleList();
+	}
+	
+	
+	
+	public static TriangleList generate_(List<VMapContour> contours, List<Vector2DH> elevationPoints) {
 		
 		TriangleList result = new TriangleList();
 		Map<Integer, List<VMapContour>> categorized = categorizeContours(contours);
@@ -65,7 +83,7 @@ public class DelaunayTriangulationTerrainGenerator {
 				}
 			}
 			
-			List<Triangle> delaunayResult = FastDelaunayTriangulator.from(tempPointList).getTriangleList();
+			List<Triangle> delaunayResult = new FastDelaunayTriangulator(tempPointList).getTriangleList();
 			
 			int h1, h2, h3;
 			triangleLoop: for(Triangle triangle : delaunayResult) {

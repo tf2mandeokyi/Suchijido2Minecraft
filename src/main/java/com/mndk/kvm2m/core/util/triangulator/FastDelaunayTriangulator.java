@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.util.delaunator;
+package com.mndk.kvm2m.core.util.triangulator;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,12 +24,12 @@ public class FastDelaunayTriangulator {
 	/*
 	 *  Arrays that will store the triangulation graph
 	 */
-	private Vector2DH[] coords;
-	private int[] triangles;
-	private int trianglesLen;
-	private int[] halfedges;
+	protected Vector2DH[] coords;
+	protected int[] triangles;
+	protected int trianglesLen;
+	protected int[] halfedges;
 	
-	private Vector2DH center;
+	protected Vector2DH center;
 	
 	
 	/* 
@@ -52,13 +52,13 @@ public class FastDelaunayTriangulator {
 	
 	
 	
-	public static FastDelaunayTriangulator from(List<Vector2DH> points) {
-		return new FastDelaunayTriangulator(points.toArray(new Vector2DH[0]));
+	public FastDelaunayTriangulator(List<Vector2DH> points) {
+		this(points.toArray(new Vector2DH[0]));
 	}
 	
 	
 	
-	private FastDelaunayTriangulator(Vector2DH[] coords) {
+	protected FastDelaunayTriangulator(Vector2DH[] coords) {
 		int n = coords.length;
 		
 		this.coords = coords;
@@ -331,7 +331,7 @@ public class FastDelaunayTriangulator {
 	
 	
 	
-	private int legalize(int a) {
+	protected int legalize(int a) {
 
 		int i = 0;
 		int ar = 0;
@@ -344,16 +344,16 @@ public class FastDelaunayTriangulator {
 			 * (p1 is inside the circumcircle of [p0, pl, pr]), flip them,
 			 * then do the same check/flip recursively for the new pair of triangles
 			 *
-			 *		   pl					pl
-			 *		  /||\				  /  \
-			 *	   al/ || \bl			al/	\a
-			 *		/  ||  \			  /	  \
-			 *	   /  a||b  \	flip	/___ar___\
+			 *		   pl                    pl
+			 *		  /||\                  /  \
+			 *	   al/ || \bl            al/    \a
+			 *		/  ||  \              /      \
+			 *	   /  a||b  \	flip     /___ar___\
 			 *	 p0\   ||   /p1   =>   p0\---bl---/p1
-			 *		\  ||  /			  \	  /
-			 *	   ar\ || /br			 b\	/br
-			 *		  \||/				  \  /
-			 *		   pr					pr
+			 *		\  ||  /              \      /
+			 *	   ar\ || /br             b\    /br
+			 *		  \||/                  \  /
+			 *		   pr                    pr
 			 */
 			int a0 = a - a % 3;
 			ar = a0 + (a + 2) % 3;

@@ -4,23 +4,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
-import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
-import com.mndk.kvm2m.core.vmap.elem.point.VMapElevationPoint;
 import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
 
 public class VMapParserResult {
 	
 	private VMapPolygon boundary;
 	private List<VMapElementLayer> layerList;
-	@Deprecated
-	private List<Vector2DH> elevationPointList;
 	
 	public VMapParserResult() {
 		this.layerList = new ArrayList<>();
-		this.elevationPointList = new ArrayList<>();
 	}
 	
 	public VMapPolygon getBoundary() {
@@ -39,16 +33,11 @@ public class VMapParserResult {
 		this.layerList.add(elementLayer);
 	}
 	
-	@Deprecated
-	public List<Vector2DH> getElevationPoints() {
-		return elevationPointList;
-	}
-	
 	public void append(VMapParserResult other) {
 		if(this.boundary == null) {
 			this.boundary = other.boundary;
 		}
-		else {			
+		else {
 			this.boundary = this.boundary.merge(other.boundary);
 		}
 		for(VMapElementLayer layer : other.layerList) {
@@ -62,7 +51,6 @@ public class VMapParserResult {
 				this.layerList.add(layer);
 			}
 		}
-		this.elevationPointList.addAll(other.elevationPointList);
 		
 		Collections.sort(this.layerList);
 	}
@@ -78,6 +66,8 @@ public class VMapParserResult {
 		return getLayer(type) != null;
 	}
 	
+	
+	/*
 	public void extractElevationPoints() {
 		
 		// Find all contour lines
@@ -127,4 +117,5 @@ public class VMapParserResult {
 			if(!onRiver || !onRoad) this.elevationPointList.add(elevationPoint.toVector());
 		}
 	}
+	*/
 }

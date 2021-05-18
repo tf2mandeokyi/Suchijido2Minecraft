@@ -1,6 +1,6 @@
 package com.mndk.kvm2m.core.vmap.elem.line;
 
-import com.mndk.kvm2m.core.util.EdgeGenerator;
+import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
@@ -14,8 +14,8 @@ public class VMapContour extends VMapPolyline {
 
 	public final int elevation;
 	
-	public VMapContour(VMapElementLayer parent, Vector2DH[] vertexes, Object[] rowData) {
-		super(parent, new Vector2DH[][] {vertexes}, rowData, false);
+	public VMapContour(VMapElementLayer parent, Vector2DH[] vertices, Object[] rowData) {
+		super(parent, new Vector2DH[][] { vertices }, rowData, false);
 		this.elevation = VMapElementStyleSelector.getStyle(this)[0].y;
 	}
 	
@@ -26,13 +26,13 @@ public class VMapContour extends VMapPolyline {
 		for(VMapElementStyle style : styles) {
 			if(style == null) continue; if(style.state == null) continue;
 			
-			EdgeGenerator lineGenerator = new EdgeGenerator.TerrainLine(
+			LineGenerator lineGenerator = new LineGenerator.TerrainLine(
 					(x, z) -> this.elevation, 
 					w, region, style.state
 			);
 			
-			for(int j = 0; j < vertexList.length; ++j) {
-				Vector2DH[] temp = vertexList[j];
+			for(int j = 0; j < vertices.length; ++j) {
+				Vector2DH[] temp = vertices[j];
 				for(int i = 0; i < temp.length - 1; ++i) {
 					lineGenerator.generate(temp[i], temp[i+1]);
 				}
@@ -43,4 +43,9 @@ public class VMapContour extends VMapPolyline {
 		}
 	}
 	
+	
+	@Override
+	public String toString() {
+		return "VMapContour{vertexLen=" + vertices[0].length + ",height=" + VMapElementStyleSelector.getStyle(this)[0].y + "}";
+	}
 }

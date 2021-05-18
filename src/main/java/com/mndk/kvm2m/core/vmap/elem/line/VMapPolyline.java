@@ -2,7 +2,7 @@ package com.mndk.kvm2m.core.vmap.elem.line;
 
 import java.util.Map;
 
-import com.mndk.kvm2m.core.util.EdgeGenerator;
+import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
@@ -18,7 +18,7 @@ import net.minecraft.world.World;
 public class VMapPolyline extends VMapElement {
 
 	
-	protected Vector2DH[][] vertexList;
+	protected Vector2DH[][] vertices;
 	private boolean isClosed;
 
 	
@@ -34,24 +34,24 @@ public class VMapPolyline extends VMapElement {
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertexes, Map<String, Object> dataRow, boolean isClosed) {
+	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean isClosed) {
 		this(parent, dataRow, isClosed);
-		this.vertexList = vertexes;
+		this.vertices = vertices;
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertexes, Object[] dataRow, boolean isClosed) {
+	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean isClosed) {
 		this(parent, dataRow, isClosed);
-		this.vertexList = vertexes;
+		this.vertices = vertices;
 		this.getBoundingBox();
 	}
 	
 	
 	public VMapPolygon merge(VMapPolyline other) {
-		Vector2DH[][] newVertexList = new Vector2DH[this.vertexList.length + other.vertexList.length][];
-		System.arraycopy(this.vertexList, 0, newVertexList, 0, this.vertexList.length);
-		System.arraycopy(other.vertexList, 0, newVertexList, this.vertexList.length, other.vertexList.length);
+		Vector2DH[][] newVertexList = new Vector2DH[this.vertices.length + other.vertices.length][];
+		System.arraycopy(this.vertices, 0, newVertexList, 0, this.vertices.length);
+		System.arraycopy(other.vertices, 0, newVertexList, this.vertices.length, other.vertices.length);
 		
 		return new VMapPolygon(this.parent, newVertexList, this.dataRow, this.isClosed);
 	}
@@ -62,7 +62,7 @@ public class VMapPolyline extends VMapElement {
 		if(boundingBoxResult != null) return boundingBoxResult;
 		int minX = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE, 
 			maxX = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
-		for(Vector2DH[] va : vertexList) for(Vector2DH v : va) {
+		for(Vector2DH[] va : vertices) for(Vector2DH v : va) {
 			if(v.x < minX) minX = (int) Math.floor(v.x);
 			if(v.x > maxX) maxX = (int) Math.ceil(v.x);
 			if(v.z < minZ) minZ = (int) Math.floor(v.z);
@@ -89,13 +89,13 @@ public class VMapPolyline extends VMapElement {
 		for(VMapElementStyle style : styles) {
 			if(style == null) continue; if(style.state == null) continue;
 			
-			EdgeGenerator lineGenerator = new EdgeGenerator.TerrainLine(
+			LineGenerator lineGenerator = new LineGenerator.TerrainLine(
 					(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)) + style.y, 
 					w, region, style.state
 			);
 			
-			for(int j = 0; j < vertexList.length; ++j) {
-				Vector2DH[] temp = vertexList[j];
+			for(int j = 0; j < vertices.length; ++j) {
+				Vector2DH[] temp = vertices[j];
 				for(int i = 0; i < temp.length - 1; ++i) {
 					lineGenerator.generate(temp[i], temp[i+1]);
 				}
@@ -108,11 +108,18 @@ public class VMapPolyline extends VMapElement {
 
 	
 	public Vector2DH[][] getVertexList() {
-		return this.vertexList;
+		return this.vertices;
 	}
 	
 	
 	public boolean isClosed() {
 		return this.isClosed;
 	}
+	
+	
+	@Override
+	public String toString() {
+		return "VMapPolyline{type=" + parent.getType() + ",vertexLen=" + vertices[0].length + "}";
+	}
+	
 }

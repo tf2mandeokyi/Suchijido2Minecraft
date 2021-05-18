@@ -4,16 +4,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 
 import com.mndk.kvm2m.core.projection.Grs80Projection;
-import com.mndk.kvm2m.core.util.delaunator.DelaunayTriangulationTerrainGenerator;
-import com.mndk.kvm2m.core.util.delaunator.FastDelaunayTriangulator;
+import com.mndk.kvm2m.core.projection.Projections;
 import com.mndk.kvm2m.core.util.file.DirectoryManager;
 import com.mndk.kvm2m.core.util.file.ZipManager;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
+import com.mndk.kvm2m.core.util.triangulator.TerrainTriangulator;
 import com.mndk.kvm2m.core.vmap.VMapElementType;
 import com.mndk.kvm2m.core.vmap.VMapParserException;
 import com.mndk.kvm2m.core.vmap.VMapParserResult;
@@ -32,7 +31,6 @@ import com.mndk.shapefile.dbf.DBaseField;
 import com.mndk.shapefile.shp.ShapeVector;
 import com.mndk.shapefile.shp.ShapefileRecord;
 
-import net.buildtheearth.terraplusplus.generator.EarthGeneratorSettings;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 
 
@@ -44,7 +42,9 @@ public class ShpZipMapParser extends VMapParser {
 	protected VMapParserResult getResult() throws IOException {
 		
 		VMapParserResult result = new VMapParserResult();
-	
+		
+		Throwable throwable = null;
+		
 		// Set temporary destination directory
 		String mapFilePath = mapFile.getAbsolutePath();
 		Grs80Projection projection = getProjFromFileName(mapFile);
@@ -65,14 +65,23 @@ public class ShpZipMapParser extends VMapParser {
 				String filePath = shapeFile.getAbsolutePath();
 				filePath = filePath.substring(0, filePath.length() - 4);
 				String fileName = new File(filePath).getName();
-				VMapElementLayer elementLayer = fromShpFile(filePath, fileName, result.getElevationPoints());
+				VMapElementLayer elementLayer = fromShpFile(filePath, fileName);
 				result.addElement(elementLayer);
 			}
-		} finally {
-			DirectoryManager.deleteDirectory(zipDestination);
+		} catch(Throwable t) {
+			throwable = t;
 		}
+		// I could use "finally" though
+		DirectoryManager.deleteDirectory(zipDestination);
 		
-		result.extractElevationPoints();
+		if(throwable != null) {
+			if(throwable instanceof IOException) {
+				throw (IOException) throwable;
+			}
+			else {
+				throw new RuntimeException(throwable);
+			}
+		}
 		
 		return result;
 		
@@ -80,7 +89,7 @@ public class ShpZipMapParser extends VMapParser {
 	
 	
 	
-	private VMapElementLayer fromShpFile(String filePath, String fileName, List<Vector2DH> elevPoints) throws FileNotFoundException, IOException {
+	private VMapElementLayer fromShpFile(String filePath, String fileName) throws FileNotFoundException, IOException {
 		
 		VMapElementType type = VMapElementType.fromLayerName(fileName.substring(4));
 		ShpDbfDataIterator iterator = new ShpDbfDataIterator(filePath, Charset.forName("cp949"));
@@ -182,9 +191,9 @@ public class ShpZipMapParser extends VMapParser {
 	
 	
 	
-	@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws IOException {
 		
+		/*
 		String BTE_GEN_JSON =
 				"{" +
 					"\"projection\":\"bteairocean\"," +
@@ -193,12 +202,16 @@ public class ShpZipMapParser extends VMapParser {
 					"\"scaleY\":7318261.522857145" +
 				"}";
 		GeographicProjection BTE = EarthGeneratorSettings.parse(BTE_GEN_JSON).projection();
-		Map<String, String> emptyOption = new HashMap<>();
+		*/
+		
+		GeographicProjection proj = Projections.GRS80_WEST;
+		Map<String, String> emptyOption = Collections.emptyMap();
 		VMapParser parser = new ShpZipMapParser();
 		
-		VMapParserResult result = parser.parse(new File("test/37612030.zip"), BTE, emptyOption);
+		VMapParserResult result = parser.parse(new File("test/37612030.zip"), proj, emptyOption);
 		
-		System.out.println(DelaunayTriangulationTerrainGenerator.generate(result).size());
-		System.out.println(FastDelaunayTriangulator.from(result.getElevationPoints()).getTriangleList().size());
+		System.out.println(result.getLayer(VMapElementType.등고선));
+		
+		System.out.println(TerrainTriangulator.generate(result).size());
 	}
 }

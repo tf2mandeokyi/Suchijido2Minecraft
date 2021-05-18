@@ -47,4 +47,10 @@ public class VMapPoint extends VMapElement {
 		}
 	}
 	
+	
+	@Override
+	public String toString() {
+		return "VMapPoint{type=" + parent.getType() + ",pos=" + this.point + "}";
+	}
+	
 }
