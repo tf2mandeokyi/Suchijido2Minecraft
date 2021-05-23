@@ -1,18 +1,11 @@
 package com.mndk.kvm2m.core.vectorparser;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.Map;
-
 import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.projection.Projections;
+import com.mndk.kvm2m.core.triangulator.TerrainTriangulator;
 import com.mndk.kvm2m.core.util.file.DirectoryManager;
 import com.mndk.kvm2m.core.util.file.ZipManager;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.util.triangulator.TerrainTriangulator;
 import com.mndk.kvm2m.core.vmap.VMapElementType;
 import com.mndk.kvm2m.core.vmap.VMapParserException;
 import com.mndk.kvm2m.core.vmap.VMapParserResult;
@@ -30,8 +23,14 @@ import com.mndk.shapefile.ShpDbfRecord;
 import com.mndk.shapefile.dbf.DBaseField;
 import com.mndk.shapefile.shp.ShapeVector;
 import com.mndk.shapefile.shp.ShapefileRecord;
-
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.Map;
 
 
 

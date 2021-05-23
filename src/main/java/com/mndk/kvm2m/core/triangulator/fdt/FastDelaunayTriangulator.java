@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.util.triangulator;
+package com.mndk.kvm2m.core.triangulator.fdt;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,7 +10,8 @@ import com.mndk.kvm2m.core.util.shape.TriangleList;
 
 
 /**
- * An incredibly fast Delaunay triangulation calculator for 2d points, from <a href="https://github.com/mapbox/delaunator">https://github.com/mapbox/delaunator</a>
+ * An incredibly fast Delaunay triangulation calculator for 2d points.<br>
+ * Original code: <a href="https://github.com/mapbox/delaunator">https://github.com/mapbox/delaunator</a>
  * */
 public class FastDelaunayTriangulator {
 	
@@ -331,7 +332,7 @@ public class FastDelaunayTriangulator {
 	
 	
 	
-	protected int legalize(int a) {
+	private int legalize(int a) {
 
 		int i = 0;
 		int ar = 0;
@@ -373,7 +374,7 @@ public class FastDelaunayTriangulator {
 			int pl = triangles[al];
 			int p1 = triangles[bl];
 
-			boolean illegal = inCircle(coords[p0], coords[pr], coords[pl], coords[p1]);
+			boolean illegal = isQuadrilateralIllegal(coords[p0], coords[pr], coords[pl], coords[p1]);
 
 			if (illegal) {
 				triangles[a] = p1;
@@ -410,9 +411,15 @@ public class FastDelaunayTriangulator {
 
 		return ar;
 	}
-	
-	
-	
+
+
+
+	protected boolean isQuadrilateralIllegal(Vector2DH t0, Vector2DH tl, Vector2DH tr, Vector2DH p) {
+		return inCircle(t0, tl, tr, p);
+	}
+
+
+
 	private void link(int a, int b) {
 		this.halfedges[a] = b;
 		if (b != -1) this.halfedges[b] = a;

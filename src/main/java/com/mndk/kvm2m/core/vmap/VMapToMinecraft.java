@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.util.triangulator.TerrainTriangulator;
+import com.mndk.kvm2m.core.triangulator.TerrainTriangulator;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
 import com.mndk.kvm2m.mod.event.ServerTickRepeater;

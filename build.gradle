@@ -113,6 +113,7 @@ dependencies {
     }
 	
 	testCompile "junit:junit:4.12"
+    testCompile 'com.github.BuildTheEarth:terraplusplus:74449c4af349fd9b77b10e1041ed2c09f2d78518'
 	
 }
 

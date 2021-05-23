@@ -62,6 +62,10 @@ public class Vector2DH {
 		double dx = x - v.x, dz = z - v.z;
 		return dx * dx + dz * dz;
 	}
+
+	public double distance2d(Vector2DH v) {
+		return Math.sqrt(distance2dSq(v));
+	}
 	
 	public Vector2DH withHeight(double height_) {
 		return new Vector2DH(x, height_, z);
