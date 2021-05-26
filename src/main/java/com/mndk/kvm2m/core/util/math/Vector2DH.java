@@ -1,5 +1,7 @@
 package com.mndk.kvm2m.core.util.math;
 
+import java.util.Objects;
+
 public class Vector2DH {
 	
 	public static final Vector2DH UNIT_X = new Vector2DH(1, 0, 0);
@@ -82,7 +84,12 @@ public class Vector2DH {
 		Vector2DH v = (Vector2DH) obj;
 		return x == v.x && height == v.height && z == v.z;
 	}
-	
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(x, height, z);
+	}
+
 	public boolean xyequals(Vector2DH v) {
 		return x == v.x && z == v.z;
 	}

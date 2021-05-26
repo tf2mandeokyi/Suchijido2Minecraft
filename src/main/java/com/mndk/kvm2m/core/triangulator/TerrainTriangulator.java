@@ -48,6 +48,8 @@ public class TerrainTriangulator {
 		cdt.insertVertices(parsed.getKey());
 		cdt.insertEdges(parsed.getValue());
 
+		cdt.eraseSuperTriangle();
+
 		return cdt.getTriangles();
 		// return new ConstraintDelaunayTriangulator(vertexes, elevationPoints.toArray(new Vector2DH[0])).getTriangleList();
 	}
