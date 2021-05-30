@@ -62,18 +62,4 @@ public abstract class VMapParser {
 		return getProjFromFileName(this.mapFile);
 	}
 	
-	
-	/*protected static void extractElevationPoints(VMapElement element, List<Vector2DH> elevPoints) {
-		if(element instanceof VMapContour) {
-			VMapContour contour = (VMapContour) element;
-			for(Vector2DH[] va : contour.getVertexList()) for(Vector2DH v : va) {
-				elevPoints.add(v.withHeight(contour.elevation));
-			}
-		}
-		else if(element instanceof VMapElevationPoint) {
-			VMapElevationPoint elevPoint = (VMapElevationPoint) element;
-			elevPoints.add(elevPoint.toVector());
-		}
-	}*/
-	
 }

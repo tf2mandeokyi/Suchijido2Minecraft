@@ -165,12 +165,15 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 			VMapToMinecraft.generateTasks(world, worldEditRegion, result, options);
 			
 		}
-		catch(FileNotFoundException exception) {
+		catch(FileNotFoundException e) {
 			throw new CommandException("File does not exist!");
 		}
-		catch(VMapParserException | IllegalArgumentException exception) {
-			KVectorMap2MinecraftMod.logger.error(exception);
-			throw new CommandException(exception.getMessage());
+		catch(VMapParserException | IllegalArgumentException e) {
+			KVectorMap2MinecraftMod.logger.error(e);
+			throw new CommandException(e.getMessage());
+		}
+		catch(CommandException e) {
+			throw e;
 		}
 		catch(Throwable t) {
 			t.printStackTrace();

@@ -49,6 +49,8 @@ public class VMapPolygon extends VMapPolyline {
 	
 	public boolean containsPoint(Vector2DH point) {
 
+		boolean result = false;
+
 		for (Vector2DH[] vertex : vertices) {
 			boolean inside = false;
 			for (int i = 0, j = vertex.length - 1; i < vertex.length; j = i++) {
@@ -56,9 +58,11 @@ public class VMapPolygon extends VMapPolyline {
 					inside = !inside;
 				}
 			}
-			if (inside) return true;
+			if (inside) {
+				result = !result;
+			}
 		}
-		return false;
+		return result;
 	}
 	
 	
