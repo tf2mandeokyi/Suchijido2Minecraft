@@ -33,7 +33,6 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,17 +42,29 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 	
 
 	static final int MAX_AXIS = 30000000;
-	static final FlatRegion INFINITE_REGION = new CuboidRegion(new Vector(-MAX_AXIS, 0, -MAX_AXIS), new Vector(MAX_AXIS, 0, MAX_AXIS));
+
+	static final FlatRegion INFINITE_REGION =
+			new CuboidRegion(new Vector(-MAX_AXIS, 0, -MAX_AXIS), new Vector(MAX_AXIS, 0, MAX_AXIS));
+
 	static final Set<String> ALLOWED_OPTIONS = new HashSet<>(Arrays.asList(
-			"generate-all", // Generate all of the map data regardless of worldedit selection
-			"element-per-tick", // Number of elements to be generated in each tick. Without this option will generate a layer per tick.
-			"no-terrain", // Terrain won't be generated with this option.
-			"no-cutting", // Terrain won't be cut with this option.
-			"no-filling", // Terrain won't be filled with tis option.
-			"terrain-only", // Map data objects won't be generated with this opiton.
-			"gen-building-shells", // Building shells will be generated with this option.
-			"draw-contour", // Contours will be generated with this option.
-			"layer-only" // Accepts only one layer. (The input is the layer name. e.g. A0010000)
+			// Generate all of the map data regardless of worldedit selection
+			"generate-all",
+			// Number of elements to be generated in each tick. Without this option, it will generate one layer per tick.
+			"element-per-tick",
+			// Terrain won't be generated with this option.
+			"no-terrain",
+			// Terrain won't be cut with this option.
+			"no-cutting",
+			// Terrain won't be filled with tis option.
+			"no-filling",
+			// Map data objects won't be generated with this opiton.
+			"terrain-only",
+			// Building shells will be generated with this option.
+			"gen-building-shells",
+			// Contours will be generated with this option.
+			"draw-contour",
+			// Accepts only one layer. (The input is the layer name. e.g. A0010000)
+			"layer-only"
 	));
 	
 	
@@ -161,8 +172,8 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 			KVectorMap2MinecraftMod.logger.error(exception);
 			throw new CommandException(exception.getMessage());
 		}
-		catch(IOException exception) {
-			exception.printStackTrace();
+		catch(Throwable t) {
+			t.printStackTrace();
 			throw new CommandException("An unexpected error occured while parsing vector map.");
 		}
 	}
