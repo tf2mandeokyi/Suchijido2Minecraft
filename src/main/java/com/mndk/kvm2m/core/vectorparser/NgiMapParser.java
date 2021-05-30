@@ -1,11 +1,5 @@
 package com.mndk.kvm2m.core.vectorparser;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vmap.VMapElementType;
 import com.mndk.kvm2m.core.vmap.VMapParserResult;
@@ -22,14 +16,16 @@ import com.mndk.ngiparser.NgiParser;
 import com.mndk.ngiparser.nda.NdaDataColumn;
 import com.mndk.ngiparser.ngi.NgiLayer;
 import com.mndk.ngiparser.ngi.NgiParserResult;
-import com.mndk.ngiparser.ngi.element.NgiLine;
-import com.mndk.ngiparser.ngi.element.NgiPoint;
-import com.mndk.ngiparser.ngi.element.NgiPolygon;
-import com.mndk.ngiparser.ngi.element.NgiRecord;
+import com.mndk.ngiparser.ngi.element.*;
 import com.mndk.ngiparser.ngi.vertex.NgiVector;
-
 import net.buildtheearth.terraplusplus.generator.EarthGeneratorSettings;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class NgiMapParser extends VMapParser {
 
@@ -76,7 +72,10 @@ public class NgiMapParser extends VMapParser {
 	
 	
 	private VMapElement fromElement(VMapElementLayer layer, NgiRecord<?> ngiElement) {
-		if(ngiElement instanceof NgiPolygon) {
+		if(ngiElement instanceof NgiMultiPolygon) {
+			return fromMultiPolygon(layer, (NgiMultiPolygon) ngiElement);
+		}
+		else if(ngiElement instanceof NgiPolygon) {
 			return fromPolygon(layer, (NgiPolygon) ngiElement);
 		}
 		else if(ngiElement instanceof NgiLine) {
@@ -86,6 +85,33 @@ public class NgiMapParser extends VMapParser {
 			return fromPoint(layer, (NgiPoint) ngiElement);
 		}
 		return null;
+	}
+
+
+
+	private VMapElement fromMultiPolygon(VMapElementLayer layer, NgiMultiPolygon polygon) {
+		Vector2DH[][] vertexList = new Vector2DH[polygon.vertexData.length][];
+
+		for(int k = 0; k < polygon.vertexData.length; ++k) {
+			for (int j = 0; j < polygon.vertexData[k].length; ++j) {
+				int size = polygon.vertexData[k][j].getSize();
+				vertexList[j] = new Vector2DH[size];
+
+				for (int i = 0; i < size; ++i) {
+					NgiVector vertex = polygon.vertexData[k][j].getVertex(i);
+					vertexList[j][i] = this.targetProjToWorldProjCoord(vertex.getAxis(0), vertex.getAxis(1));
+				}
+			}
+		}
+
+		if(layer.getType() == VMapElementType.건물) {
+			if(options.containsKey("gen-building-shells")) {
+				return new VMapBuilding(layer, vertexList, polygon.rowData);
+			} else {
+				return new VMapPolyline(layer, vertexList, polygon.rowData, true);
+			}
+		}
+		else { return new VMapPolygon(layer, vertexList, polygon.rowData, true); }
 	}
 	
 	

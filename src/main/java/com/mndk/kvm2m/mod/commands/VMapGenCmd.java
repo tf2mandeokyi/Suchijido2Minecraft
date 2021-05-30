@@ -1,19 +1,5 @@
 package com.mndk.kvm2m.mod.commands;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.io.FilenameUtils;
-
 import com.mndk.kvm2m.core.util.KeyRestrictedMap;
 import com.mndk.kvm2m.core.vectorparser.VMapParser;
 import com.mndk.kvm2m.core.vmap.VMapParserException;
@@ -29,7 +15,6 @@ import com.sk89q.worldedit.forge.ForgeWorldEdit;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.FlatRegion;
 import com.sk89q.worldedit.regions.Region;
-
 import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
 import io.github.opencubicchunks.cubicchunks.core.server.CubeProviderServer;
 import net.buildtheearth.terraplusplus.generator.EarthGenerator;
@@ -44,6 +29,14 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import org.apache.commons.io.FilenameUtils;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 
@@ -51,7 +44,7 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 
 	static final int MAX_AXIS = 30000000;
 	static final FlatRegion INFINITE_REGION = new CuboidRegion(new Vector(-MAX_AXIS, 0, -MAX_AXIS), new Vector(MAX_AXIS, 0, MAX_AXIS));
-	static final Set<String> ALLOWED_OPTIONS = new HashSet<>(Arrays.asList(new String[] {
+	static final Set<String> ALLOWED_OPTIONS = new HashSet<>(Arrays.asList(
 			"generate-all", // Generate all of the map data regardless of worldedit selection
 			"element-per-tick", // Number of elements to be generated in each tick. Without this option will generate a layer per tick.
 			"no-terrain", // Terrain won't be generated with this option.
@@ -61,7 +54,7 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 			"gen-building-shells", // Building shells will be generated with this option.
 			"draw-contour", // Contours will be generated with this option.
 			"layer-only" // Accepts only one layer. (The input is the layer name. e.g. A0010000)
-	}));
+	));
 	
 	
 	
@@ -135,6 +128,7 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 					File file = new File(KVectorMap2MinecraftMod.kVecFileDirectory + "/" + fileName);
 					if(file.isDirectory()) {
 						File[] files = file.listFiles((dir, name) -> name.endsWith(this.extension));
+
 						for(File child : files) {
 							VMapParserResult parserResult = this.parser.parse(child, projection, options);
 							result.append(parserResult);
@@ -168,6 +162,7 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 			throw new CommandException(exception.getMessage());
 		}
 		catch(IOException exception) {
+			exception.printStackTrace();
 			throw new CommandException("An unexpected error occured while parsing vector map.");
 		}
 	}
@@ -240,7 +235,7 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 		if(files == null) return new ArrayList<>();
 		
 		return Stream.of(files).filter(f -> f.isFile() && f.getName().endsWith(final_extension))
-				.map(f -> f.getName()).collect(Collectors.toList());
+				.map(File::getName).collect(Collectors.toList());
 	}
 	
 	

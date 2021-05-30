@@ -1,7 +1,5 @@
 package com.mndk.kvm2m.core.vmap.elem.poly;
 
-import java.util.Map;
-
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.math.VectorMath;
 import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
@@ -12,9 +10,10 @@ import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapPolyline;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
-
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
+import java.util.Map;
 
 public class VMapPolygon extends VMapPolyline {
 
@@ -49,16 +48,15 @@ public class VMapPolygon extends VMapPolyline {
 	
 	
 	public boolean containsPoint(Vector2DH point) {
-		
-		for(int k = 0; k < vertices.length; ++k) {
+
+		for (Vector2DH[] vertex : vertices) {
 			boolean inside = false;
-			Vector2DH[] temp = vertices[k];
-			for(int i = 0, j = temp.length - 1; i < temp.length; j = i++) {
-				if(VectorMath.checkRayXIntersection(point, temp[i], temp[j])) {
+			for (int i = 0, j = vertex.length - 1; i < vertex.length; j = i++) {
+				if (VectorMath.checkRayXIntersection(point, vertex[i], vertex[j])) {
 					inside = !inside;
 				}
 			}
-			if(inside) return true;
+			if (inside) return true;
 		}
 		return false;
 	}

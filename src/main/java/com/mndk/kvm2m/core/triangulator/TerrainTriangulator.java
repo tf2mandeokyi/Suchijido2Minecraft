@@ -16,11 +16,21 @@ public class TerrainTriangulator {
 	
 	
 	public static TriangleList generate(VMapParserResult result) {
-		
-		List<VMapContour> contourList = 
-				result.getLayer(VMapElementType.등고선).stream().map(element -> (VMapContour) element).collect(Collectors.toList());
-		List<Vector2DH> elevationPoints = 
-				result.getLayer(VMapElementType.표고점).stream().map(element -> ((VMapElevationPoint) element).toVector()).collect(Collectors.toList());
+
+		List<VMapContour> contourList = new ArrayList<>();
+		List<Vector2DH> elevationPoints = new ArrayList<>();
+
+		if(result.containsLayer(VMapElementType.등고선)) {
+			contourList = result.getLayer(VMapElementType.등고선)
+					.stream().map(element -> (VMapContour) element).collect(Collectors.toList());
+		}
+
+		if(result.containsLayer(VMapElementType.표고점)) {
+			elevationPoints = result.getLayer(VMapElementType.표고점)
+					.stream().map(element -> ((VMapElevationPoint) element).toVector()).collect(Collectors.toList());
+		}
+
+
 		
 		return generate(contourList, elevationPoints);
 	}
@@ -51,7 +61,6 @@ public class TerrainTriangulator {
 		cdt.eraseSuperTriangle();
 
 		return cdt.getTriangles();
-		// return new ConstraintDelaunayTriangulator(vertexes, elevationPoints.toArray(new Vector2DH[0])).getTriangleList();
 	}
 
 
