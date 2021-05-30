@@ -36,7 +36,7 @@ The mod that imports Korean National Geographic Data Map files (also known as "�
     * `/genshpzipmap 37000000.zip --layer-only=B0010000`
 
 ## Copyright
-You can find the documentation of National Geographic Data Maps and their interactive platform at [National Geographic Information Platform, 국토정보플랫폼](http://map.ngii.go.kr/mn/mainPage.do).
+The vector map data, map format, and triangulation algorithms (CDT, FDT) are copyrighted by their original creators.
 
 ## Screenshot
 
