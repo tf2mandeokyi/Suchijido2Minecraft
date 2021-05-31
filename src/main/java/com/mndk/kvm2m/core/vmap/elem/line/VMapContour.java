@@ -16,7 +16,7 @@ public class VMapContour extends VMapPolyline {
 	
 	public VMapContour(VMapElementLayer parent, Vector2DH[] vertices, Object[] rowData) {
 		super(parent, new Vector2DH[][] { vertices }, rowData, false);
-		this.elevation = VMapElementStyleSelector.getStyle(this)[0].y;
+		this.elevation = (int) Math.round((Double) this.getDataByColumn("등고수치"));
 	}
 	
 	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
@@ -46,6 +46,6 @@ public class VMapContour extends VMapPolyline {
 	
 	@Override
 	public String toString() {
-		return "VMapContour{vertexLen=" + vertices[0].length + ",height=" + VMapElementStyleSelector.getStyle(this)[0].y + "}";
+		return "VMapContour{vertexLen=" + vertices[0].length + ",height=" + elevation + "}";
 	}
 }

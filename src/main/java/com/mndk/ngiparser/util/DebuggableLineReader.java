@@ -24,13 +24,23 @@ public class DebuggableLineReader extends BufferedReader {
     }
 
     public IOException getException() {
-        return new IOException("Invalid syntax in file " + fileName + " at line " + line + ": \"" + lineCache + "\"");
+        return new IOException(
+                "Exception thrown while parsing line " + line + " of file \"" + fileName +
+                "\": \"" + lineCache + "\""
+        );
     }
 
     public IOException getException(String message) {
         return new IOException(
-                "Invalid syntax in file " + fileName + " at line " + line + ": \"" + lineCache + "\"\n" +
-                "Reason: " + message
+                "Exception thrown while parsing line " + line + " of file \"" + fileName + "\": \"" + lineCache + "\"\n" +
+                "Cause: " + message
+        );
+    }
+
+    public IOException getException(Throwable t) {
+        return new IOException(
+                "Exception thrown while parsing line " + line + " of file \"" + fileName + "\": \"" + lineCache + "\"",
+                t
         );
     }
 

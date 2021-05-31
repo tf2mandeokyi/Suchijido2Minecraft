@@ -65,7 +65,7 @@ public class NgiParser {
 
 				ndaFilePath == null ? null : new DebuggableLineReader(
 						new InputStreamReader(new FileInputStream(ndaFilePath), encoding),
-						new File(ngiFilePath).getName()
+						new File(ndaFilePath).getName()
 				)
 		);
 	}
@@ -105,19 +105,27 @@ public class NgiParser {
 
 		String line;
 
-		while(ngiReader.ready()) {
-			line = ngiReader.readLine();
-			if(line.equals("<LAYER_START>")) {
-				readNgiLayer();
+		try {
+			while (ngiReader.ready()) {
+				line = ngiReader.readLine();
+				if (line.equals("<LAYER_START>")) {
+					readNgiLayer();
+				}
 			}
+		} catch(Throwable t) {
+			throw ngiReader.getException(t);
 		}
 
 		if(this.ndaReader != null) {
-			while(ndaReader.ready()) {
-				line = ndaReader.readLine();
-				if(line.equals("<LAYER_START>")) {
-					readNdaLayer();
+			try {
+				while (ndaReader.ready()) {
+					line = ndaReader.readLine();
+					if (line.equals("<LAYER_START>")) {
+						readNdaLayer();
+					}
 				}
+			} catch(Throwable t) {
+				throw ndaReader.getException(t);
 			}
 		}
 
@@ -321,8 +329,10 @@ public class NgiParser {
 			if(line.startsWith("$RECORD")) {
 				int recordIndex = Integer.parseInt(line.substring(line.indexOf(" ") + 1));
 				NgiRecord<?> element = result.getElement(recordIndex);
-				String nextLine = ndaReader.readLine();
-				element.rowData = parseDataParametersToObject(nextLine);
+				if (element != null) { // If the record number exists in .ngi file
+					String nextLine = ndaReader.readLine();
+					element.rowData = parseDataParametersToObject(nextLine);
+				}
 			}
 			else if(line.equals("<END>")) break;
 		}

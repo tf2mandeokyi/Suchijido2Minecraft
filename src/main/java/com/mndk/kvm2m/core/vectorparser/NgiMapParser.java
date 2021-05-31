@@ -1,14 +1,5 @@
 package com.mndk.kvm2m.core.vectorparser;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vmap.VMapElementType;
 import com.mndk.kvm2m.core.vmap.VMapParserResult;
@@ -25,15 +16,14 @@ import com.mndk.ngiparser.NgiParser;
 import com.mndk.ngiparser.nda.NdaDataColumn;
 import com.mndk.ngiparser.ngi.NgiLayer;
 import com.mndk.ngiparser.ngi.NgiParserResult;
-import com.mndk.ngiparser.ngi.element.NgiLine;
-import com.mndk.ngiparser.ngi.element.NgiMultiPolygon;
-import com.mndk.ngiparser.ngi.element.NgiPoint;
-import com.mndk.ngiparser.ngi.element.NgiPolygon;
-import com.mndk.ngiparser.ngi.element.NgiRecord;
+import com.mndk.ngiparser.ngi.element.*;
 import com.mndk.ngiparser.ngi.vertex.NgiVector;
-
 import net.buildtheearth.terraplusplus.generator.EarthGeneratorSettings;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 public class NgiMapParser extends VMapParser {
 
@@ -47,8 +37,10 @@ public class NgiMapParser extends VMapParser {
 		Collection<NgiLayer> layers = parseResult.getLayers().values();
 		for(NgiLayer layer : layers) {
 			if(layer.header.dimensions != 2) continue;
-			VMapElementLayer elementLayer = fromNgiLayer(layer);
-			result.addElement(elementLayer);
+			try {
+				VMapElementLayer elementLayer = fromNgiLayer(layer);
+				result.addElement(elementLayer);
+			} catch(NullPointerException ignored) {} // TODO I don't have a good feeling about this
 		}
 		
 		return result;
@@ -135,7 +127,7 @@ public class NgiMapParser extends VMapParser {
 			vertexList[j] = new Vector2DH[size];
 			
 			for(int i = 0; i < size; ++i) {
-				NgiVector vertex = polygon.vertexData[0].getVertex(i);
+				NgiVector vertex = polygon.vertexData[j].getVertex(i);
 				vertexList[j][i] = this.targetProjToWorldProjCoord(vertex.getAxis(0), vertex.getAxis(1));
 			}
 		}
