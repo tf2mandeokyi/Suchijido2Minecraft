@@ -1,28 +1,27 @@
 package com.mndk.kvm2m.core.vmap.elem.point;
 
-import java.util.Map;
-
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
-import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
+import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.sk89q.worldedit.regions.FlatRegion;
-
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
+import java.util.Map;
 
 public class VMapPoint extends VMapElement {
 
 	private final Vector2DH point;
 
-	public VMapPoint(VMapElementLayer layer, Vector2DH point, Map<String, Object> dataRow) {
+	public VMapPoint(VMapLayer layer, Vector2DH point, Map<String, Object> dataRow) {
 		super(layer, dataRow);
 		this.point = point;
 	}
 
-	public VMapPoint(VMapElementLayer layer, Vector2DH point, Object[] dataRow) {
+	public VMapPoint(VMapLayer layer, Vector2DH point, Object[] dataRow) {
 		super(layer, dataRow);
 		this.point = point;
 	}

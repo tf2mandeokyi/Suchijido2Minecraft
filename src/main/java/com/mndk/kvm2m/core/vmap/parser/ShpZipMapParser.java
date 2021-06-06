@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.vectorparser;
+package com.mndk.kvm2m.core.vmap.parser;
 
 import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.projection.Projections;
@@ -10,7 +10,7 @@ import com.mndk.kvm2m.core.vmap.VMapElementType;
 import com.mndk.kvm2m.core.vmap.VMapParserException;
 import com.mndk.kvm2m.core.vmap.VMapParserResult;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
-import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
+import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapPolyline;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapWall;
@@ -26,7 +26,6 @@ import com.mndk.shapefile.shp.ShapefileRecord;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Collections;
@@ -56,7 +55,7 @@ public class ShpZipMapParser extends VMapParser {
 		try {
 			
 			// Extract all files in map file
-			zipDestination.mkdir();			
+			zipDestination.mkdir();
 			ZipManager.extractZipFile(mapFile, zipDestination);
 			
 			File[] shapeFiles = zipDestination.listFiles((dir, name) -> name.endsWith(".shp"));
@@ -64,7 +63,7 @@ public class ShpZipMapParser extends VMapParser {
 				String filePath = shapeFile.getAbsolutePath();
 				filePath = filePath.substring(0, filePath.length() - 4);
 				String fileName = new File(filePath).getName();
-				VMapElementLayer elementLayer = fromShpFile(filePath, fileName);
+				VMapLayer elementLayer = fromShpFile(filePath, fileName);
 				result.addElement(elementLayer);
 			}
 		} catch(Throwable t) {
@@ -88,7 +87,7 @@ public class ShpZipMapParser extends VMapParser {
 	
 	
 	
-	private VMapElementLayer fromShpFile(String filePath, String fileName) throws FileNotFoundException, IOException {
+	private VMapLayer fromShpFile(String filePath, String fileName) throws IOException {
 		
 		VMapElementType type = VMapElementType.fromLayerName(fileName.substring(4));
 		ShpDbfDataIterator iterator = new ShpDbfDataIterator(filePath, Charset.forName("cp949"));
@@ -99,7 +98,7 @@ public class ShpZipMapParser extends VMapParser {
 			columns[i] = fields[i].name;
 		}
 		
-		VMapElementLayer layer = new VMapElementLayer(type, columns);
+		VMapLayer layer = new VMapLayer(type, columns);
 		
 		// int i = 0;
 		for(ShpDbfRecord record : iterator) {
@@ -116,7 +115,7 @@ public class ShpZipMapParser extends VMapParser {
 	
 	
 	
-	private VMapElement fromElement(VMapElementLayer layer, ShpDbfRecord record) {
+	private VMapElement fromElement(VMapLayer layer, ShpDbfRecord record) {
 		if(record.shape instanceof ShapefileRecord.Polygon) {
 			return fromPolygon(layer, record);
 		}
@@ -131,7 +130,7 @@ public class ShpZipMapParser extends VMapParser {
 	
 	
 	
-	private VMapElement fromPolygon(VMapElementLayer layer, ShpDbfRecord record) {
+	private VMapElement fromPolygon(VMapLayer layer, ShpDbfRecord record) {
 		ShapefileRecord.Polygon shape = (ShapefileRecord.Polygon) record.shape;
 		ShapeVector[][] points = shape.points;
 		Vector2DH[][] vertexList = new Vector2DH[shape.points.length][];
@@ -158,7 +157,7 @@ public class ShpZipMapParser extends VMapParser {
 	
 
 	
-	private VMapPolyline fromLine(VMapElementLayer layer, ShpDbfRecord record) {
+	private VMapPolyline fromLine(VMapLayer layer, ShpDbfRecord record) {
 		ShapefileRecord.PolyLine shape = (ShapefileRecord.PolyLine) record.shape;
 		ShapeVector[][] points = shape.points;
 		Vector2DH[][] vertexList = new Vector2DH[shape.points.length][];
@@ -180,7 +179,7 @@ public class ShpZipMapParser extends VMapParser {
 	
 	
 	
-	private VMapPoint fromPoint(VMapElementLayer layer, ShpDbfRecord record) {
+	private VMapPoint fromPoint(VMapLayer layer, ShpDbfRecord record) {
 		ShapefileRecord.Point shape = (ShapefileRecord.Point) record.shape;
 		Vector2DH vpoint = this.targetProjToWorldProjCoord(shape.x, shape.y);
 		

@@ -6,8 +6,12 @@ import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementType;
 import com.mndk.kvm2m.core.vmap.VMapParserResult;
+import com.mndk.kvm2m.core.vmap.elem.VMapElement;
+import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
 import com.mndk.kvm2m.core.vmap.elem.point.VMapElevationPoint;
+import com.mndk.kvm2m.core.vmap.elem.point.VMapPoint;
+import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,15 +23,26 @@ public class TerrainTriangulator {
 
 		List<VMapContour> contourList = new ArrayList<>();
 		List<Vector2DH> elevationPoints = new ArrayList<>();
+		VMapLayer tempLayer;
 
-		if(result.containsLayer(VMapElementType.등고선)) {
-			contourList = result.getLayer(VMapElementType.등고선)
-					.stream().map(element -> (VMapContour) element).collect(Collectors.toList());
+		if((tempLayer = result.getLayer(VMapElementType.등고선)) != null) {
+			contourList = tempLayer.stream().map(element -> (VMapContour) element).collect(Collectors.toList());
 		}
 
-		if(result.containsLayer(VMapElementType.표고점)) {
-			elevationPoints = result.getLayer(VMapElementType.표고점)
-					.stream().map(element -> ((VMapElevationPoint) element).toVector()).collect(Collectors.toList());
+		if((tempLayer = result.getLayer(VMapElementType.표고점)) != null) {
+			for(VMapElement pElem : tempLayer) {
+				assert pElem instanceof VMapElevationPoint;
+				VMapElevationPoint point = (VMapElevationPoint) pElem;
+
+				if( checkLayerContainsPoint(point, result.getLayer(VMapElementType.육교)) ||
+					checkLayerContainsPoint(point, result.getLayer(VMapElementType.교량)) ||
+					checkLayerContainsPoint(point, result.getLayer(VMapElementType.입체교차부))) {
+
+					continue;
+				}
+
+				elevationPoints.add(point.getPosition());
+			}
 		}
 
 
@@ -110,5 +125,19 @@ public class TerrainTriangulator {
 		return new AbstractMap.SimpleEntry<>(Arrays.asList(pointArray), indexEdges);
 
 	}
-	
+
+
+
+	private static boolean checkLayerContainsPoint(VMapPoint point, VMapLayer layer) {
+		if(layer == null) return true;
+
+		for(VMapElement elem : layer) {
+			if(elem instanceof VMapPolygon) {
+				if(((VMapPolygon) elem).containsPoint(point.getPosition())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }

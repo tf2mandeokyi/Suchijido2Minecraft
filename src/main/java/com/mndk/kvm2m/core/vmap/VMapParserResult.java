@@ -1,6 +1,6 @@
 package com.mndk.kvm2m.core.vmap;
 
-import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
+import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
 
 import javax.annotation.Nullable;
@@ -11,7 +11,7 @@ import java.util.List;
 public class VMapParserResult {
 	
 	private VMapPolygon boundary;
-	private final List<VMapElementLayer> layerList;
+	private final List<VMapLayer> layerList;
 	
 	public VMapParserResult() {
 		this.layerList = new ArrayList<>();
@@ -25,11 +25,11 @@ public class VMapParserResult {
 		this.boundary = boundary;
 	}
 	
-	public List<VMapElementLayer> getElementLayers() {
+	public List<VMapLayer> getElementLayers() {
 		return this.layerList;
 	}
 	
-	public void addElement(VMapElementLayer elementLayer) {
+	public void addElement(VMapLayer elementLayer) {
 		this.layerList.add(elementLayer);
 	}
 	
@@ -40,8 +40,8 @@ public class VMapParserResult {
 		else {
 			this.boundary = this.boundary.merge(other.boundary);
 		}
-		for(VMapElementLayer layer : other.layerList) {
-			VMapElementLayer thisLayer = this.getLayer(layer.getType());
+		for(VMapLayer layer : other.layerList) {
+			VMapLayer thisLayer = this.getLayer(layer.getType());
 			if(thisLayer != null) {
 				thisLayer.addAll(layer);
 			}
@@ -54,8 +54,8 @@ public class VMapParserResult {
 	}
 
 	@Nullable
-	public VMapElementLayer getLayer(VMapElementType type) {
-		for(VMapElementLayer layer : this.layerList) {
+	public VMapLayer getLayer(VMapElementType type) {
+		for(VMapLayer layer : this.layerList) {
 			if(layer.getType() == type) return layer;
 		}
 		return null;

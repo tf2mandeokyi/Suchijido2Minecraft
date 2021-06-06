@@ -6,7 +6,7 @@ import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
-import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
+import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapPolyline;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
@@ -21,26 +21,26 @@ public class VMapPolygon extends VMapPolyline {
 	private final boolean doFill;
 
 	
-	private VMapPolygon(VMapElementLayer parent, Map<String, Object> dataRow, boolean doFill) {
+	private VMapPolygon(VMapLayer parent, Map<String, Object> dataRow, boolean doFill) {
 		super(parent, dataRow, true);
 		this.doFill = doFill;
 	}
 
 	
-	private VMapPolygon(VMapElementLayer parent, Object[] dataRow, boolean doFill) {
+	private VMapPolygon(VMapLayer parent, Object[] dataRow, boolean doFill) {
 		super(parent, dataRow, true);
 		this.doFill = doFill;
 	}
 	
 	
-	public VMapPolygon(VMapElementLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean doFill) {
+	public VMapPolygon(VMapLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean doFill) {
 		this(parent, dataRow, doFill);
 		this.vertices = vertices;
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapPolygon(VMapElementLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean doFill) {
+	public VMapPolygon(VMapLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean doFill) {
 		this(parent, dataRow, doFill);
 		this.vertices = vertices;
 		this.getBoundingBox();

@@ -1,26 +1,25 @@
 package com.mndk.kvm2m.core.vmap.elem;
 
-import java.util.Map;
-
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.sk89q.worldedit.regions.FlatRegion;
-
 import net.minecraft.world.World;
+
+import java.util.Map;
 
 public abstract class VMapElement {
 	
 	
-	protected final VMapElementLayer parent;
+	protected final VMapLayer parent;
 	protected final Object[] dataRow;
 	
 	
-	protected VMapElement(VMapElementLayer parent, Object[] dataRow) {
+	protected VMapElement(VMapLayer parent, Object[] dataRow) {
 		this.parent = parent;
 		this.dataRow = dataRow;
 	}
 	
 	
-	public VMapElement(VMapElementLayer parent, Map<String, Object> dataRow) {
+	public VMapElement(VMapLayer parent, Map<String, Object> dataRow) {
 		this(parent, new Object[dataRow.size()]);
 		for(Map.Entry<String, Object> data : dataRow.entrySet()) {
 			int columnIndex = parent.getDataColumnIndex(data.getKey());
@@ -37,7 +36,7 @@ public abstract class VMapElement {
 	}
 	
 	
-	public VMapElementLayer getParent() { return parent; }
+	public VMapLayer getParent() { return parent; }
 	
 	
 	public abstract void generateBlocks(FlatRegion region, World world, TriangleList triangles);

@@ -37,9 +37,7 @@ public class VMapElementStyleSelector {
 			case 교량:
 				return singleStyle(Blocks.IRON_BLOCK, 0);
 			case 승강장_지붕:
-				return singleStyle(Blocks.WOOL, EnumDyeColor.SILVER, 2);
-			case 터널:
-				return singleStyle(Blocks.CONCRETE, EnumDyeColor.MAGENTA, 0);
+				return singleStyle(Blocks.WOOL, EnumDyeColor.SILVER, 6);
 			case 철도:
 				return singleStyle(Blocks.ANVIL, 1);
 

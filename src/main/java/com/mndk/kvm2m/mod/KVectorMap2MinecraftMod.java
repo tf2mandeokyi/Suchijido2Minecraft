@@ -1,19 +1,17 @@
 package com.mndk.kvm2m.mod;
 
-import java.io.File;
-
-import org.apache.logging.log4j.Logger;
-
-import com.mndk.kvm2m.core.vectorparser.NgiMapParser;
-import com.mndk.kvm2m.core.vectorparser.ShpZipMapParser;
+import com.mndk.kvm2m.core.vmap.parser.NgiMapParser;
+import com.mndk.kvm2m.core.vmap.parser.ShpZipMapParser;
 import com.mndk.kvm2m.mod.commands.VMapGenCmd;
-
 import net.minecraft.command.ICommand;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
 
 @Mod(
 		modid = KVectorMap2MinecraftMod.MODID, 

@@ -1,26 +1,25 @@
 package com.mndk.kvm2m.core.vmap.elem.line;
 
-import java.util.Map;
-
 import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
-import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
+import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.sk89q.worldedit.regions.FlatRegion;
-
 import net.minecraft.world.World;
+
+import java.util.Map;
 
 public class VMapWall extends VMapPolyline {
 
 	
-	public VMapWall(VMapElementLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean isClosed) {
+	public VMapWall(VMapLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean isClosed) {
 		super(parent, vertices, dataRow, isClosed);
 	}
 	
 	
-	public VMapWall(VMapElementLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean isClosed) {
+	public VMapWall(VMapLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean isClosed) {
 		super(parent, vertices, dataRow, isClosed);
 	}
 	
@@ -36,14 +35,13 @@ public class VMapWall extends VMapPolyline {
 					(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)), 
 					w, region, style.state, style.y
 			);
-			
-			for(int j = 0; j < vertices.length; ++j) {
-				Vector2DH[] temp = vertices[j];
-				for(int i = 0; i < temp.length - 1; ++i) {
-					lineGenerator.generate(temp[i], temp[i+1]);
+
+			for (Vector2DH[] temp : vertices) {
+				for (int i = 0; i < temp.length - 1; ++i) {
+					lineGenerator.generate(temp[i], temp[i + 1]);
 				}
-				if(this.isClosed()) {
-					lineGenerator.generate(temp[temp.length-1], temp[0]);
+				if (this.isClosed()) {
+					lineGenerator.generate(temp[temp.length - 1], temp[0]);
 				}
 			}
 		}

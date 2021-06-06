@@ -1,10 +1,10 @@
-package com.mndk.kvm2m.core.vectorparser;
+package com.mndk.kvm2m.core.vmap.parser;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vmap.VMapElementType;
 import com.mndk.kvm2m.core.vmap.VMapParserResult;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
-import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
+import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapPolyline;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapWall;
@@ -38,7 +38,7 @@ public class NgiMapParser extends VMapParser {
 		for(NgiLayer layer : layers) {
 			if(layer.header.dimensions != 2) continue;
 			try {
-				VMapElementLayer elementLayer = fromNgiLayer(layer);
+				VMapLayer elementLayer = fromNgiLayer(layer);
 				result.addElement(elementLayer);
 			} catch(NullPointerException ignored) {} // TODO I don't have a good feeling about this
 		}
@@ -49,7 +49,7 @@ public class NgiMapParser extends VMapParser {
 	
 	
 	
-	private VMapElementLayer fromNgiLayer(NgiLayer ngiLayer) {
+	private VMapLayer fromNgiLayer(NgiLayer ngiLayer) {
 		VMapElementType type = VMapElementType.fromLayerName(ngiLayer.name);
 		
 		NdaDataColumn[] columns = ngiLayer.header.columns;
@@ -57,7 +57,7 @@ public class NgiMapParser extends VMapParser {
 		for(int i = 0; i < columns.length; ++i) {
 			layerColumns[i] = columns[i].name;
 		}
-		VMapElementLayer elementLayer = new VMapElementLayer(type, layerColumns);
+		VMapLayer elementLayer = new VMapLayer(type, layerColumns);
 		
 		Collection<NgiRecord<?>> ngiElements = ngiLayer.data.values();
 		for(NgiRecord<?> ngiElement : ngiElements) {
@@ -71,7 +71,7 @@ public class NgiMapParser extends VMapParser {
 	
 	
 	
-	private VMapElement fromElement(VMapElementLayer layer, NgiRecord<?> ngiElement) {
+	private VMapElement fromElement(VMapLayer layer, NgiRecord<?> ngiElement) {
 		if(ngiElement instanceof NgiMultiPolygon) {
 			return fromMultiPolygon(layer, (NgiMultiPolygon) ngiElement);
 		}
@@ -89,8 +89,8 @@ public class NgiMapParser extends VMapParser {
 
 
 
-	private VMapElement fromMultiPolygon(VMapElementLayer layer, NgiMultiPolygon polygon) {
-		List<Vector2DH[]> vertexList = new ArrayList<Vector2DH[]>();
+	private VMapElement fromMultiPolygon(VMapLayer layer, NgiMultiPolygon polygon) {
+		List<Vector2DH[]> vertexList = new ArrayList<>();
 		Vector2DH[] tempArray;
 		
 		for(int k = 0; k < polygon.vertexData.length; ++k) {
@@ -119,7 +119,7 @@ public class NgiMapParser extends VMapParser {
 	
 	
 	
-	private VMapElement fromPolygon(VMapElementLayer layer, NgiPolygon polygon) {
+	private VMapElement fromPolygon(VMapLayer layer, NgiPolygon polygon) {
 		Vector2DH[][] vertexList = new Vector2DH[polygon.vertexData.length][];
 		
 		for(int j = 0; j < polygon.vertexData.length; ++j) {
@@ -144,7 +144,7 @@ public class NgiMapParser extends VMapParser {
 	
 
 	
-	private VMapPolyline fromLine(VMapElementLayer layer, NgiLine line) {
+	private VMapPolyline fromLine(VMapLayer layer, NgiLine line) {
 		int size = line.lineData.getSize();
 		Vector2DH[] vertexList = new Vector2DH[size];
 		
@@ -160,7 +160,7 @@ public class NgiMapParser extends VMapParser {
 	
 	
 	
-	private VMapPoint fromPoint(VMapElementLayer layer, NgiPoint point) {
+	private VMapPoint fromPoint(VMapLayer layer, NgiPoint point) {
 		Vector2DH vpoint = this.targetProjToWorldProjCoord(point.position.getAxis(0), point.position.getAxis(1));
 		
 		if(layer.getType() == VMapElementType.표고점) { return new VMapElevationPoint(layer, vpoint, point.rowData); }
@@ -188,7 +188,7 @@ public class NgiMapParser extends VMapParser {
 		result.append(parser.parse(new File("test/376081986.ngi"), BTE, emptyOption));
 		result.append(parser.parse(new File("test/377052193.ngi"), BTE, emptyOption));
 		result.append(parser.parse(new File("test/376082465.ngi"), BTE, emptyOption));
-		for(VMapElementLayer layer : result.getElementLayers()) {
+		for(VMapLayer layer : result.getElementLayers()) {
 			System.out.println(layer.getType() + ": " + layer.size());
 			/*for(VMapElement element : layer) {
 				System.out.println("  " + element.getParent().getType() + " (" + element.getDataByColumn("UFID") + ")");

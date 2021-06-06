@@ -1,7 +1,5 @@
 package com.mndk.kvm2m.core.vmap.elem.line;
 
-import java.util.Map;
-
 import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
@@ -9,11 +7,12 @@ import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
-import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
+import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
 import com.sk89q.worldedit.regions.FlatRegion;
-
 import net.minecraft.world.World;
+
+import java.util.Map;
 
 public class VMapPolyline extends VMapElement {
 
@@ -22,26 +21,26 @@ public class VMapPolyline extends VMapElement {
 	private boolean isClosed;
 
 	
-	protected VMapPolyline(VMapElementLayer parent, Map<String, Object> dataRow, boolean isClosed) {
+	protected VMapPolyline(VMapLayer parent, Map<String, Object> dataRow, boolean isClosed) {
 		super(parent, dataRow);
 		this.isClosed = isClosed;
 	}
 
 	
-	protected VMapPolyline(VMapElementLayer parent, Object[] dataRow, boolean isClosed) {
+	protected VMapPolyline(VMapLayer parent, Object[] dataRow, boolean isClosed) {
 		super(parent, dataRow);
 		this.isClosed = isClosed;
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean isClosed) {
+	public VMapPolyline(VMapLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean isClosed) {
 		this(parent, dataRow, isClosed);
 		this.vertices = vertices;
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapPolyline(VMapElementLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean isClosed) {
+	public VMapPolyline(VMapLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean isClosed) {
 		this(parent, dataRow, isClosed);
 		this.vertices = vertices;
 		this.getBoundingBox();
@@ -93,14 +92,13 @@ public class VMapPolyline extends VMapElement {
 					(x, z) -> (int) Math.round(triangleList.interpolateHeight(x, z)) + style.y, 
 					w, region, style.state
 			);
-			
-			for(int j = 0; j < vertices.length; ++j) {
-				Vector2DH[] temp = vertices[j];
-				for(int i = 0; i < temp.length - 1; ++i) {
-					lineGenerator.generate(temp[i], temp[i+1]);
+
+			for (Vector2DH[] temp : vertices) {
+				for (int i = 0; i < temp.length - 1; ++i) {
+					lineGenerator.generate(temp[i], temp[i + 1]);
 				}
-				if(this.isClosed()) {
-					lineGenerator.generate(temp[temp.length-1], temp[0]);
+				if (this.isClosed()) {
+					lineGenerator.generate(temp[temp.length - 1], temp[0]);
 				}
 			}
 		}

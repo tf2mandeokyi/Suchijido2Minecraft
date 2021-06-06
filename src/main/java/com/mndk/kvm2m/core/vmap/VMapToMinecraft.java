@@ -1,23 +1,17 @@
 package com.mndk.kvm2m.core.vmap;
 
-import java.util.List;
-import java.util.Map;
-
+import com.mndk.kvm2m.core.triangulator.TerrainTriangulator;
 import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.triangulator.TerrainTriangulator;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
-import com.mndk.kvm2m.core.vmap.elem.VMapElementLayer;
+import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.mod.event.ServerTickRepeater;
-import com.mndk.kvm2m.mod.task.TerrainCuttingTask;
-import com.mndk.kvm2m.mod.task.TerrainFillingTask;
-import com.mndk.kvm2m.mod.task.TerrainGenerationTask;
-import com.mndk.kvm2m.mod.task.TerrainTrianglesGenTask;
-import com.mndk.kvm2m.mod.task.VMapElemLayerGenTask;
-import com.mndk.kvm2m.mod.task.VMapElemsGenTask;
+import com.mndk.kvm2m.mod.task.*;
 import com.sk89q.worldedit.regions.FlatRegion;
-
 import net.minecraft.world.World;
+
+import java.util.List;
+import java.util.Map;
 
 public class VMapToMinecraft {
 	
@@ -32,7 +26,7 @@ public class VMapToMinecraft {
 			generateTasksPerTick(elementsPerTick, world, worldEditRegion, result, options);
 		}
 		else {
-			List<VMapElementLayer> layerList = result.getElementLayers();
+			List<VMapLayer> layerList = result.getElementLayers();
 			
 			TriangleList triangleList = TerrainTriangulator.generate(result);
 			
@@ -49,7 +43,7 @@ public class VMapToMinecraft {
 			
 			if(!options.containsKey("terrain-only")) {
 				if(!layerList.isEmpty()) {
-					for(VMapElementLayer elementLayer : layerList) {
+					for(VMapLayer elementLayer : layerList) {
 						
 						VMapElementType type = elementLayer.getType();
 						
@@ -87,7 +81,7 @@ public class VMapToMinecraft {
 		Triangle[] triangleArray = new Triangle[elementsPerTick];
 		int i = 0;
 
-		List<VMapElementLayer> layerList;
+		List<VMapLayer> layerList;
 		TriangleList triangleList = TerrainTriangulator.generate(result);
 		boolean cutTerrain = !options.containsKey("no-cutting"), fillTerrain = !options.containsKey("no-filling");
 		
@@ -109,7 +103,7 @@ public class VMapToMinecraft {
 			layerList = result.getElementLayers();
 			VMapElement[] mapElementArray = new VMapElement[elementsPerTick];
 			
-			for(VMapElementLayer elementLayer : layerList) {
+			for(VMapLayer elementLayer : layerList) {
 				
 				VMapElementType type = elementLayer.getType();
 				
@@ -133,9 +127,8 @@ public class VMapToMinecraft {
 					}
 				}
 			}
+
 			ServerTickRepeater.addTask(new VMapElemsGenTask(mapElementArray, world, worldEditRegion, triangleList));
-			i = 0;
-			mapElementArray = new VMapElement[elementsPerTick];
 		}
 	}
 	

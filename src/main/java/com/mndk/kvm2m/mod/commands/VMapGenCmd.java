@@ -1,7 +1,7 @@
 package com.mndk.kvm2m.mod.commands;
 
 import com.mndk.kvm2m.core.util.KeyRestrictedMap;
-import com.mndk.kvm2m.core.vectorparser.VMapParser;
+import com.mndk.kvm2m.core.vmap.parser.VMapParser;
 import com.mndk.kvm2m.core.vmap.VMapParserException;
 import com.mndk.kvm2m.core.vmap.VMapParserResult;
 import com.mndk.kvm2m.core.vmap.VMapToMinecraft;

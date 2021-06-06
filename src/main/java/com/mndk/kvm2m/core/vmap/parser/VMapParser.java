@@ -1,16 +1,15 @@
-package com.mndk.kvm2m.core.vectorparser;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
+package com.mndk.kvm2m.core.vmap.parser;
 
 import com.mndk.kvm2m.core.projection.Grs80Projection;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vmap.VMapParserResult;
 import com.mndk.kvm2m.core.vmap.VMapUtils;
-
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
 
 public abstract class VMapParser {
 	
