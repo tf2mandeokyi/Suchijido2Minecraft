@@ -1,6 +1,6 @@
 package com.mndk.kvm2m.core.vmap.parser;
 
-import com.mndk.kvm2m.core.projection.Grs80Projection;
+import com.mndk.kvm2m.core.projection.Korea2010BeltProjection;
 import com.mndk.kvm2m.core.projection.Projections;
 import com.mndk.kvm2m.core.triangulator.TerrainTriangulator;
 import com.mndk.kvm2m.core.util.file.DirectoryManager;
@@ -45,7 +45,7 @@ public class ShpZipMapParser extends VMapParser {
 		
 		// Set temporary destination directory
 		String mapFilePath = mapFile.getAbsolutePath();
-		Grs80Projection projection = getProjFromFileName(mapFile);
+		Korea2010BeltProjection projection = getProjFromFileName(mapFile);
 		if(projection == null) throw new VMapParserException("Invalid projection!");
 		File zipDestination = new File(mapFilePath.substring(0, mapFilePath.lastIndexOf(".zip")) + "/");
 		if(zipDestination.exists()) {
@@ -202,7 +202,7 @@ public class ShpZipMapParser extends VMapParser {
 		GeographicProjection BTE = EarthGeneratorSettings.parse(BTE_GEN_JSON).projection();
 		*/
 		
-		GeographicProjection proj = Projections.GRS80_WEST;
+		GeographicProjection proj = Projections.KOREA2010_WEST;
 		Map<String, String> emptyOption = Collections.emptyMap();
 		VMapParser parser = new ShpZipMapParser();
 		

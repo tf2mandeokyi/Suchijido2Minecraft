@@ -1,6 +1,6 @@
 package com.mndk.kvm2m.core.vmap.parser;
 
-import com.mndk.kvm2m.core.projection.Grs80Projection;
+import com.mndk.kvm2m.core.projection.Korea2010BeltProjection;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vmap.VMapParserResult;
 import com.mndk.kvm2m.core.vmap.VMapUtils;
@@ -17,7 +17,7 @@ public abstract class VMapParser {
 	
 	protected File mapFile;
 	protected GeographicProjection worldProjection;
-	protected Grs80Projection targetProjection;
+	protected Korea2010BeltProjection targetProjection;
 	protected Map<String, String> options;
 	
 	
@@ -50,14 +50,14 @@ public abstract class VMapParser {
 	
 	
 	
-	protected static Grs80Projection getProjFromFileName(File file) {
+	protected static Korea2010BeltProjection getProjFromFileName(File file) {
 		String fileName = file.getName();
 		return VMapUtils.getProjectionFromMapId(fileName.substring(0, fileName.length() - 4));
 	}
 	
 	
 	
-	public Grs80Projection getTargetProjection() {
+	public Korea2010BeltProjection getTargetProjection() {
 		return getProjFromFileName(this.mapFile);
 	}
 	
