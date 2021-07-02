@@ -37,7 +37,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class VMapGenCmd<T extends VMapParser> extends CommandBase {
+public class VMapGenCmd extends CommandBase {
 
 	
 
@@ -70,11 +70,11 @@ public class VMapGenCmd<T extends VMapParser> extends CommandBase {
 	
 	
 	private final String name, extension;
-	private final T parser;
+	private final VMapParser parser;
 	
 	
 	
-	public VMapGenCmd(String name, String extension, T parser) {
+	public VMapGenCmd(String name, String extension, VMapParser parser) {
 		this.name = name;
 		this.extension = extension;
 		this.parser = parser;

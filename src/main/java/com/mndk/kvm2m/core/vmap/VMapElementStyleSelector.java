@@ -45,8 +45,11 @@ public class VMapElementStyleSelector {
 			case 건물:
 				if(element instanceof VMapBuilding) {
 					Object floorCount = element.getDataByColumn("층수");
-					if(floorCount instanceof Integer) height = (Integer) element.getDataByColumn("층수") * VMapBuilding.FLOOR_HEIGHT;
-					else height = (int) Math.round((Double) element.getDataByColumn("층수")) * VMapBuilding.FLOOR_HEIGHT;
+					if(floorCount instanceof Integer) height = (Integer) element.getDataByColumn("층수");
+					else height = (int) Math.round((Double) element.getDataByColumn("층수"));
+
+					height = (int) (height * VMapBuilding.FLOOR_HEIGHT);
+
 					return singleStyle(Blocks.STONE, height);
 				}
 				else return singleStyle(Blocks.BRICK_BLOCK, 0);

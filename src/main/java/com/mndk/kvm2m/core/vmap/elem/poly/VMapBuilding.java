@@ -6,6 +6,7 @@ import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
+import com.mndk.kvm2m.core.vmap.VMapUtils;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
@@ -17,7 +18,7 @@ import java.util.Map;
 public class VMapBuilding extends VMapPolygon {
 	
 	
-	public static final int FLOOR_HEIGHT = 4;
+	public static final double FLOOR_HEIGHT = 3.5;
 	
 	
 	public VMapBuilding(VMapLayer layer, Vector2DH[][] polygon, Map<String, Object> dataRow) {
@@ -73,7 +74,7 @@ public class VMapBuilding extends VMapPolygon {
 		for(int z = limitBox.zmin; z <= limitBox.zmax; ++z) {
 			for(int x = limitBox.xmin; x <= limitBox.xmax; ++x) {
 				if(!region.contains(new Vector(x, region.getMinimumY(), z)) || !this.containsPoint(new Vector2DH(x+.5, z+.5))) continue;
-				w.setBlockState(new BlockPos(x, y, z), style.state);
+				VMapUtils.setBlock(w, new BlockPos(x, y, z), style.state);
 			}
 		}
 	}

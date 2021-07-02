@@ -27,7 +27,7 @@ public class VMapElemsGenTask implements VMapGeneratorTask {
 	}
 	
 	@Override
-	public void doTask() {
+	public void run() {
 		for(VMapElement element : elements) {
 			if(element != null) element.generateBlocks(this.worldEditRegion, this.world, this.triangleList);
 		}

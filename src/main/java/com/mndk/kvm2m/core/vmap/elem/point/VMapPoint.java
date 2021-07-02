@@ -4,6 +4,7 @@ import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
+import com.mndk.kvm2m.core.vmap.VMapUtils;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.sk89q.worldedit.regions.FlatRegion;
@@ -41,7 +42,7 @@ public class VMapPoint extends VMapElement {
 			if(region.contains(point.withHeight(region.getMinimumY()).toIntegerWorldEditVector())) {
 				
 				Vector2DH p = point.withHeight(triangles.interpolateHeight((int) Math.floor(point.x), (int) Math.floor(point.z)) + style.y);
-				world.setBlockState(new BlockPos(p.x, p.height, p.z), style.state);
+				VMapUtils.setBlock(world, new BlockPos(p.x, p.height, p.z), style.state);
 			}
 		}
 	}

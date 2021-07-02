@@ -48,7 +48,7 @@ public class ShapefileCustomInputStream extends InputStream {
 	}
 
 	public long readLongLittle() throws IOException {
-		return read() + (read() << 8) + (read() << 16) + (read() << 24) + ((long) read() << 32) + ((long) read() << 40) + ((long) read() << 48) + ((long) read() << 56);
+		return read() + ((long) read() << 8) + ((long) read() << 16) + ((long) read() << 24) + ((long) read() << 32) + ((long) read() << 40) + ((long) read() << 48) + ((long) read() << 56);
 	}
 
 	public double readDoubleLittle() throws IOException {

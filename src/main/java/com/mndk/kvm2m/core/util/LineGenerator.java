@@ -1,14 +1,14 @@
 package com.mndk.kvm2m.core.util;
 
-import java.util.function.BiFunction;
-
 import com.mndk.kvm2m.core.util.math.Vector2DH;
+import com.mndk.kvm2m.core.vmap.VMapUtils;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
-
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
+import java.util.function.BiFunction;
 
 public abstract class LineGenerator {
 	
@@ -83,7 +83,7 @@ public abstract class LineGenerator {
 		protected void generatePoint(double x, double z) {
 			if(!region.contains(new Vector(Math.floor(x), region.getMinimumY(), Math.floor(z)))) return;
 			int y = getHeight(x, z);
-			world.setBlockState(new BlockPos(x, y, z), state);
+			VMapUtils.setBlock(world, new BlockPos(x, y, z), state);
 		}
 	}
 	
@@ -102,7 +102,7 @@ public abstract class LineGenerator {
 		protected void generatePoint(double x, double z) {
 			if(!region.contains(new Vector(Math.floor(x), region.getMinimumY(), Math.floor(z)))) return;
 			int terrainY = getHeight(x, z);
-			for(int y = terrainY; y <= maxHeight; ++y) world.setBlockState(new BlockPos(x, y, z), state);
+			for(int y = terrainY; y <= maxHeight; ++y) VMapUtils.setBlock(world, new BlockPos(x, y, z), state);
 		}
 	}
 	
@@ -121,7 +121,7 @@ public abstract class LineGenerator {
 		protected void generatePoint(double x, double z) {
 			if(!region.contains(new Vector(Math.floor(x), region.getMinimumY(), Math.floor(z)))) return;
 			int terrainY = getHeight(x, z);
-			for(int y = terrainY; y <= terrainY + height; ++y) world.setBlockState(new BlockPos(x, y, z), state);
+			for(int y = terrainY; y <= terrainY + height; ++y) VMapUtils.setBlock(world, new BlockPos(x, y, z), state);
 		}
 	}
 	

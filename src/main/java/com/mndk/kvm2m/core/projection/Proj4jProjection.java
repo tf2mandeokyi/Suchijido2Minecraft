@@ -29,6 +29,10 @@ public class Proj4jProjection implements GeographicProjection {
 		this(crsFactory.createFromParameters(crsName, crsParameter));
 	}
 
+	public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+		return targetCrs;
+	}
+
 	@Override
 	public double[] fromGeo(double longitude, double latitude) {
 		ProjCoordinate result = new ProjCoordinate();

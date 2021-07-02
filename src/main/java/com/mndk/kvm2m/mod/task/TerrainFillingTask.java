@@ -19,7 +19,7 @@ public class TerrainFillingTask implements VMapGeneratorTask {
 	}
 	
 	@Override
-	public void doTask() {
+	public void run() {
 		for(Triangle triangle : this.triangleList) {
 			triangle.fillBlocksBelow(this.world, this.worldEditRegion);
 		}

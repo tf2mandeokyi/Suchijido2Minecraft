@@ -1,9 +1,9 @@
 package com.mndk.shapefile.shp;
 
+import com.mndk.shapefile.util.ShapefileCustomInputStream;
+
 import java.io.IOException;
 import java.util.Arrays;
-
-import com.mndk.shapefile.util.ShapefileCustomInputStream;
 
 public abstract class ShapefileRecord {
 	
@@ -26,23 +26,28 @@ public abstract class ShapefileRecord {
 		ShapefileBoundingBoxXY bbox;
 		int numParts, numPoints;
 		int[] parts;
-		ShapeVector[] points, polylines[];
-		
+		ShapeVector[] points;
+		ShapeVector[][] polylines;
+
 		int typeId = is.readIntLittle();
 		ShapeType type = ShapeType.getType(typeId);
 		if(type == null) {
 			throw new IOException("Unknown shape type: " + typeId);
 		}
 		switch(type) {
+
 			case NULL:
 				return new Null(recordNumber);
+
 			case POINT: 
 				return new Point(recordNumber, is.readDoubleLittle(), is.readDoubleLittle());
+
 			case MULTIPOINT:
 				bbox = new ShapefileBoundingBoxXY(is);
 				numPoints = is.readIntLittle(); points = new ShapeVector[numPoints];
 				for(int i = 0; i < numPoints; i++) points[i] = new ShapeVector(is);
 				return new MultiPoint(recordNumber, bbox, points);
+
 			case POLYLINE:
 				bbox = new ShapefileBoundingBoxXY(is);
 				numParts = is.readIntLittle();  
@@ -55,6 +60,7 @@ public abstract class ShapefileRecord {
 				}
 				polylines = getPolylinesWithPartsAndPoints(parts, points);
 				return new PolyLine(recordNumber, bbox, polylines);
+
 			case POLYGON:
 				bbox = new ShapefileBoundingBoxXY(is);
 				numParts = is.readIntLittle();  
@@ -67,6 +73,7 @@ public abstract class ShapefileRecord {
 				}
 				polylines = getPolylinesWithPartsAndPoints(parts, points);
 				return new Polygon(recordNumber, bbox, polylines);
+
 			case POINTM:
 			case MULTIPOINTM:
 			case POLYLINEM:
@@ -76,15 +83,17 @@ public abstract class ShapefileRecord {
 			case POLYLINEZ:
 			case POLYGONZ:
 			case MULTIPATCH: // TODO finish these
+				throw new IOException("The shape type \"" + type + "\" is not yet implemented.");
 			default:
-				throw new IOException("Unknown shape type.");
+				throw new IOException("Unknown shape type");
 		}
 	}
 	
 	
 	
 	private static ShapeVector[][] getPolylinesWithPartsAndPoints(int[] parts, ShapeVector[] points) {
-		ShapeVector[] tempLine, result[] = new ShapeVector[parts.length][];
+		ShapeVector[] tempLine;
+		ShapeVector[][] result = new ShapeVector[parts.length][];
 		int start, end;
 		for(int j = 0; j < parts.length; j++) {
 			start = parts[j];
@@ -95,9 +104,7 @@ public abstract class ShapefileRecord {
 				end = points.length;
 			}
 			result[j] = tempLine = new ShapeVector[end - start];
-			for(int i = start; i < end; i++) {
-				tempLine[i - start] = points[i];
-			}
+			if (end - start >= 0) System.arraycopy(points, start, tempLine, start - start, end - start);
 		}
 		return result;
 	}

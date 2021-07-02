@@ -12,6 +12,7 @@ public class ZipManager {
 	
 
 	public static void extractZipFile(File sourceZip, File destination) throws IOException {
+
 		try (ZipInputStream zis = new ZipInputStream(new FileInputStream(sourceZip))) {
 			ZipEntry zipEntry = zis.getNextEntry();
 			byte[] buffer = new byte[1024];

@@ -2,10 +2,24 @@ package com.mndk.kvm2m.core.vmap;
 
 import com.mndk.kvm2m.core.projection.Korea2010BeltProjection;
 import com.mndk.kvm2m.core.projection.Projections;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class VMapUtils {
 
+	private static final Pattern generalPattern = Pattern.compile("^\\(.{4}\\)수치지도_(\\d+)");
+
 	public static Korea2010BeltProjection getProjectionFromMapId(String fileName) {
+
+		Matcher matcher = generalPattern.matcher(fileName);
+		if(matcher.find()) {
+			fileName = matcher.group(1);
+		}
+
 		char number = fileName.charAt(2);
 		if(number == '5') {
 			return Projections.KOREA2010_WEST;
@@ -18,6 +32,16 @@ public class VMapUtils {
 		}
 		return null;
 	}
+
+
+
+	public static void setBlock(World world, BlockPos pos, IBlockState state) {
+		// synchronized(world) {
+			world.setBlockState(pos, state);
+		// }
+	}
+
+
 
 	public static int getScaleFromMapId(String id) {
 		switch(id.length()) {

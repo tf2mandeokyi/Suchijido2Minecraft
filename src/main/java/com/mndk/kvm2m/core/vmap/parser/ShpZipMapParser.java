@@ -48,8 +48,9 @@ public class ShpZipMapParser extends VMapParser {
 		Korea2010BeltProjection projection = getProjFromFileName(mapFile);
 		if(projection == null) throw new VMapParserException("Invalid projection!");
 		File zipDestination = new File(mapFilePath.substring(0, mapFilePath.lastIndexOf(".zip")) + "/");
-		if(zipDestination.exists()) {
-			throw new VMapParserException(zipDestination.getAbsolutePath() + " already exists.");
+		System.out.println(zipDestination);
+		if(zipDestination.isDirectory()) {
+			throw new VMapParserException(zipDestination.getAbsolutePath() + " directory already exists.");
 		}
 		
 		try {
@@ -69,6 +70,7 @@ public class ShpZipMapParser extends VMapParser {
 		} catch(Throwable t) {
 			throwable = t;
 		}
+
 		// I could use "finally" though
 		DirectoryManager.deleteDirectory(zipDestination);
 		

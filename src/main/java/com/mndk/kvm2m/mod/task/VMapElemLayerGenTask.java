@@ -22,7 +22,7 @@ public class VMapElemLayerGenTask implements VMapGeneratorTask {
 	}
 	
 	@Override
-	public void doTask() {
+	public void run() {
 		for(VMapElement element : this.elementLayer) {
 			element.generateBlocks(this.worldEditRegion, this.world, this.triangleList);
 		}

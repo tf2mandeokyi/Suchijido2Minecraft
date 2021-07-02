@@ -1,15 +1,14 @@
 package com.mndk.kvm2m.mod.event;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.mndk.kvm2m.mod.task.VMapGeneratorTask;
-
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Mod.EventBusSubscriber()
 public class ServerTickRepeater {
@@ -34,7 +33,7 @@ public class ServerTickRepeater {
 				VMapGeneratorTask task = tasks.get(0);
 				String msg = task.getBroadcastMessage();
 				if(msg != null) KVectorMap2MinecraftMod.broadcastMessage(msg);
-				task.doTask();
+				task.run();
 				current += task.getSize();
 				tasks.remove(0);
 				

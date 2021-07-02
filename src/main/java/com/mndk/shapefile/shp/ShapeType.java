@@ -17,7 +17,7 @@ public enum ShapeType {
 	MULTIPATCH(31);
 	
 	private final int code;
-	private ShapeType(int code) {
+	ShapeType(int code) {
 		this.code = code;
 	}
 	

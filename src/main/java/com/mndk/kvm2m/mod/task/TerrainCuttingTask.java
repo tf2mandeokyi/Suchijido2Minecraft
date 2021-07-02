@@ -19,7 +19,7 @@ public class TerrainCuttingTask implements VMapGeneratorTask {
 	}
 	
 	@Override
-	public void doTask() {
+	public void run() {
 		for(Triangle triangle : this.triangleList) {
 			triangle.removeTerrainAbove(this.world, this.worldEditRegion);
 		}

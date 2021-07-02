@@ -28,7 +28,7 @@ public class TerrainTrianglesGenTask implements VMapGeneratorTask {
 	}
 	
 	@Override
-	public void doTask() {
+	public void run() {
 		for(Triangle triangle : triangles) {
 			if(triangle == null) continue;
 			triangle.rasterize(world, worldEditRegion, Blocks.GRASS.getDefaultState());

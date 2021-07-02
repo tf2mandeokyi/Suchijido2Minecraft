@@ -25,8 +25,8 @@ public class KVectorMap2MinecraftMod {
 	public static final String VERSION = "b1.0";
 
 	private static final ICommand[] serverCommands = {
-			new VMapGenCmd<>("genngimap", "ngi", new NgiMapParser()),
-			new VMapGenCmd<>("genshpzipmap", "zip", new ShpZipMapParser())
+			new VMapGenCmd("genngimap", "ngi", new NgiMapParser()),
+			new VMapGenCmd("genshpzipmap", "zip", new ShpZipMapParser())
 	};
 
 	public static Logger logger;

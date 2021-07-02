@@ -6,6 +6,7 @@ import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
+import com.mndk.kvm2m.core.vmap.VMapUtils;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapPolyline;
 import com.sk89q.worldedit.Vector;
@@ -99,8 +100,10 @@ public class VMapPolygon extends VMapPolyline {
 			for(int z = limitBox.zmin; z <= limitBox.zmax; ++z) {
 				for(int x = limitBox.xmin; x <= limitBox.xmax; ++x) {
 					if(!region.contains(new Vector(x, region.getMinimumY(), z)) || !this.containsPoint(new Vector2DH(x+.5, z+.5))) continue;
+
 					int y = (int) Math.round(triangleList.interpolateHeight(x, z)) + style.y;
-					w.setBlockState(new BlockPos(x, y, z), style.state);
+
+					VMapUtils.setBlock(w, new BlockPos(x, y, z), style.state);
 				}
 			}
 		}

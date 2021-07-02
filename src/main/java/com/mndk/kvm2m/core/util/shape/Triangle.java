@@ -1,6 +1,7 @@
 package com.mndk.kvm2m.core.util.shape;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
+import com.mndk.kvm2m.core.vmap.VMapUtils;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.Vector2D;
 import com.sk89q.worldedit.regions.FlatRegion;
@@ -75,8 +76,10 @@ public class Triangle {
 	public void rasterize(World world, FlatRegion region, IBlockState blockState) {
 		for(int z = minZ; z <= maxZ; ++z)  for(int x = minX; x <= maxX; ++x) {
 			if(this.contains(x + .5, z + .5) == null || !region.contains(new Vector(x, region.getMinimumY(), z))) continue;
+
 			int height = (int) Math.round(interpolateY(x + .5, z + .5));
-			world.setBlockState(new BlockPos(x, height, z), blockState);
+
+			VMapUtils.setBlock(world, new BlockPos(x, height, z), blockState);
 		}
 	}
 	
@@ -85,9 +88,11 @@ public class Triangle {
 	public void removeTerrainAbove(World world, FlatRegion region) {
 		for(int z = minZ; z <= maxZ; ++z)  for(int x = minX; x <= maxX; ++x) {
 			if(this.contains(x + .5, z + .5) == null || !region.contains(new Vector(x, region.getMinimumY(), z))) continue;
+
 			int height = (int) Math.round(interpolateY(x + .5, z + .5));
+
 			for(int y = height + 1; world.getBlockState(new BlockPos(x, y, z)).getBlock() != Blocks.AIR; y++) {
-				world.setBlockState(new BlockPos(x, y, z), Blocks.AIR.getDefaultState());
+				VMapUtils.setBlock(world, new BlockPos(x, y, z), Blocks.AIR.getDefaultState());
 			}
 		}
 	}
@@ -97,13 +102,18 @@ public class Triangle {
 	public void fillBlocksBelow(World world, FlatRegion region) {
 		for(int z = minZ; z <= maxZ; ++z)  for(int x = minX; x <= maxX; ++x) {
 			if(this.contains(x + .5, z + .5) == null || !region.contains(new Vector(x, region.getMinimumY(), z))) continue;
+
 			int height = (int) Math.round(interpolateY(x + .5, z + .5));
-			for(int y = height - 1; world.getBlockState(new BlockPos(x, y, z)).getBlock() != Blocks.STONE; y--) {
-				world.setBlockState(new BlockPos(x, y, z), Blocks.DIRT.getDefaultState());
+
+			VMapUtils.setBlock(world, new BlockPos(x, height - 1, z), Blocks.DIRT.getDefaultState());
+			VMapUtils.setBlock(world, new BlockPos(x, height - 2, z), Blocks.DIRT.getDefaultState());
+
+			for(int y = height - 3; world.getBlockState(new BlockPos(x, y, z)).getBlock() != Blocks.STONE; y--) {
+				VMapUtils.setBlock(world, new BlockPos(x, y, z), Blocks.STONE.getDefaultState());
 			}
 		}
 	}
-	
+
 	
 	
 	public double interpolateY(Vector2DH point) {
@@ -134,41 +144,41 @@ public class Triangle {
 	
 	
 	
-	public boolean checkIntersection(Vector2DH p0, Vector2DH p1) {
-		/* Check whether segment is outside one of the three half-planes
-	     * delimited by the triangle. */
-		double f1 = side(p0, v3, v1, v2), f2 = side(p1, v3, v1, v2);
-		double f3 = side(p0, v1, v2, v3), f4 = side(p1, v1, v2, v3);
-		double f5 = side(p0, v2, v3, v1), f6 = side(p1, v2, v3, v1);
-	    /* Check whether triangle is totally inside one of the two half-planes
-	     * delimited by the segment. */
-		double f7 = side(v1, v2, p0, p1);
-		double f8 = side(v2, v3, p0, p1);
-
-	    /* If segment is strictly outside triangle, or triangle is strictly
-	     * apart from the line, we're not intersecting */
-	    if ((f1 < 0 && f2 < 0) || (f3 < 0 && f4 < 0) || (f5 < 0 && f6 < 0)
-	          || (f7 > 0 && f8 > 0))
-	        return false;
-
-	    /* If segment is aligned with one of the edges, we're overlapping */
-	    if ((f1 == 0 && f2 == 0) || (f3 == 0 && f4 == 0) || (f5 == 0 && f6 == 0))
-	        return false;
-
-	    /* If segment is outside but not strictly, or triangle is apart but
-	     * not strictly, we're touching */
-	    if ((f1 <= 0 && f2 <= 0) || (f3 <= 0 && f4 <= 0) || (f5 <= 0 && f6 <= 0)
-	          || (f7 >= 0 && f8 >= 0))
-	        return false;
-
-	    /* If both segment points are strictly inside the triangle, we
-	     * are not intersecting either */
-	    if (f1 > 0 && f2 > 0 && f3 > 0 && f4 > 0 && f5 > 0 && f6 > 0)
-	        return false;
-
-	    /* Otherwise we're intersecting with at least one edge */
-	    return true;
-	}
+//	public boolean checkIntersection(Vector2DH p0, Vector2DH p1) {
+//		/* Check whether segment is outside one of the three half-planes
+//	     * delimited by the triangle. */
+//		double f1 = side(p0, v3, v1, v2), f2 = side(p1, v3, v1, v2);
+//		double f3 = side(p0, v1, v2, v3), f4 = side(p1, v1, v2, v3);
+//		double f5 = side(p0, v2, v3, v1), f6 = side(p1, v2, v3, v1);
+//	    /* Check whether triangle is totally inside one of the two half-planes
+//	     * delimited by the segment. */
+//		double f7 = side(v1, v2, p0, p1);
+//		double f8 = side(v2, v3, p0, p1);
+//
+//	    /* If segment is strictly outside triangle, or triangle is strictly
+//	     * apart from the line, we're not intersecting */
+//	    if ((f1 < 0 && f2 < 0) || (f3 < 0 && f4 < 0) || (f5 < 0 && f6 < 0)
+//	          || (f7 > 0 && f8 > 0))
+//	        return false;
+//
+//	    /* If segment is aligned with one of the edges, we're overlapping */
+//	    if ((f1 == 0 && f2 == 0) || (f3 == 0 && f4 == 0) || (f5 == 0 && f6 == 0))
+//	        return false;
+//
+//	    /* If segment is outside but not strictly, or triangle is apart but
+//	     * not strictly, we're touching */
+//	    if ((f1 <= 0 && f2 <= 0) || (f3 <= 0 && f4 <= 0) || (f5 <= 0 && f6 <= 0)
+//	          || (f7 >= 0 && f8 >= 0))
+//	        return false;
+//
+//	    /* If both segment points are strictly inside the triangle, we
+//	     * are not intersecting either */
+//	    if (f1 > 0 && f2 > 0 && f3 > 0 && f4 > 0 && f5 > 0 && f6 > 0)
+//	        return false;
+//
+//	    /* Otherwise we're intersecting with at least one edge */
+//	    return true;
+//	}
 	
 	
 	

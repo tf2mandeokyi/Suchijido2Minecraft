@@ -3,6 +3,7 @@ package com.mndk.kvm2m.core.vmap.elem.point;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
+import com.mndk.kvm2m.core.vmap.VMapUtils;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.sk89q.worldedit.regions.FlatRegion;
 import net.minecraft.util.math.BlockPos;
@@ -32,7 +33,7 @@ public class VMapElevationPoint extends VMapPoint {
 			Vector2DH p = this.getPosition();
 
 			if(region.contains(p.withHeight(region.getMinimumY()).toIntegerWorldEditVector())) {
-				world.setBlockState(new BlockPos(p.x, this.y, p.z), style.state);
+				VMapUtils.setBlock(world, new BlockPos(p.x, this.y, p.z), style.state);
 			}
 		}
 	}

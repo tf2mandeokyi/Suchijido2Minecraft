@@ -20,7 +20,7 @@ public class TerrainGenerationTask implements VMapGeneratorTask {
 	}
 	
 	@Override
-	public void doTask() {
+	public void run() {
 		for(Triangle triangle : this.triangleList) {
 			triangle.rasterize(this.world, this.worldEditRegion, Blocks.GRASS.getDefaultState());
 		}

@@ -1,8 +1,8 @@
 package com.mndk.shapefile.shp;
 
-import java.io.IOException;
-
 import com.mndk.shapefile.util.ShapefileCustomInputStream;
+
+import java.io.IOException;
 
 public class ShapeVector {
 	
