@@ -2,12 +2,13 @@ package com.mndk.kvm2m.core.vmap.elem;
 
 import com.mndk.kvm2m.core.vmap.VMapElementType;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 
-public class VMapLayer extends HashSet<VMapElement> implements Comparable<VMapLayer> {
+public class VMapLayer extends ArrayList<VMapElement> implements Comparable<VMapLayer> {
 
 	private final VMapElementType type;
+	@Deprecated
 	private final String[] dataColumns;
 	
 	public VMapLayer(List<VMapElement> elements, VMapElementType type, String[] dataColumns) {

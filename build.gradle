@@ -106,6 +106,7 @@ dependencies {
 	}
 
     shade 'org.osgeo:proj4j:0.1.0'
+    shade 'mysql:mysql-connector-java:8.0.21'
 
     runtime "org.apache.commons:commons-imaging:1.0-alpha2"
     runtime("net.daporkchop:leveldb-mcpe-jni:0.0.10-SNAPSHOT")  {
@@ -114,6 +115,7 @@ dependencies {
 	
 	testCompile "junit:junit:4.12"
     testCompile 'com.github.BuildTheEarth:terraplusplus:74449c4af349fd9b77b10e1041ed2c09f2d78518'
+    provided 'org.projectlombok:lombok:1.18.20'
 	
 }
 
