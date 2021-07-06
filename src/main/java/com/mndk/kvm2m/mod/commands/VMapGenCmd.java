@@ -141,8 +141,13 @@ public class VMapGenCmd extends CommandBase {
 						File[] files = file.listFiles((dir, name) -> name.endsWith(this.extension));
 
 						for(File child : files) {
-							VMapParserResult parserResult = this.parser.parse(child, projection, options);
-							result.append(parserResult);
+							try {
+								VMapParserResult parserResult = this.parser.parse(child, projection, options);
+								result.append(parserResult);
+							} catch(Exception e) {
+								throw new CommandException(
+										"Error caused while parsing \"" + child.getName() + "\" : " + e.getMessage());
+							}
 						}
 					}
 					else {

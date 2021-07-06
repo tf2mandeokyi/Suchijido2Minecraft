@@ -29,7 +29,7 @@ public class VMapToMinecraft {
 		else {
 			List<VMapLayer> layerList = result.getElementLayers();
 			
-			TriangleList triangleList = TerrainTriangulator.generate(result);
+			TriangleList triangleList = TerrainTriangulator.generateTerrain(result);
 			
 			// Schedule triangles generation task based on contour lines with delaunay triangulate algorithm
 			if(!options.containsKey("no-terrain")) {
@@ -83,7 +83,7 @@ public class VMapToMinecraft {
 		int i = 0;
 
 		List<VMapLayer> layerList;
-		TriangleList triangleList = TerrainTriangulator.generate(result);
+		TriangleList triangleList = TerrainTriangulator.generateTerrain(result);
 		boolean cutTerrain = !options.containsKey("no-cutting"), fillTerrain = !options.containsKey("no-filling");
 		
 		if(!options.containsKey("no-terrain")) {

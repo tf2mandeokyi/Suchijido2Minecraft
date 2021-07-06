@@ -167,33 +167,4 @@ public class NgiMapParser extends VMapParser {
 		else { return new VMapPoint(layer, vpoint, point.rowData); }
 	}
 	
-	
-	
-	public static void main(String[] args) throws IOException {
-		
-		String BTE_GEN_JSON =
-				"{" +
-					"\"projection\":\"bteairocean\"," +
-					"\"orentation\":\"upright\"," +
-					"\"scaleX\":7318261.522857145," +
-					"\"scaleY\":7318261.522857145" +
-				"}";
-		GeographicProjection BTE = EarthGeneratorSettings.parse(BTE_GEN_JSON).projection();
-		
-		Map<String, String> emptyOption = new HashMap<>();
-		
-		NgiMapParser parser = new NgiMapParser();
-		
-		VMapParserResult result = new VMapParserResult();
-		result.append(parser.parse(new File("test/376081986.ngi"), BTE, emptyOption));
-		result.append(parser.parse(new File("test/377052193.ngi"), BTE, emptyOption));
-		result.append(parser.parse(new File("test/376082465.ngi"), BTE, emptyOption));
-		for(VMapLayer layer : result.getElementLayers()) {
-			System.out.println(layer.getType() + ": " + layer.size());
-			/*for(VMapElement element : layer) {
-				System.out.println("  " + element.getParent().getType() + " (" + element.getDataByColumn("UFID") + ")");
-			}*/
-		}
-	}
-	
 }

@@ -188,30 +188,5 @@ public class ShpZipMapParser extends VMapParser {
 		if(layer.getType() == VMapElementType.표고점) { return new VMapElevationPoint(layer, vpoint, record.dBase.data); }
 		else { return new VMapPoint(layer, vpoint, record.dBase.data); }
 	}
-	
-	
-	
-	public static void main(String[] args) throws IOException {
-		
-		/*
-		String BTE_GEN_JSON =
-				"{" +
-					"\"projection\":\"bteairocean\"," +
-					"\"orentation\":\"upright\"," +
-					"\"scaleX\":7318261.522857145," +
-					"\"scaleY\":7318261.522857145" +
-				"}";
-		GeographicProjection BTE = EarthGeneratorSettings.parse(BTE_GEN_JSON).projection();
-		*/
-		
-		GeographicProjection proj = Projections.KOREA2010_WEST;
-		Map<String, String> emptyOption = Collections.emptyMap();
-		VMapParser parser = new ShpZipMapParser();
-		
-		VMapParserResult result = parser.parse(new File("test/37612030.zip"), proj, emptyOption);
-		
-		System.out.println(result.getLayer(VMapElementType.등고선));
-		
-		System.out.println(TerrainTriangulator.generate(result).size());
-	}
+
 }

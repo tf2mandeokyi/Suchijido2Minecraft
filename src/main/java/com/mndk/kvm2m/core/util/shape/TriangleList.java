@@ -12,4 +12,8 @@ public class TriangleList extends ArrayList<Triangle> {
 		}
 		return Double.NaN;
 	}
+
+	public double interpolateHeight(double x, double z) {
+		return interpolateHeight((int) Math.floor(x), (int) Math.floor(z));
+	}
 }
