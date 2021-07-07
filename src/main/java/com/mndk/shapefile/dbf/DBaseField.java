@@ -9,8 +9,8 @@ public class DBaseField {
 	
 	public final String name;
 	public final DBaseFieldType type;
-	public final byte length;
-	public final byte decimalCount;
+	public final int length;
+	public final int decimalCount;
 	public final short workAreaId;
 	public final byte example;
 	public final boolean productionMdxFieldFlag;
@@ -24,8 +24,8 @@ public class DBaseField {
 		
 		/*int reserved0 = */ is.readIntLittle();
 		
-		this.length = (byte) is.read();
-		this.decimalCount = (byte) is.read();
+		this.length = is.read();
+		this.decimalCount = is.read();
 		
 		this.workAreaId = is.readShortLittle(); // TODO figure out whether this is little or big
 		

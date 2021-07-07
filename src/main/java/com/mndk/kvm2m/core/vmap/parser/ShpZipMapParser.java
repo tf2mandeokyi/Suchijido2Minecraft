@@ -91,28 +91,28 @@ public class ShpZipMapParser extends VMapParser {
 	
 	private VMapLayer fromShpFile(String filePath, String fileName) throws IOException {
 		
-		VMapElementType type = VMapElementType.fromLayerName(fileName.substring(4));
-		ShpDbfDataIterator iterator = new ShpDbfDataIterator(filePath, Charset.forName("cp949"));
-		
-		DBaseField[] fields = iterator.getDBaseHeader().fields;
-		String[] columns = new String[fields.length];
-		for(int i = 0; i < fields.length; ++i) {
-			columns[i] = fields[i].name;
+		VMapElementType type = VMapElementType.fromLayerName(fileName);
+
+		try(ShpDbfDataIterator iterator = new ShpDbfDataIterator(filePath, Charset.forName("cp949"))) {
+
+			DBaseField[] fields = iterator.getDBaseHeader().fields;
+			String[] columns = new String[fields.length];
+			for (int i = 0; i < fields.length; ++i) {
+				columns[i] = fields[i].name;
+			}
+
+			VMapLayer layer = new VMapLayer(type, columns);
+
+			// int i = 0;
+			for (ShpDbfRecord record : iterator) {
+				VMapElement element = fromElement(layer, record);
+				if (element == null) continue;
+				layer.add(element);
+				// i++;
+			}
+
+			return layer;
 		}
-		
-		VMapLayer layer = new VMapLayer(type, columns);
-		
-		// int i = 0;
-		for(ShpDbfRecord record : iterator) {
-			VMapElement element = fromElement(layer, record);
-			if(element == null) continue;
-			layer.add(element);
-			// i++;
-		}
-		
-		iterator.close();
-		
-		return layer;
 	}
 	
 	
@@ -183,7 +183,7 @@ public class ShpZipMapParser extends VMapParser {
 	
 	private VMapPoint fromPoint(VMapLayer layer, ShpDbfRecord record) {
 		ShapefileRecord.Point shape = (ShapefileRecord.Point) record.shape;
-		Vector2DH vpoint = this.targetProjToWorldProjCoord(shape.x, shape.y);
+		Vector2DH vpoint = this.targetProjToWorldProjCoord(shape.vector.x, shape.vector.y);
 		
 		if(layer.getType() == VMapElementType.표고점) { return new VMapElevationPoint(layer, vpoint, record.dBase.data); }
 		else { return new VMapPoint(layer, vpoint, record.dBase.data); }

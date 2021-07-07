@@ -52,7 +52,7 @@ public abstract class VMapParser {
 	
 	protected static Korea2010BeltProjection getProjFromFileName(File file) {
 		String fileName = file.getName();
-		return VMapUtils.getProjectionFromMapId(fileName.substring(0, fileName.length() - 4));
+		return VMapUtils.getProjectionFromMapName(fileName.substring(0, fileName.length() - 4));
 	}
 	
 	

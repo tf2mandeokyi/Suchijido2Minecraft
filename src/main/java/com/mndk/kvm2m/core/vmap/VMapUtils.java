@@ -11,11 +11,12 @@ import java.util.regex.Pattern;
 
 public class VMapUtils {
 
-	private static final Pattern generalPattern = Pattern.compile("^\\(.{4}\\)수치지도_(\\d+)");
+	private static final Pattern generalMapIdPattern = Pattern.compile("^\\(.{4}\\)수치지도_(\\d+)");
+	private static final Pattern layerTypePattern = Pattern.compile("[A-H]\\d{7}");
 
-	public static Korea2010BeltProjection getProjectionFromMapId(String fileName) {
+	public static Korea2010BeltProjection getProjectionFromMapName(String fileName) {
 
-		Matcher matcher = generalPattern.matcher(fileName);
+		Matcher matcher = generalMapIdPattern.matcher(fileName);
 		if(matcher.find()) {
 			fileName = matcher.group(1);
 		}

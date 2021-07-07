@@ -26,6 +26,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -216,7 +217,7 @@ public class VMapGenCmd extends CommandBase {
 		}
 		
 		EarthGenerator generator = (EarthGenerator) cubeGenerator;
-		
+
 		return generator.projection;
 	}
 	

@@ -42,7 +42,7 @@ public class DBaseHeader {
 		
 		this.recordCount = is.readIntLittle();
 		int headerBytes = is.readShortLittle();
-		int fieldCount = (headerBytes - 33) / 32; // 
+		int fieldCount = headerBytes == 0 ? 0 : (headerBytes - 33) / 32;
 		this.recordBytes = is.readShortLittle();
 		
 		/*short reserved0 = */ is.readShortLittle();

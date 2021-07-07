@@ -7,6 +7,7 @@ import java.io.IOException;
 public class ShapeVector {
 	
 	public final double x, y;
+	public double z = 0, measure = 0;
 	
 	public ShapeVector(double x, double y) {
 		this.x = x; this.y = y;
@@ -19,7 +20,7 @@ public class ShapeVector {
 
 	@Override
 	public String toString() {
-		return "(" + x + "," + y + ")";
+		return "(" + x + "," + y + ",z=" + z + ",m=" + measure + ")";
 	}
 	
 }

@@ -1,24 +1,40 @@
 package com.mndk.shapefile.shp;
 
 public enum ShapeType {
-	NULL(0),
-	POINT(1),
-	POLYLINE(3),
-	POLYGON(5),
-	MULTIPOINT(8),
-	POINTZ(11),
-	POLYLINEZ(13),
-	POLYGONZ(15),
-	MULTIPOINTZ(18),
-	POINTM(21),
-	POLYLINEM(23),
-	POLYGONM(25),
-	MULTIPOINTM(28),
-	MULTIPATCH(31);
+	NULL(0, false, false),
+
+	POINT(1, false, false),
+	POINTM(21, true, false, POINT),
+	POINTZ(11, true, true, POINT),
+
+	MULTIPOINT(8, false, false),
+	MULTIPOINTM(28, true, false, MULTIPOINT),
+	MULTIPOINTZ(18, true, true, MULTIPOINT),
+
+	POLYLINE(3, false, false),
+	POLYLINEM(23, true, false, POLYLINE),
+	POLYLINEZ(13, true, true, POLYLINE),
+
+	POLYGON(5, false, false),
+	POLYGONM(25, true, false, POLYGON),
+	POLYGONZ(15, true, true, POLYGON),
+
+	MULTIPATCH(31, true, true);
 	
 	private final int code;
-	ShapeType(int code) {
+	private ShapeType parent;
+	public final boolean containsMeasure, containsZ;
+
+	ShapeType(int code, boolean containsM, boolean containsZ, ShapeType parent) {
 		this.code = code;
+		this.containsMeasure = containsM;
+		this.containsZ = containsZ;
+		this.parent = parent;
+	}
+
+	ShapeType(int code, boolean containsM, boolean containsZ) {
+		this(code, containsM, containsZ, null);
+		this.parent = this;
 	}
 	
 	public static ShapeType getType(int code) {
@@ -26,5 +42,9 @@ public enum ShapeType {
 			if(type.code == code) return type;
 		}
 		return null;
+	}
+
+	public ShapeType getParent() {
+		return parent;
 	}
 }

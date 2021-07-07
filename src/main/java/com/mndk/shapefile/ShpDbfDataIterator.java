@@ -51,7 +51,7 @@ public class ShpDbfDataIterator implements AutoCloseableIterator<ShpDbfRecord> {
 	
 	@Override
 	public boolean hasNext() {
-		return shpIterator.hasNext() && (dBaseIterator != null ? dBaseIterator.hasNext() : true);
+		return shpIterator.hasNext() && (dBaseIterator == null || dBaseIterator.hasNext());
 	}
 
 	

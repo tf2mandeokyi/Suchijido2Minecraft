@@ -24,7 +24,7 @@ public abstract class ShapefileRecord {
 	public static ShapefileRecord from(int recordNumber, int recordLength, ShapefileCustomInputStream is) throws IOException {
 		
 		ShapefileBoundingBoxXY bbox;
-		int numParts, numPoints;
+		int numParts, numPoints, i;
 		int[] parts;
 		ShapeVector[] points;
 		ShapeVector[][] polylines;
@@ -34,59 +34,74 @@ public abstract class ShapefileRecord {
 		if(type == null) {
 			throw new IOException("Unknown shape type: " + typeId);
 		}
-		switch(type) {
 
-			case NULL:
-				return new Null(recordNumber);
 
-			case POINT: 
-				return new Point(recordNumber, is.readDoubleLittle(), is.readDoubleLittle());
+		if(type == ShapeType.NULL) return new Null(recordNumber);
 
-			case MULTIPOINT:
-				bbox = new ShapefileBoundingBoxXY(is);
-				numPoints = is.readIntLittle(); points = new ShapeVector[numPoints];
-				for(int i = 0; i < numPoints; i++) points[i] = new ShapeVector(is);
-				return new MultiPoint(recordNumber, bbox, points);
 
-			case POLYLINE:
-				bbox = new ShapefileBoundingBoxXY(is);
-				numParts = is.readIntLittle();  
-				numPoints = is.readIntLittle(); 
-				parts = new int[numParts]; for(int j = 0; j < numParts; j++) {
-					parts[j] = is.readIntLittle();
+		if(type.getParent() == ShapeType.POINT) {
+			ShapeVector vector = new ShapeVector(is.readDoubleLittle(), is.readDoubleLittle());
+			if(type.containsMeasure) {
+				if(type.containsZ) {
+					vector.z = is.readDoubleLittle();
 				}
-				points = new ShapeVector[numPoints]; for(int i = 0; i < numPoints; i++) {
-					points[i] = new ShapeVector(is);
-				}
-				polylines = getPolylinesWithPartsAndPoints(parts, points);
-				return new PolyLine(recordNumber, bbox, polylines);
-
-			case POLYGON:
-				bbox = new ShapefileBoundingBoxXY(is);
-				numParts = is.readIntLittle();  
-				numPoints = is.readIntLittle(); 
-				parts = new int[numParts]; for(int j = 0; j < numParts; j++) {
-					parts[j] = is.readIntLittle();
-				}
-				points = new ShapeVector[numPoints]; for(int i = 0; i < numPoints; i++) {
-					points[i] = new ShapeVector(is);
-				}
-				polylines = getPolylinesWithPartsAndPoints(parts, points);
-				return new Polygon(recordNumber, bbox, polylines);
-
-			case POINTM:
-			case MULTIPOINTM:
-			case POLYLINEM:
-			case POLYGONM:
-			case POINTZ:
-			case MULTIPOINTZ:
-			case POLYLINEZ:
-			case POLYGONZ:
-			case MULTIPATCH: // TODO finish these
-				throw new IOException("The shape type \"" + type + "\" is not yet implemented.");
-			default:
-				throw new IOException("Unknown shape type");
+				vector.measure = is.readDoubleLittle();
+			}
+			return new Point(recordNumber, vector);
 		}
+
+
+		if(type.getParent() == ShapeType.MULTIPOINT) {
+			bbox = new ShapefileBoundingBoxXY(is);
+			numPoints = is.readIntLittle(); points = new ShapeVector[numPoints];
+			for(i = 0; i < numPoints; i++) points[i] = new ShapeVector(is);
+			if(type.containsMeasure) {
+				if(type.containsZ) {
+					bbox.readZRange(is);
+					for(i = 0; i < numPoints; i++) points[i].z = is.readDoubleLittle();
+				}
+				bbox.readMeasureRange(is);
+				for(i = 0; i < numPoints; i++) points[i].measure = is.readDoubleLittle();
+			}
+			return new MultiPoint(recordNumber, bbox, points);
+		}
+
+
+		if(type.getParent() == ShapeType.POLYLINE || type.getParent() == ShapeType.POLYGON) {
+			bbox = new ShapefileBoundingBoxXY(is);
+			numParts = is.readIntLittle(); numPoints = is.readIntLittle();
+
+			parts = new int[numParts]; points = new ShapeVector[numPoints];
+
+			for(i = 0; i < numParts; i++) parts[i] = is.readIntLittle();
+			for(i = 0; i < numPoints; i++) points[i] = new ShapeVector(is);
+
+			if(type.containsMeasure) {
+				if(type.containsZ) {
+					bbox.readZRange(is);
+					for(i = 0; i < numPoints; i++) points[i].z = is.readDoubleLittle();
+				}
+				bbox.readMeasureRange(is);
+				for(i = 0; i < numPoints; i++) points[i].measure = is.readDoubleLittle();
+			}
+
+			polylines = getPolylinesWithPartsAndPoints(parts, points);
+
+			if(type.getParent() == ShapeType.POLYLINE) {
+				return new PolyLine(recordNumber, bbox, polylines);
+			}
+			else {
+				return new Polygon(recordNumber, bbox, polylines);
+			}
+		}
+
+
+		if(type == ShapeType.MULTIPATCH) {
+			throw new IOException("The shape type \"MULTIPATCH\" is not yet implemented.");
+		}
+
+
+		throw new IOException("Unknown shape type");
 	}
 	
 	
@@ -104,7 +119,7 @@ public abstract class ShapefileRecord {
 				end = points.length;
 			}
 			result[j] = tempLine = new ShapeVector[end - start];
-			if (end - start >= 0) System.arraycopy(points, start, tempLine, start - start, end - start);
+			if (end - start >= 0) System.arraycopy(points, start, tempLine, 0, end - start);
 		}
 		return result;
 	}
@@ -123,14 +138,13 @@ public abstract class ShapefileRecord {
 	
 	
 	public static class Point extends ShapefileRecord {
-		public final double x, y;
-		Point(int number, double x, double y) {
+		public final ShapeVector vector;
+		Point(int number, ShapeVector vector) {
 			super(number, ShapeType.POINT);
-			this.x = x;
-			this.y = y;
+			this.vector = vector;
 		}
 		@Override public String toString() {
-			return "Point(" + x + "," + y + ")";
+			return "Point(" + vector + ")";
 		}
 	}
 	

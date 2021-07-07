@@ -4,6 +4,9 @@ import com.mndk.kvm2m.db.common.TableColumn;
 import com.mndk.kvm2m.db.common.TableColumns;
 import lombok.Getter;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public enum VMapElementType {
 	
 	// A타입 - 교통
@@ -589,11 +592,19 @@ public enum VMapElementType {
 
 
 
+	private static final Pattern layerTypePattern = Pattern.compile("([A-H]\\d{7})");
+
+
+
 	public static VMapElementType fromLayerName(String layerName) {
 		if(layerName == null) return null;
-		for(VMapElementType t : values()) {
-			if(layerName.startsWith(t.layerNameHeader)) {
-				return t;
+		Matcher matcher = layerTypePattern.matcher(layerName);
+		if(matcher.find()) {
+			String match = matcher.group(1);
+			for (VMapElementType t : values()) {
+				if (match.startsWith(t.layerNameHeader)) {
+					return t;
+				}
 			}
 		}
 		return null;
