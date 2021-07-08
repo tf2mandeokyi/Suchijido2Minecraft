@@ -12,18 +12,18 @@ import com.mndk.kvm2m.core.vmap.elem.point.VMapElevationPoint;
 import com.mndk.kvm2m.core.vmap.elem.point.VMapPoint;
 import com.mndk.kvm2m.core.vmap.elem.poly.VMapBuilding;
 import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
+import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.mndk.ngiparser.NgiParser;
 import com.mndk.ngiparser.nda.NdaDataColumn;
 import com.mndk.ngiparser.ngi.NgiLayer;
 import com.mndk.ngiparser.ngi.NgiParserResult;
 import com.mndk.ngiparser.ngi.element.*;
 import com.mndk.ngiparser.ngi.vertex.NgiVector;
-import net.buildtheearth.terraplusplus.generator.EarthGeneratorSettings;
-import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class NgiMapParser extends VMapParser {
 
@@ -61,9 +61,13 @@ public class NgiMapParser extends VMapParser {
 		
 		Collection<NgiRecord<?>> ngiElements = ngiLayer.data.values();
 		for(NgiRecord<?> ngiElement : ngiElements) {
-			VMapElement element = fromElement(elementLayer, ngiElement);
-			if(element == null) continue;
-			elementLayer.add(element);
+			try {
+				VMapElement element = fromElement(elementLayer, ngiElement);
+				if (element == null) continue;
+				elementLayer.add(element);
+			} catch(Exception e) {
+				KVectorMap2MinecraftMod.logger.error("Error occured while parsing layer " + type + ": " + e.getMessage());
+			}
 		}
 		
 		return elementLayer;
@@ -71,7 +75,7 @@ public class NgiMapParser extends VMapParser {
 	
 	
 	
-	private VMapElement fromElement(VMapLayer layer, NgiRecord<?> ngiElement) {
+	private VMapElement fromElement(VMapLayer layer, NgiRecord<?> ngiElement) throws Exception {
 		if(ngiElement instanceof NgiMultiPolygon) {
 			return fromMultiPolygon(layer, (NgiMultiPolygon) ngiElement);
 		}
@@ -160,7 +164,7 @@ public class NgiMapParser extends VMapParser {
 	
 	
 	
-	private VMapPoint fromPoint(VMapLayer layer, NgiPoint point) {
+	private VMapPoint fromPoint(VMapLayer layer, NgiPoint point) throws Exception {
 		Vector2DH vpoint = this.targetProjToWorldProjCoord(point.position.getAxis(0), point.position.getAxis(1));
 		
 		if(layer.getType() == VMapElementType.표고점) { return new VMapElevationPoint(layer, vpoint, point.rowData); }

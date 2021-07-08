@@ -1,8 +1,6 @@
 package com.mndk.kvm2m.core.vmap.parser;
 
 import com.mndk.kvm2m.core.projection.Korea2010BeltProjection;
-import com.mndk.kvm2m.core.projection.Projections;
-import com.mndk.kvm2m.core.triangulator.TerrainTriangulator;
 import com.mndk.kvm2m.core.util.file.DirectoryManager;
 import com.mndk.kvm2m.core.util.file.ZipManager;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
@@ -18,18 +16,16 @@ import com.mndk.kvm2m.core.vmap.elem.point.VMapElevationPoint;
 import com.mndk.kvm2m.core.vmap.elem.point.VMapPoint;
 import com.mndk.kvm2m.core.vmap.elem.poly.VMapBuilding;
 import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
+import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.mndk.shapefile.ShpDbfDataIterator;
 import com.mndk.shapefile.ShpDbfRecord;
 import com.mndk.shapefile.dbf.DBaseField;
 import com.mndk.shapefile.shp.ShapeVector;
 import com.mndk.shapefile.shp.ShapefileRecord;
-import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.Map;
 
 
 
@@ -105,10 +101,14 @@ public class ShpZipMapParser extends VMapParser {
 
 			// int i = 0;
 			for (ShpDbfRecord record : iterator) {
-				VMapElement element = fromElement(layer, record);
-				if (element == null) continue;
-				layer.add(element);
-				// i++;
+				try {
+					VMapElement element = fromElement(layer, record);
+					if (element == null) continue;
+					layer.add(element);
+					// i++;
+				} catch(Exception e) {
+					KVectorMap2MinecraftMod.logger.error("Error occured while parsing layer " + type + ": " + e.getMessage());
+				}
 			}
 
 			return layer;
@@ -117,7 +117,7 @@ public class ShpZipMapParser extends VMapParser {
 	
 	
 	
-	private VMapElement fromElement(VMapLayer layer, ShpDbfRecord record) {
+	private VMapElement fromElement(VMapLayer layer, ShpDbfRecord record) throws Exception {
 		if(record.shape instanceof ShapefileRecord.Polygon) {
 			return fromPolygon(layer, record);
 		}
@@ -181,7 +181,7 @@ public class ShpZipMapParser extends VMapParser {
 	
 	
 	
-	private VMapPoint fromPoint(VMapLayer layer, ShpDbfRecord record) {
+	private VMapPoint fromPoint(VMapLayer layer, ShpDbfRecord record) throws Exception {
 		ShapefileRecord.Point shape = (ShapefileRecord.Point) record.shape;
 		Vector2DH vpoint = this.targetProjToWorldProjCoord(shape.vector.x, shape.vector.y);
 		

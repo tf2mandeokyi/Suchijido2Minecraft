@@ -9,13 +9,23 @@ import com.sk89q.worldedit.regions.FlatRegion;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.io.IOException;
+
 public class VMapElevationPoint extends VMapPoint {
 	
 	public final int y;
 	
-	public VMapElevationPoint(VMapLayer layer, Vector2DH point, Object[] rowData) {
+	public VMapElevationPoint(VMapLayer layer, Vector2DH point, Object[] rowData) throws Exception {
 		super(layer, point, rowData);
-		this.y = (int) Math.round((Double) this.getDataByColumn("수치"));
+		Object value = this.getDataByColumn("수치");
+		if(value instanceof String) {
+			try {
+				value = Double.parseDouble((String) value);
+			} catch(NumberFormatException e) {
+				throw new IOException("Invalid 수치 data");
+			}
+		}
+		this.y = (int) Math.round((Double) value);
 	}
 	
 	public Vector2DH getPosition() {

@@ -5,6 +5,7 @@ import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
+import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.mndk.kvm2m.mod.event.ServerTickRepeater;
 import com.mndk.kvm2m.mod.task.*;
 import com.sk89q.worldedit.regions.FlatRegion;
@@ -28,7 +29,9 @@ public class VMapToMinecraft {
 		}
 		else {
 			List<VMapLayer> layerList = result.getElementLayers();
-			
+
+			KVectorMap2MinecraftMod.broadcastMessage("§Calculating terrain...");
+
 			TriangleList triangleList = TerrainTriangulator.generateTerrain(result);
 			
 			// Schedule triangles generation task based on contour lines with delaunay triangulate algorithm
