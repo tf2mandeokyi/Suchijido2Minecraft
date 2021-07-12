@@ -6,7 +6,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 
@@ -33,16 +32,17 @@ public class ServerTickRepeater {
 		}
 	}
 	
-	@SubscribeEvent(priority = EventPriority.LOW)
+	@SubscribeEvent
 	public static void onServerTick(ServerTickEvent event) {
 
-		synchronized (blockTasks) {
-			for(int i = 0; i < 2000; ++i) {
-				if(blockTasks.isEmpty()) return;
-				BlockTask task = blockTasks.getFirst();
-				task.world.setBlockState(task.pos, task.blockState);
+		for (int i = 0; i < 2000; ++i) {
+			BlockTask task;
+			synchronized (blockTasks) {
+				if (blockTasks.isEmpty()) break;
+				task = blockTasks.getFirst();
 				blockTasks.removeFirst();
 			}
+			task.world.setBlockState(task.pos, task.blockState);
 		}
 	}
 	
