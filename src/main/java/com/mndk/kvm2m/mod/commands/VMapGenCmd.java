@@ -1,10 +1,8 @@
 package com.mndk.kvm2m.mod.commands;
 
 import com.mndk.kvm2m.core.util.KeyRestrictedMap;
+import com.mndk.kvm2m.core.vmap.VMapGenerationTask;
 import com.mndk.kvm2m.core.vmap.parser.VMapParser;
-import com.mndk.kvm2m.core.vmap.VMapParserException;
-import com.mndk.kvm2m.core.vmap.VMapParserResult;
-import com.mndk.kvm2m.core.vmap.VMapToMinecraft;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.mojang.authlib.GameProfile;
 import com.sk89q.worldedit.IncompleteRegionException;
@@ -26,14 +24,12 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -129,26 +125,18 @@ public class VMapGenCmd extends CommandBase {
 			}
 			
 			FlatRegion worldEditRegion = options.containsKey("generate-all") ? INFINITE_REGION : validateWorldEditRegion(world, player);
-			
-			KVectorMap2MinecraftMod.broadcastMessage("§dParsing files...");
-			
-			VMapParserResult result = new VMapParserResult();
+
 			boolean isEmpty = true;
+
+			List<File> fileList = new ArrayList<>();
 			
 			for(String fileName : args) {
 				if(!fileName.startsWith("--")) {
 					File file = new File(KVectorMap2MinecraftMod.kVecFileDirectory + "/" + fileName);
 					if(file.isDirectory()) {
 						File[] files = file.listFiles((dir, name) -> name.endsWith(this.extension));
-
-						for(File child : files) {
-							try {
-								VMapParserResult parserResult = this.parser.parse(child, projection, options);
-								result.append(parserResult);
-							} catch(Exception e) {
-								throw new CommandException(
-										"Error caused while parsing \"" + child.getName() + "\" : " + e.getMessage());
-							}
+						if(files != null) {
+							fileList.addAll(Arrays.asList(files));
 						}
 					}
 					else {
@@ -158,8 +146,7 @@ public class VMapGenCmd extends CommandBase {
 						if(!FilenameUtils.isExtension(fileName, this.extension)) {
 							throw new CommandException("Invalid extension!");
 						}
-						VMapParserResult parserResult = this.parser.parse(file, projection, options);
-						result.append(parserResult);
+						fileList.add(file);
 					}
 					
 					isEmpty = false;
@@ -168,13 +155,17 @@ public class VMapGenCmd extends CommandBase {
 			
 			if(isEmpty) throw new CommandException("No Files are given!");
 			
-			VMapToMinecraft.generateTasks(world, worldEditRegion, result, options);
+			new Thread(new VMapGenerationTask(
+					fileList.toArray(new File[0]),
+					world,
+					worldEditRegion,
+					projection,
+					parser,
+					player,
+					options
+			)).start();
 			
-		}
-		catch(FileNotFoundException e) {
-			throw new CommandException("File does not exist!");
-		}
-		catch(VMapParserException | IllegalArgumentException e) {
+		} catch(IllegalArgumentException e) {
 			KVectorMap2MinecraftMod.logger.error(e);
 			throw new CommandException(e.getMessage());
 		}
@@ -208,12 +199,12 @@ public class VMapGenCmd extends CommandBase {
 		
 		IChunkProvider chunkProvider = world.getChunkProvider();
 		if(!(chunkProvider instanceof CubeProviderServer)) {
-			throw new CommandException("You must be in a cubic chunks world to generate .dxf map.");
+			throw new CommandException("You must be in a cubic chunks world to generate vector map files.");
 		}
 
 		ICubeGenerator cubeGenerator = ((CubeProviderServer) chunkProvider).getCubeGenerator();
 		if (!(cubeGenerator instanceof EarthGenerator)) {
-			throw new CommandException("You must be in a terra 1 to 1 world to generate .dxf map.");
+			throw new CommandException("You must be in a terra 1 to 1 world to generate vector map files.");
 		}
 		
 		EarthGenerator generator = (EarthGenerator) cubeGenerator;

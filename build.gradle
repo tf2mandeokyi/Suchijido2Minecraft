@@ -114,7 +114,10 @@ dependencies {
     }
 	
 	testCompile "junit:junit:4.12"
+    testCompile 'com.github.OpenCubicChunks.CubicChunks:cubicchunks:6e18a97abe31e1c7892ebcf8ed0f17a4ac379e10'
+    testCompile 'com.github.OpenCubicChunks:CubicWorldGen:27de56d2f792513873584b2f8fd9f3082fb259ec'
     testCompile 'com.github.BuildTheEarth:terraplusplus:74449c4af349fd9b77b10e1041ed2c09f2d78518'
+    testCompile 'com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT'
     provided 'org.projectlombok:lombok:1.18.20'
 	
 }

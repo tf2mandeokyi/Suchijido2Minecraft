@@ -23,12 +23,14 @@ public abstract class VMapParser {
 	
 	
 	public final VMapParserResult parse(File mapFile, GeographicProjection worldProjection, Map<String, String> options) throws IOException {
-		
-		this.mapFile = mapFile;
-		this.worldProjection = worldProjection;
-		this.options = options;
-		this.targetProjection = this.getTargetProjection();
-		return getResult();
+
+		synchronized (this) {
+			this.mapFile = mapFile;
+			this.worldProjection = worldProjection;
+			this.options = options;
+			this.targetProjection = this.getTargetProjection();
+			return getResult();
+		}
 		
 	}
 	

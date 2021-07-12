@@ -2,6 +2,7 @@ package com.mndk.kvm2m.core.vmap;
 
 import com.mndk.kvm2m.core.projection.Korea2010BeltProjection;
 import com.mndk.kvm2m.core.projection.Projections;
+import com.mndk.kvm2m.mod.event.ServerTickRepeater;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -12,7 +13,6 @@ import java.util.regex.Pattern;
 public class VMapUtils {
 
 	private static final Pattern generalMapIdPattern = Pattern.compile("^\\(.{4}\\)수치지도_(\\d+)");
-	private static final Pattern layerTypePattern = Pattern.compile("[A-H]\\d{7}");
 
 	public static Korea2010BeltProjection getProjectionFromMapName(String fileName) {
 
@@ -37,9 +37,7 @@ public class VMapUtils {
 
 
 	public static void setBlock(World world, BlockPos pos, IBlockState state) {
-		// synchronized(world) {
-			world.setBlockState(pos, state);
-		// }
+		ServerTickRepeater.addTask(new ServerTickRepeater.BlockTask(world, pos, state));
 	}
 
 
