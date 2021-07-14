@@ -93,7 +93,7 @@ public class NgiMapReader extends VMapReader {
 
 
 
-	private VMapElement fromMultiPolygon(VMapLayer layer, NgiMultiPolygon polygon) {
+	private VMapPolygon fromMultiPolygon(VMapLayer layer, NgiMultiPolygon polygon) {
 		List<Vector2DH[]> vertexList = new ArrayList<>();
 		Vector2DH[] tempArray;
 		
@@ -115,7 +115,7 @@ public class NgiMapReader extends VMapReader {
 			if(options.containsKey("gen-building-shells")) {
 				return new VMapBuilding(layer, vertexArray, polygon.rowData);
 			} else {
-				return new VMapPolyline(layer, vertexArray, polygon.rowData, true);
+				return new VMapPolygon(layer, vertexArray, polygon.rowData, true);
 			}
 		}
 		else { return new VMapPolygon(layer, vertexArray, polygon.rowData, true); }
@@ -123,7 +123,7 @@ public class NgiMapReader extends VMapReader {
 	
 	
 	
-	private VMapElement fromPolygon(VMapLayer layer, NgiPolygon polygon) {
+	private VMapPolygon fromPolygon(VMapLayer layer, NgiPolygon polygon) {
 		Vector2DH[][] vertexList = new Vector2DH[polygon.vertexData.length][];
 		
 		for(int j = 0; j < polygon.vertexData.length; ++j) {
@@ -140,7 +140,7 @@ public class NgiMapReader extends VMapReader {
 			if(options.containsKey("gen-building-shells")) { 
 				return new VMapBuilding(layer, vertexList, polygon.rowData);
 			} else {
-				return new VMapPolyline(layer, vertexList, polygon.rowData, true);
+				return new VMapPolygon(layer, vertexList, polygon.rowData, false);
 			}
 		}
 		else { return new VMapPolygon(layer, vertexList, polygon.rowData, true); }

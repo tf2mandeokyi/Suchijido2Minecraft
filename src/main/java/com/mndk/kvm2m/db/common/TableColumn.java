@@ -22,6 +22,15 @@ public class TableColumn {
     }
 
 
+    public String toTableCreationSql() {
+        String result = "`" + this.categoryName + "` " + this.dataType;
+        if ((this.flag & TableColumn.NOT_NULL) == TableColumn.NOT_NULL) {
+            result += " NOT NULL";
+        }
+        return result;
+    }
+
+
 
     public static abstract class ColumnType {
         @Override public abstract String toString();
@@ -31,8 +40,7 @@ public class TableColumn {
     public static class VarCharType extends ColumnType {
         private final @Getter int length;
         @Override public String toString() {
-            return "VARCHAR(" + length * 3 + ")";
-            // There are some data exceeding their length limit, so I'm multiplying this by 3 for just in case
+            return "VARCHAR(" + length + ")";
         }
     }
 

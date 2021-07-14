@@ -10,9 +10,7 @@ import java.util.regex.Pattern;
 public enum VMapElementType {
 	
 	// A타입 - 교통
-	도로경계("A001", new TableColumns(
-			new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34), TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL)
-	)),
+	도로경계("A001", new TableColumns()),
 	도로중심선("A002", new TableColumns(
 			new TableColumn("RDNU", "도로번호", new TableColumn.VarCharType(30)),
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
@@ -33,9 +31,7 @@ public enum VMapElementType {
 			new TableColumn("BYYN", "자전거도로유무", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
 			new TableColumn("KIND", "종류", new TableColumn.VarCharType(6), TableColumn.NOT_NULL)
 	)),
-	횡단보도("A004", new TableColumns(
-			new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34), TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL)
-	)),
+	횡단보도("A004", new TableColumns()),
 	안전지대("A005", new TableColumns(
 			new TableColumn("STRU", "구조", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100))
@@ -97,9 +93,7 @@ public enum VMapElementType {
 			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
 			new TableColumn("REST", "기타", new TableColumn.VarCharType(50))
 	)),
-	철도경계("A016", new TableColumns(
-			new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34), TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL)
-	)),
+	철도경계("A016", new TableColumns()),
 	철도중심선("A017", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
@@ -189,9 +183,7 @@ public enum VMapElementType {
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
 			new TableColumn("QUAL", "재질", new TableColumn.VarCharType(6), TableColumn.NOT_NULL)
 	)),
-	암거("C007", new TableColumns(
-			new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34), TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL)
-	)),
+	암거("C007", new TableColumns()),
 	잔교("C008", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("SERV", "용도(설명)", new TableColumn.VarCharType(50)),
@@ -279,9 +271,7 @@ public enum VMapElementType {
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("REST", "기타", new TableColumn.VarCharType(50))
 	)),
-	묘지("C028", new TableColumns(
-			new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34), TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL)
-	)),
+	묘지("C028", new TableColumns()),
 	묘지계("C029", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
@@ -314,12 +304,8 @@ public enum VMapElementType {
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("QUAL", "재질(설명)", new TableColumn.VarCharType(50))
 	)),
-	공중전화("C036", new TableColumns(
-			new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34), TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL)
-	)),
-	우체통("C037", new TableColumns(
-			new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34), TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL)
-	)),
+	공중전화("C036", new TableColumns()),
+	우체통("C037", new TableColumns()),
 	놀이시설("C038", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(6), TableColumn.NOT_NULL)
@@ -364,9 +350,7 @@ public enum VMapElementType {
 			new TableColumn("SERV", "용도", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
 			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
 	)),
-	굴뚝("C048", new TableColumns(
-			new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34), TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL)
-	)),
+	굴뚝("C048", new TableColumns()),
 	신호등("C049", new TableColumns(
 			new TableColumn("SERV", "용도", new TableColumn.VarCharType(6), TableColumn.NOT_NULL)
 	)),
@@ -375,9 +359,7 @@ public enum VMapElementType {
 			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30)),
 			new TableColumn("BJCD", "법정동코드", new TableColumn.VarCharType(10))
 	)),
-	도로반사경("C051", new TableColumns(
-			new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34), TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL)
-	)),
+	도로반사경("C051", new TableColumns()),
 	도로분리대("C052", new TableColumns(
 			new TableColumn("STRU", "구조", new TableColumn.VarCharType(6), TableColumn.NOT_NULL)
 	)),
@@ -421,9 +403,7 @@ public enum VMapElementType {
 
 	
 	// E타입 - 수계
-	하천경계("E001", new TableColumns(
-			new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34), TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL)
-	), -1),
+	하천경계("E001", new TableColumns(), -1),
 	하천중심선("E002", new TableColumns(
 			new TableColumn("RVNU", "하천번호", new TableColumn.NumericType(9)),
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
@@ -431,9 +411,7 @@ public enum VMapElementType {
 			new TableColumn("TYPE", "형태", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
 			new TableColumn("STAT", "상태", new TableColumn.VarCharType(6), TableColumn.NOT_NULL)
 	), -1),
-	실폭하천("E003", new TableColumns(
-			new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34), TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL)
-	), -1),
+	실폭하천("E003", new TableColumns(), -1),
 	유수방향("E004", new TableColumns(
 			new TableColumn("ANGL", "방향각도", new TableColumn.NumericType(3))
 	), -1),
@@ -497,7 +475,6 @@ public enum VMapElementType {
 
 	// G타입 - 경계
 	시도_행정경계("G001", new TableColumns(
-			//new TableColumn("BJCD", "법정동코드", new TableColumn.VarCharType(10)),
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(6), TableColumn.NOT_NULL)
 	)),
@@ -549,9 +526,7 @@ public enum VMapElementType {
 			new TableColumn("PYMD", "촬영년도", new TableColumn.VarCharType(4)),
 			new TableColumn("SCLS", "통합코드", new TableColumn.VarCharType(8), TableColumn.NOT_NULL)
 	)),
-	격자("H003", new TableColumns(
-			new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34), TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL)
-	)),
+	격자("H003", new TableColumns()),
 	지명("H004", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),

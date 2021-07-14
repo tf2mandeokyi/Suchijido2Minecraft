@@ -1,6 +1,5 @@
 package com.mndk.kvm2m.mod.event;
 
-import com.mndk.kvm2m.mod.task.VMapGeneratorTask;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
@@ -22,9 +21,6 @@ public class ServerTickRepeater {
 		public final BlockPos pos;
 		public final IBlockState blockState;
 	}
-
-	@Deprecated
-	public static void addTask(VMapGeneratorTask task) {}
 
 	public static void addTask(BlockTask task) {
 		synchronized(blockTasks) {

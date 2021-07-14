@@ -49,12 +49,10 @@ public class ShpZipMapReader extends VMapReader {
 			throw new VMapParserException(zipDestination.getAbsolutePath() + " directory already exists.");
 		}
 
-		boolean ignored;
-
 		try {
 			
 			// Extract all files in map file
-			ignored = zipDestination.mkdir();
+			zipDestination.mkdir();
 			ZipManager.extractZipFile(mapFile, zipDestination);
 			
 			File[] shapeFiles = zipDestination.listFiles((dir, name) -> name.endsWith(".shp"));
@@ -135,7 +133,7 @@ public class ShpZipMapReader extends VMapReader {
 	
 	
 	
-	private VMapElement fromPolygon(VMapLayer layer, ShpDbfRecord record) {
+	private VMapPolygon fromPolygon(VMapLayer layer, ShpDbfRecord record) {
 		ShapefileRecord.Polygon shape = (ShapefileRecord.Polygon) record.shape;
 		ShapeVector[][] points = shape.points;
 		Vector2DH[][] vertexList = new Vector2DH[shape.points.length][];
@@ -154,7 +152,7 @@ public class ShpZipMapReader extends VMapReader {
 			if(options.containsKey("gen-building-shells")) { 
 				return new VMapBuilding(layer, vertexList, record.dBase.data);
 			} else {
-				return new VMapPolyline(layer, vertexList, record.dBase.data, true);
+				return new VMapPolygon(layer, vertexList, record.dBase.data, false);
 			}
 		}
 		else { return new VMapPolygon(layer, vertexList, record.dBase.data, true); }

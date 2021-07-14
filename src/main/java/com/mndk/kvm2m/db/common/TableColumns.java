@@ -13,6 +13,14 @@ public class TableColumns {
     private static final boolean CHECK_PRIMARY_KEY = true;
 
 
+    public static final TableColumn UFID_COLUMN = new TableColumn(
+            "UFID",
+            "UFID",
+            new TableColumn.VarCharType(34),
+            TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL
+    );
+
+
     private final TableColumn[] columns;
     private final @Getter int primaryKeyIndex;
     private final @Getter int length;
@@ -32,14 +40,14 @@ public class TableColumns {
 
         this.columns[0] = new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34),
                 TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL);
+        primaryKeyIndex = 0;
 
         for (int i = 0; i < columns.length; ++i) {
             this.columns[i + 1] = columns[i];
 
             if(CHECK_PRIMARY_KEY) {
                 if ((columns[i].getFlag() & TableColumn.PRIMARY_KEY) == TableColumn.PRIMARY_KEY) {
-                    if (primaryKeyIndex != -1) throw new RuntimeException("Duplicate Primary Key");
-                    primaryKeyIndex = i;
+                    throw new RuntimeException("Duplicate Primary Key");
                 }
             }
         }
@@ -56,26 +64,26 @@ public class TableColumns {
 
 
     public String generateTableCreationSQL() {
-        String result = "CREATE TABLE IF NOT EXISTS `" + VMapSQLManager.getElementDataTableName(parentType) + "` (";
+        StringBuilder result = new StringBuilder(
+                "CREATE TABLE IF NOT EXISTS `" + VMapSQLManager.getElementDataTableName(parentType) + "` (");
+
         for (int i = 0; i < columns.length; ++i) {
             TableColumn column = columns[i];
-            result += "`" + column.getCategoryName() + "` " + column.getDataType();
-            if ((column.getFlag() & TableColumn.NOT_NULL) == TableColumn.NOT_NULL) {
-                result += " NOT NULL";
-            }
-            if(i != columns.length - 1 || primaryKeyIndex != -1) {
-                result += ",";
+            result.append(column.toTableCreationSql());
+            if(i != columns.length - 1) {
+                result.append(",");
             }
         }
+
         if(primaryKeyIndex != -1) {
-            result += " PRIMARY KEY (`" + columns[primaryKeyIndex].getCategoryName() + "`)";
+            result.append(", PRIMARY KEY (`").append(columns[primaryKeyIndex].getCategoryName()).append("`)");
         }
         return result + ") CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;";
     }
 
 
 
-    public String generateElementInsertionSQL(int elementCount) {
+    public String generateElementDataInsertionSQL(int elementCount) {
         String columnString = "", qmarkString = "", dataUpdateString = "";
 
         for (TableColumn column : columns) {
