@@ -1,7 +1,7 @@
 package com.mndk.kvm2m.mod;
 
-import com.mndk.kvm2m.core.vmap.parser.NgiMapParser;
-import com.mndk.kvm2m.core.vmap.parser.ShpZipMapParser;
+import com.mndk.kvm2m.core.vmap.parser.NgiMapReader;
+import com.mndk.kvm2m.core.vmap.parser.ShpZipMapReader;
 import com.mndk.kvm2m.mod.commands.VMapGenCmd;
 import net.minecraft.command.ICommand;
 import net.minecraft.util.text.TextComponentString;
@@ -25,8 +25,8 @@ public class KVectorMap2MinecraftMod {
 	public static final String VERSION = "b1.0";
 
 	private static final ICommand[] serverCommands = {
-			new VMapGenCmd("genngimap", "ngi", new NgiMapParser()),
-			new VMapGenCmd("genshpzipmap", "zip", new ShpZipMapParser())
+			new VMapGenCmd("genngimap", "ngi", new NgiMapReader()),
+			new VMapGenCmd("genshpzipmap", "zip", new ShpZipMapReader())
 	};
 
 	public static Logger logger;
@@ -56,7 +56,7 @@ public class KVectorMap2MinecraftMod {
 		kVecFileDirectory = event.getModConfigurationDirectory().getParentFile().getAbsolutePath() + "/kvecmap_files/";
 		File temp = new File(kVecFileDirectory);
 		if(!temp.isDirectory()) {
-			temp.mkdirs();
+			boolean ignored = temp.mkdirs();
 		}
 	}
 	

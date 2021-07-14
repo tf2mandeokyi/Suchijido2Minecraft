@@ -18,7 +18,7 @@ public class VMapToMinecraft {
 
 
 
-	public static void generateTasks(World world, FlatRegion worldEditRegion, VMapParserResult result, Map<String, String> options) throws VMapParserException {
+	public static void generateTasks(World world, FlatRegion worldEditRegion, VMapReaderResult result, Map<String, String> options) throws VMapParserException {
 		
 		String elementPerTickStr = options.get("element-per-tick");
 		
@@ -76,7 +76,7 @@ public class VMapToMinecraft {
 			int elementsPerTick,
 			World world,
 			FlatRegion worldEditRegion,
-			VMapParserResult result,
+			VMapReaderResult result,
 			Map<String, String> options
 	) throws VMapParserException {
 		

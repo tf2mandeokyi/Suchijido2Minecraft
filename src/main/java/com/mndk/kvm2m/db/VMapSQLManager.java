@@ -1,7 +1,7 @@
 package com.mndk.kvm2m.db;
 
 import com.mndk.kvm2m.core.vmap.VMapElementType;
-import com.mndk.kvm2m.core.vmap.VMapParserResult;
+import com.mndk.kvm2m.core.vmap.VMapReaderResult;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.db.common.TableColumns;
@@ -52,7 +52,7 @@ public class VMapSQLManager {
         }
     }
 
-    public void insertVMapData(VMapParserResult result) throws SQLException {
+    public void insertVMapData(VMapReaderResult result) throws SQLException {
         for(VMapLayer layer : result.getElementLayers()) {
             insertVMapLayerData(layer);
         }

@@ -6,7 +6,7 @@ import com.mndk.kvm2m.core.util.file.ZipManager;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vmap.VMapElementType;
 import com.mndk.kvm2m.core.vmap.VMapParserException;
-import com.mndk.kvm2m.core.vmap.VMapParserResult;
+import com.mndk.kvm2m.core.vmap.VMapReaderResult;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
@@ -29,13 +29,13 @@ import java.nio.charset.Charset;
 
 
 
-public class ShpZipMapParser extends VMapParser {
+public class ShpZipMapReader extends VMapReader {
 
 
 	@Override
-	protected VMapParserResult getResult() throws IOException {
+	protected VMapReaderResult getResult() throws IOException {
 		
-		VMapParserResult result = new VMapParserResult();
+		VMapReaderResult result = new VMapReaderResult();
 		
 		Throwable throwable = null;
 		
@@ -48,14 +48,17 @@ public class ShpZipMapParser extends VMapParser {
 		if(zipDestination.isDirectory()) {
 			throw new VMapParserException(zipDestination.getAbsolutePath() + " directory already exists.");
 		}
-		
+
+		boolean ignored;
+
 		try {
 			
 			// Extract all files in map file
-			zipDestination.mkdir();
+			ignored = zipDestination.mkdir();
 			ZipManager.extractZipFile(mapFile, zipDestination);
 			
 			File[] shapeFiles = zipDestination.listFiles((dir, name) -> name.endsWith(".shp"));
+			assert shapeFiles != null;
 			for(File shapeFile : shapeFiles) {
 				String filePath = shapeFile.getAbsolutePath();
 				filePath = filePath.substring(0, filePath.length() - 4);

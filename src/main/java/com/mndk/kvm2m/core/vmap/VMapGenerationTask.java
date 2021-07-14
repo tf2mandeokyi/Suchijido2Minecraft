@@ -5,7 +5,7 @@ import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
-import com.mndk.kvm2m.core.vmap.parser.VMapParser;
+import com.mndk.kvm2m.core.vmap.parser.VMapReader;
 import com.sk89q.worldedit.regions.FlatRegion;
 import io.github.opencubicchunks.cubicchunks.core.server.CubeProviderServer;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
@@ -28,7 +28,7 @@ public class VMapGenerationTask implements Runnable {
     private final World world;
     private final FlatRegion worldEditRegion;
     private final GeographicProjection projection;
-    private final VMapParser parser;
+    private final VMapReader parser;
     private final ICommandSender commandSender;
     private final Map<String, String> options;
 
@@ -37,7 +37,7 @@ public class VMapGenerationTask implements Runnable {
             World world,
             FlatRegion worldEditRegion,
             GeographicProjection projection,
-            VMapParser parser,
+            VMapReader parser,
             ICommandSender commandSender,
             Map<String, String> options
     ) {
@@ -55,15 +55,15 @@ public class VMapGenerationTask implements Runnable {
     public void run() {
         try {
 
-            VMapParserResult finalResult = new VMapParserResult();
+            VMapReaderResult finalResult = new VMapReaderResult();
 
             commandSender.sendMessage(new TextComponentString("§dParsing files..."));
-            List<Callable<VMapParserResult>> fileParsingTasks = new ArrayList<>();
+            List<Callable<VMapReaderResult>> fileParsingTasks = new ArrayList<>();
             for (final File file : files) {
                 fileParsingTasks.add(() -> this.parser.parse(file, projection, options));
             }
-            List<Future<VMapParserResult>> parserResults = executorService.invokeAll(fileParsingTasks);
-            for (Future<VMapParserResult> result : parserResults) {
+            List<Future<VMapReaderResult>> parserResults = executorService.invokeAll(fileParsingTasks);
+            for (Future<VMapReaderResult> result : parserResults) {
                 finalResult.append(result.get());
             }
 

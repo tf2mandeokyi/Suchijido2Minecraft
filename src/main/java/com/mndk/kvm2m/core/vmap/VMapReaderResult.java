@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class VMapParserResult {
+public class VMapReaderResult {
 	
 	private VMapPolygon boundary;
 	private final List<VMapLayer> layerList;
 	
-	public VMapParserResult() {
+	public VMapReaderResult() {
 		this.layerList = new ArrayList<>();
 	}
 	
@@ -33,7 +33,7 @@ public class VMapParserResult {
 		this.layerList.add(elementLayer);
 	}
 	
-	public void append(VMapParserResult other) {
+	public void append(VMapReaderResult other) {
 		if(this.boundary == null) {
 			this.boundary = other.boundary;
 		}

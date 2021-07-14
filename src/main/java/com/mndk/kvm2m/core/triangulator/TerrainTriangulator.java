@@ -5,7 +5,7 @@ import com.mndk.kvm2m.core.triangulator.cdt.IndexEdge;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementType;
-import com.mndk.kvm2m.core.vmap.VMapParserResult;
+import com.mndk.kvm2m.core.vmap.VMapReaderResult;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
@@ -21,7 +21,7 @@ public class TerrainTriangulator {
 
 
 
-	public static TriangleList generateTerrain(VMapParserResult result) {
+	public static TriangleList generateTerrain(VMapReaderResult result) {
 
 		Map.Entry<List<VMapContour>, List<Vector2DH>> extraction = extractContourAndElevationPointList(result);
 
@@ -36,7 +36,7 @@ public class TerrainTriangulator {
 
 
 	private static TriangleList generateWithLayerPolylines(
-			VMapParserResult result,
+			VMapReaderResult result,
 			Map.Entry<List<VMapContour>, List<Vector2DH>> extraction,
 			TriangleList previousResult,
 			VMapElementType layerType) {
@@ -105,7 +105,7 @@ public class TerrainTriangulator {
 
 
 
-	static Map.Entry<List<VMapContour>, List<Vector2DH>> extractContourAndElevationPointList(VMapParserResult result) {
+	static Map.Entry<List<VMapContour>, List<Vector2DH>> extractContourAndElevationPointList(VMapReaderResult result) {
 
 		List<VMapContour> contourList = new ArrayList<>();
 		List<Vector2DH> elevationPoints = new ArrayList<>();

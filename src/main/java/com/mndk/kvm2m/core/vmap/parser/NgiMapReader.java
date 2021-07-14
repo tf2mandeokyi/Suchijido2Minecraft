@@ -2,7 +2,7 @@ package com.mndk.kvm2m.core.vmap.parser;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vmap.VMapElementType;
-import com.mndk.kvm2m.core.vmap.VMapParserResult;
+import com.mndk.kvm2m.core.vmap.VMapReaderResult;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
@@ -25,13 +25,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class NgiMapParser extends VMapParser {
+public class NgiMapReader extends VMapReader {
 
 
 	@Override
-	protected VMapParserResult getResult() throws IOException {
+	protected VMapReaderResult getResult() throws IOException {
 
-		VMapParserResult result = new VMapParserResult();
+		VMapReaderResult result = new VMapReaderResult();
 		NgiParserResult parseResult = NgiParser.parse(mapFile.getAbsolutePath(), "MS949", true);
 		
 		Collection<NgiLayer> layers = parseResult.getLayers().values();

@@ -2,7 +2,7 @@ package com.mndk.kvm2m.core.vmap.parser;
 
 import com.mndk.kvm2m.core.projection.Korea2010BeltProjection;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vmap.VMapParserResult;
+import com.mndk.kvm2m.core.vmap.VMapReaderResult;
 import com.mndk.kvm2m.core.vmap.VMapUtils;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-public abstract class VMapParser {
+public abstract class VMapReader {
 	
 	
 	
@@ -22,7 +22,7 @@ public abstract class VMapParser {
 	
 	
 	
-	public final VMapParserResult parse(File mapFile, GeographicProjection worldProjection, Map<String, String> options) throws IOException {
+	public final VMapReaderResult parse(File mapFile, GeographicProjection worldProjection, Map<String, String> options) throws IOException {
 
 		synchronized (this) {
 			this.mapFile = mapFile;
@@ -36,7 +36,7 @@ public abstract class VMapParser {
 	
 	
 	
-	protected abstract VMapParserResult getResult() throws IOException;
+	protected abstract VMapReaderResult getResult() throws IOException;
 	
 	
 	

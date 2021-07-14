@@ -2,7 +2,7 @@ package com.mndk.kvm2m.mod.commands;
 
 import com.mndk.kvm2m.core.util.KeyRestrictedMap;
 import com.mndk.kvm2m.core.vmap.VMapGenerationTask;
-import com.mndk.kvm2m.core.vmap.parser.VMapParser;
+import com.mndk.kvm2m.core.vmap.parser.VMapReader;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.mojang.authlib.GameProfile;
 import com.sk89q.worldedit.IncompleteRegionException;
@@ -15,6 +15,7 @@ import com.sk89q.worldedit.regions.FlatRegion;
 import com.sk89q.worldedit.regions.Region;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.ICubeGenerator;
 import io.github.opencubicchunks.cubicchunks.core.server.CubeProviderServer;
+import mcp.MethodsReturnNonnullByDefault;
 import net.buildtheearth.terraplusplus.generator.EarthGenerator;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.minecraft.command.CommandBase;
@@ -29,11 +30,18 @@ import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.io.FilenameUtils;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+
+
+@MethodsReturnNonnullByDefault
+@ParametersAreNonnullByDefault
 public class VMapGenCmd extends CommandBase {
 
 	
@@ -67,11 +75,11 @@ public class VMapGenCmd extends CommandBase {
 	
 	
 	private final String name, extension;
-	private final VMapParser parser;
+	private final VMapReader parser;
 	
 	
 	
-	public VMapGenCmd(String name, String extension, VMapParser parser) {
+	public VMapGenCmd(String name, String extension, VMapReader parser) {
 		this.name = name;
 		this.extension = extension;
 		this.parser = parser;
@@ -112,6 +120,10 @@ public class VMapGenCmd extends CommandBase {
 			GeographicProjection projection = getWorldProjection(world);
 			
 			Map<String, String> options = new KeyRestrictedMap<>(ALLOWED_OPTIONS);
+
+			boolean isEmpty = true;
+
+			List<File> fileList = new ArrayList<>();
 			
 			for(String fileName : args) {
 				if(fileName.startsWith("--")) {
@@ -122,37 +134,45 @@ public class VMapGenCmd extends CommandBase {
 					}
 					else options.put(keyNvalue, null);
 				}
-			}
-			
-			FlatRegion worldEditRegion = options.containsKey("generate-all") ? INFINITE_REGION : validateWorldEditRegion(world, player);
-
-			boolean isEmpty = true;
-
-			List<File> fileList = new ArrayList<>();
-			
-			for(String fileName : args) {
-				if(!fileName.startsWith("--")) {
-					File file = new File(KVectorMap2MinecraftMod.kVecFileDirectory + "/" + fileName);
-					if(file.isDirectory()) {
-						File[] files = file.listFiles((dir, name) -> name.endsWith(this.extension));
+				else {
+					File vectorMapFile = Paths.get(KVectorMap2MinecraftMod.kVecFileDirectory, fileName).toFile();
+					if(vectorMapFile.isDirectory()) {
+						File[] files = vectorMapFile.listFiles((dir, name) -> name.endsWith(this.extension));
 						if(files != null) {
 							fileList.addAll(Arrays.asList(files));
 						}
 					}
 					else {
-						if(!file.isFile()) {
-							throw new CommandException("File \"" + fileName + "\" does not exist!");
+						if(!vectorMapFile.exists()) {
+							File parent = vectorMapFile.getParentFile();
+							String name = vectorMapFile.getName();
+							if(name.endsWith("." + this.extension)) {
+								name = name.substring(0, name.length() - (this.extension.length() + 1));
+							}
+							String regex = "^\\(.{4}\\)수치지도_" + name + "_.+\\." + this.extension;
+							if(name.matches("\\d+")) {
+								File[] matchingFiles = parent.listFiles(
+										(dir, name1) -> name1.matches(regex));
+								if(matchingFiles != null && matchingFiles.length != 0) {
+									fileList.add(matchingFiles[0]);
+								}
+							}
+							else {
+								throw new CommandException("File \"" + fileName + "\" does not exist!");
+							}
 						}
-						if(!FilenameUtils.isExtension(fileName, this.extension)) {
+						else if(!FilenameUtils.isExtension(fileName, this.extension)) {
 							throw new CommandException("Invalid extension!");
 						}
-						fileList.add(file);
+						else fileList.add(vectorMapFile);
 					}
-					
+
 					isEmpty = false;
 				}
 			}
 			
+			FlatRegion worldEditRegion = options.containsKey("generate-all") ? INFINITE_REGION : validateWorldEditRegion(world, player);
+
 			if(isEmpty) throw new CommandException("No Files are given!");
 			
 			new Thread(new VMapGenerationTask(
@@ -235,7 +255,7 @@ public class VMapGenCmd extends CommandBase {
 	
 	
 	@Override
-	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos targetPos) {
+	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
 		
 		File file = new File(KVectorMap2MinecraftMod.kVecFileDirectory);
 		String extension = this.extension;
