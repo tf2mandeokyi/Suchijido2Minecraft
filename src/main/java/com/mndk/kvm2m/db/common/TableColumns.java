@@ -10,14 +10,11 @@ import lombok.ToString;
 public class TableColumns {
 
 
-    private static final boolean CHECK_PRIMARY_KEY = true;
-
-
     public static final TableColumn UFID_COLUMN = new TableColumn(
             "UFID",
             "UFID",
             new TableColumn.VarCharType(34),
-            TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL
+            TableColumn.NOT_NULL
     );
 
 
@@ -37,21 +34,10 @@ public class TableColumns {
         this.columns = new TableColumn[columns.length + 1];
         this.length = columns.length + 1;
 
-        this.columns[0] = new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34),
-                TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL);
-        int primaryKeyIndex = 0;
+        this.columns[0] = UFID_COLUMN;
+        this.primaryKeyIndex = 0;
 
-        for (int i = 0; i < columns.length; ++i) {
-            this.columns[i + 1] = columns[i];
-
-            if(CHECK_PRIMARY_KEY) {
-                if ((columns[i].getFlag() & TableColumn.PRIMARY_KEY) == TableColumn.PRIMARY_KEY) {
-                    throw new RuntimeException("Duplicate Primary Key");
-                }
-            }
-        }
-
-        this.primaryKeyIndex = primaryKeyIndex;
+        System.arraycopy(columns, 0, this.columns, 1, columns.length);
     }
 
 
@@ -63,6 +49,8 @@ public class TableColumns {
 
 
     public String generateTableCreationSQL() {
+        if(this.length == 1) return null;
+
         StringBuilder result = new StringBuilder(
                 "CREATE TABLE IF NOT EXISTS `" + VMapSQLManager.getElementDataTableName(parentType) + "` (");
 
@@ -83,6 +71,8 @@ public class TableColumns {
 
 
     public String generateElementDataInsertionSQL(int elementCount) {
+        if(this.length == 1) return null;
+
         String columnString = "", qmarkString = "", dataUpdateString = "";
 
         for (TableColumn column : columns) {
@@ -105,6 +95,4 @@ public class TableColumns {
                 " (" + columnString + ") VALUES " + qmarkStrings +
                 (primaryKeyIndex != -1 ? " ON DUPLICATE KEY UPDATE " + dataUpdateString : "") + ";";
     }
-
-
 }

@@ -1,9 +1,6 @@
 package com.mndk.kvm2m.db;
 
-import com.mndk.kvm2m.core.vmap.VMapElementDataType;
-import com.mndk.kvm2m.core.vmap.VMapGeometryPayload;
-import com.mndk.kvm2m.core.vmap.VMapReaderResult;
-import com.mndk.kvm2m.core.vmap.VMapUtils;
+import com.mndk.kvm2m.core.vmap.*;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.db.common.TableColumn;
@@ -73,6 +70,7 @@ public class VMapSQLManager {
         for(VMapElementDataType type : VMapElementDataType.values()) {
             if(!filter.apply(type)) continue;
             String query = type.getColumns().generateTableCreationSQL();
+            if(query == null) continue;
             try(Statement statement = connection.createStatement()){
                 statement.executeUpdate(query);
             }
@@ -93,7 +91,7 @@ public class VMapSQLManager {
 
 
 
-    public void insertVMapData(VMapReaderResult result) throws SQLException {
+    public void insertVMapData(VMapReaderResult result) throws SQLException, IOException {
         for(VMapLayer layer : result.getElementLayers()) {
             insertVMapLayerData(layer);
         }
@@ -101,7 +99,7 @@ public class VMapSQLManager {
 
 
 
-    public void insertVMapLayerData(VMapLayer layer) throws SQLException {
+    public void insertVMapLayerData(VMapLayer layer) throws SQLException, IOException {
         if(layer == null) return;
         if(layer.size() == 0) return;
 
@@ -111,26 +109,27 @@ public class VMapSQLManager {
         final String dataSql = columns.generateElementDataInsertionSQL(layer.size());
         final String geometrySql = generateGeometryInsertionSql(layer.size());
 
-        try(PreparedStatement dataStatement = this.connection.prepareStatement(dataSql);
-            PreparedStatement geometryStatement = this.connection.prepareStatement(geometrySql)) {
+        PreparedStatement dataStatement = dataSql == null ? null : this.connection.prepareStatement(dataSql);
+        PreparedStatement geometryStatement = this.connection.prepareStatement(geometrySql);
 
-            int dataStatementIndex = 1;
-            for(int i = 0 ; i < layer.size(); ++i) {
-                VMapElement element = layer.get(i);
+        int dataStatementIndex = 1;
+        for(int i = 0 ; i < layer.size(); ++i) {
+            VMapElement element = layer.get(i);
 
-                Blob geometryBlob = this.connection.createBlob();
-                geometryBlob.setBytes(1, VMapUtils.generateGeometryDataBytes(element));
-                geometryStatement.setObject(2 * i + 1, element.getDataByColumn("UFID"));
-                geometryStatement.setBlob(2 * i + 2, geometryBlob);
+            Blob geometryBlob = this.connection.createBlob();
+            geometryBlob.setBytes(1, VMapUtils.generateGeometryDataBytes(element));
+            geometryStatement.setObject(2 * i + 1, element.getDataByColumn("UFID"));
+            geometryStatement.setBlob(2 * i + 2, geometryBlob);
 
+            if(dataStatement != null) {
                 for (int j = 0; j < columns.getLength(); ++j) {
                     TableColumn column = columns.get(j);
                     String columnName = column.getCategoryName();
                     Object o = element.getDataByColumn(columnName);
 
-                    if(column.getDataType() instanceof TableColumn.VarCharType) {
+                    if (column.getDataType() instanceof TableColumn.VarCharType) {
                         TableColumn.VarCharType varCharType = (TableColumn.VarCharType) column.getDataType();
-                        if(o instanceof String && varCharType.getLength() < ((String) o).length()) {
+                        if (o instanceof String && varCharType.getLength() < ((String) o).length()) {
                             o = ((String) o).substring(0, varCharType.getLength());
                         }
                     }
@@ -139,12 +138,10 @@ public class VMapSQLManager {
                 }
                 dataStatementIndex += columns.getLength();
             }
-
-            dataStatement.executeUpdate();
-            geometryStatement.executeUpdate();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
+        if(dataStatement != null) dataStatement.executeUpdate();
+        geometryStatement.executeUpdate();
     }
 
 
@@ -162,19 +159,58 @@ public class VMapSQLManager {
 
 
 
-    public Map<String, VMapGeometryPayload<?>> getVMapGeometryData(String mapNumber) throws SQLException {
+    public Map<String, VMapGeometryPayload<?>> getVMapGeometry(String mapNumber) throws SQLException, IOException {
+
         String sql = "SELECT * FROM `" + GEOMETRY_TABLE_NAME + "` WHERE `UFID` REGEXP(CONCAT('^1000', ?, '[A-Z]'));";
         Map<String, VMapGeometryPayload<?>> result = new HashMap<>();
+
         try(PreparedStatement statement = this.connection.prepareStatement(sql)) {
+
             statement.setString(1, mapNumber);
             ResultSet resultSet = statement.executeQuery();
+
             while(resultSet.next()) {
                 InputStream stream = resultSet.getBlob("geometry_data").getBinaryStream();
                 result.put(resultSet.getString("UFID"), VMapUtils.parseGeometryDataString(stream));
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        return result;
+    }
+
+
+
+    public Map<String, VMapDataPayload> getVMapData(String mapNumber) throws SQLException {
+
+        Map<String, VMapDataPayload> result = new HashMap<>();
+
+        for(VMapElementDataType type : VMapElementDataType.values()) {
+            TableColumns columns = type.getColumns();
+
+            String tableName = getElementDataTableName(type);
+            String sql = "SELECT * FROM `" + tableName + "` WHERE `UFID` REGEXP(CONCAT('^1000', ?, '[A-Z]'));";
+
+            try(PreparedStatement statement = this.connection.prepareStatement(sql)) {
+
+                statement.setString(1, mapNumber);
+                ResultSet resultSet = statement.executeQuery();
+
+                while(resultSet.next()) {
+                    String ufid = resultSet.getString("UFID");
+                    Object[] dataRow = new Object[columns.getLength()];
+                    for(int i = 0; i < columns.getLength(); ++i) {
+                        TableColumn column = columns.get(i);
+                        if(column.getDataType() instanceof TableColumn.VarCharType) {
+                            dataRow[i] = resultSet.getString(column.getCategoryName());
+                        }
+                        else if(column.getDataType() instanceof TableColumn.NumericType) {
+                            dataRow[i] = resultSet.getDouble(column.getCategoryName());
+                        }
+                    }
+                    result.put(ufid, new VMapDataPayload(type, dataRow));
+                }
+            }
+        }
+
         return result;
     }
 

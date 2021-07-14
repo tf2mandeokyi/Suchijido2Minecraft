@@ -7,6 +7,7 @@ import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.sk89q.worldedit.regions.FlatRegion;
+import net.minecraft.init.Bootstrap;
 import net.minecraft.world.World;
 
 import java.util.Map;
@@ -50,6 +51,9 @@ public class VMapWall extends VMapLineString {
 	
 	@Override
 	public String toString() {
+		if(!Bootstrap.isRegistered()) {
+			return "VMapWall{type=" + parent.getType() + ",vertexLen=" + vertices[0].length + "}";
+		}
 		return "VMapWall{type=" + parent.getType() + ",vertexLen=" + vertices[0].length + ",height=" + VMapElementStyleSelector.getStyle(this)[0].y + "}";
 	}
 

@@ -29,7 +29,7 @@ public class VMapReaderResult {
 		return this.layerList;
 	}
 	
-	public void addElement(VMapLayer elementLayer) {
+	public void addLayer(VMapLayer elementLayer) {
 		this.layerList.add(elementLayer);
 	}
 	

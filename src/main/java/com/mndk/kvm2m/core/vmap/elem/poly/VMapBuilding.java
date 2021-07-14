@@ -10,6 +10,7 @@ import com.mndk.kvm2m.core.vmap.VMapUtils;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
+import net.minecraft.init.Bootstrap;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -103,6 +104,9 @@ public class VMapBuilding extends VMapPolygon {
 	
 	@Override
 	public String toString() {
+		if(!Bootstrap.isRegistered()) {
+			return "VMapBuilding{vertexLen=" + vertices[0].length + ",floor=" + this.getDataByColumn("층수") + "}";
+		}
 		return "VMapBuilding{vertexLen=" + vertices[0].length + ",height=" + VMapElementStyleSelector.getStyle(this)[0].y + "}";
 	}
 

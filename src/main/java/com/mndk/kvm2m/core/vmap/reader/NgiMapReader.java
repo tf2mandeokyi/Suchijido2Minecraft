@@ -39,7 +39,7 @@ public class NgiMapReader extends VMapReader {
 			if(layer.header.dimensions != 2) continue;
 			try {
 				VMapLayer elementLayer = fromNgiLayer(layer);
-				result.addElement(elementLayer);
+				result.addLayer(elementLayer);
 			} catch(NullPointerException ignored) {} // TODO I don't have a good feeling about this
 		}
 		

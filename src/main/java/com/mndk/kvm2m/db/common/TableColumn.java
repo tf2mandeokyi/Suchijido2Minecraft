@@ -9,9 +9,7 @@ import lombok.ToString;
 @Getter
 public class TableColumn {
 
-    public static final int PRIMARY_KEY = 1;
-
-    public static final int NOT_NULL = 2;
+    public static final int NOT_NULL = 1;
 
     private final String categoryId;
     private final String categoryName;

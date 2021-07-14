@@ -62,7 +62,7 @@ public class ShpZipMapReader extends VMapReader {
 				filePath = filePath.substring(0, filePath.length() - 4);
 				String fileName = new File(filePath).getName();
 				VMapLayer elementLayer = fromShpFile(filePath, fileName);
-				result.addElement(elementLayer);
+				result.addLayer(elementLayer);
 			}
 		} catch(Throwable t) {
 			throwable = t;
