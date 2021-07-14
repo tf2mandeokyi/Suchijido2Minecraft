@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.core.vmap.parser;
+package com.mndk.kvm2m.core.vmap.reader;
 
 import com.mndk.kvm2m.core.projection.Korea2010BeltProjection;
 import com.mndk.kvm2m.core.util.math.Vector2DH;

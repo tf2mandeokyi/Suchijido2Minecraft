@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public enum VMapElementType {
+public enum VMapElementDataType {
 	
 	// A타입 - 교통
 	도로경계("A001", new TableColumns()),
@@ -546,13 +546,13 @@ public enum VMapElementType {
 
 
 
-	VMapElementType(String layerNameHeader, TableColumns columns) {
+	VMapElementDataType(String layerNameHeader, TableColumns columns) {
 		this(layerNameHeader, columns, 0);
 	}
 
 
 
-	VMapElementType(String layerNameHeader, TableColumns columns, int priority) {
+	VMapElementDataType(String layerNameHeader, TableColumns columns, int priority) {
 		this.layerNameHeader = layerNameHeader;
 		this.columns = columns;
 		this.columns.setParentType(this);
@@ -571,12 +571,12 @@ public enum VMapElementType {
 
 
 
-	public static VMapElementType fromLayerName(String layerName) {
+	public static VMapElementDataType fromLayerName(String layerName) {
 		if(layerName == null) return null;
 		Matcher matcher = layerTypePattern.matcher(layerName);
 		if(matcher.find()) {
 			String match = matcher.group(1);
-			for (VMapElementType t : values()) {
+			for (VMapElementDataType t : values()) {
 				if (match.startsWith(t.layerNameHeader)) {
 					return t;
 				}

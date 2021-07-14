@@ -4,11 +4,12 @@ import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.math.VectorMath;
 import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
+import com.mndk.kvm2m.core.vmap.VMapElementGeomType;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
 import com.mndk.kvm2m.core.vmap.VMapUtils;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
-import com.mndk.kvm2m.core.vmap.elem.line.VMapPolyline;
+import com.mndk.kvm2m.core.vmap.elem.line.VMapLineString;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
 import net.minecraft.util.math.BlockPos;
@@ -16,7 +17,7 @@ import net.minecraft.world.World;
 
 import java.util.Map;
 
-public class VMapPolygon extends VMapPolyline {
+public class VMapPolygon extends VMapLineString {
 
 	
 	private final boolean doFill;
@@ -24,12 +25,14 @@ public class VMapPolygon extends VMapPolyline {
 	
 	private VMapPolygon(VMapLayer parent, Map<String, Object> dataRow, boolean doFill) {
 		super(parent, dataRow, true);
+		this.type = VMapElementGeomType.POLYGON;
 		this.doFill = doFill;
 	}
 
 	
 	private VMapPolygon(VMapLayer parent, Object[] dataRow, boolean doFill) {
 		super(parent, dataRow, true);
+		this.type = VMapElementGeomType.POLYGON;
 		this.doFill = doFill;
 	}
 	

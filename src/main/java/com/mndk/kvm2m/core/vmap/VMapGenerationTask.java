@@ -5,7 +5,7 @@ import com.mndk.kvm2m.core.util.shape.Triangle;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
-import com.mndk.kvm2m.core.vmap.parser.VMapReader;
+import com.mndk.kvm2m.core.vmap.reader.VMapReader;
 import com.sk89q.worldedit.regions.FlatRegion;
 import io.github.opencubicchunks.cubicchunks.core.server.CubeProviderServer;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
@@ -102,14 +102,14 @@ public class VMapGenerationTask implements Runnable {
 
                 commandSender.sendMessage(new TextComponentString("§dGenerating elements..."));
                 for(VMapLayer layer : layers) {
-                    VMapElementType type = layer.getType();
+                    VMapElementDataType type = layer.getType();
                     if(options.containsKey("layer-only")) {
-                        if(!type.equals(VMapElementType.fromLayerName(options.get("layer-only")))) {
+                        if(!type.equals(VMapElementDataType.fromLayerName(options.get("layer-only")))) {
                             continue;
                         }
                     }
                     if(!options.containsKey("draw-contour")) {
-                        if(type == VMapElementType.등고선 || type == VMapElementType.표고점) {
+                        if(type == VMapElementDataType.등고선 || type == VMapElementDataType.표고점) {
                             continue;
                         }
                     }

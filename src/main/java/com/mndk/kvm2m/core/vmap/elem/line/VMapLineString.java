@@ -4,6 +4,7 @@ import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
+import com.mndk.kvm2m.core.vmap.VMapElementGeomType;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
@@ -14,40 +15,40 @@ import net.minecraft.world.World;
 
 import java.util.Map;
 
-public class VMapPolyline extends VMapElement {
+public class VMapLineString extends VMapElement {
 
 	
 	protected Vector2DH[][] vertices;
 	private boolean isClosed;
 
 	
-	protected VMapPolyline(VMapLayer parent, Map<String, Object> dataRow, boolean isClosed) {
-		super(parent, dataRow);
+	protected VMapLineString(VMapLayer parent, Map<String, Object> dataRow, boolean isClosed) {
+		super(parent, dataRow, VMapElementGeomType.LINESTRING);
 		this.isClosed = isClosed;
 	}
 
 	
-	protected VMapPolyline(VMapLayer parent, Object[] dataRow, boolean isClosed) {
-		super(parent, dataRow);
+	protected VMapLineString(VMapLayer parent, Object[] dataRow, boolean isClosed) {
+		super(parent, dataRow, VMapElementGeomType.LINESTRING);
 		this.isClosed = isClosed;
 	}
 	
 	
-	public VMapPolyline(VMapLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean isClosed) {
+	public VMapLineString(VMapLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean isClosed) {
 		this(parent, dataRow, isClosed);
 		this.vertices = vertices;
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapPolyline(VMapLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean isClosed) {
+	public VMapLineString(VMapLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean isClosed) {
 		this(parent, dataRow, isClosed);
 		this.vertices = vertices;
 		this.getBoundingBox();
 	}
 	
 	
-	public VMapPolygon merge(VMapPolyline other) {
+	public VMapPolygon merge(VMapLineString other) {
 		Vector2DH[][] newVertexList = new Vector2DH[this.vertices.length + other.vertices.length][];
 		System.arraycopy(this.vertices, 0, newVertexList, 0, this.vertices.length);
 		System.arraycopy(other.vertices, 0, newVertexList, this.vertices.length, other.vertices.length);
@@ -117,7 +118,7 @@ public class VMapPolyline extends VMapElement {
 	
 	@Override
 	public String toString() {
-		return "VMapPolyline{type=" + parent.getType() + ",vertexLen=" + vertices[0].length + "}";
+		return "VMapLineString{type=" + parent.getType() + ",vertexLen=" + vertices[0].length + "}";
 	}
 	
 }

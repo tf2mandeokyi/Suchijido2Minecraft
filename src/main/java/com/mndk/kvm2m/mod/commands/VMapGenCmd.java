@@ -2,7 +2,7 @@ package com.mndk.kvm2m.mod.commands;
 
 import com.mndk.kvm2m.core.util.KeyRestrictedMap;
 import com.mndk.kvm2m.core.vmap.VMapGenerationTask;
-import com.mndk.kvm2m.core.vmap.parser.VMapReader;
+import com.mndk.kvm2m.core.vmap.reader.VMapReader;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.mojang.authlib.GameProfile;
 import com.sk89q.worldedit.IncompleteRegionException;

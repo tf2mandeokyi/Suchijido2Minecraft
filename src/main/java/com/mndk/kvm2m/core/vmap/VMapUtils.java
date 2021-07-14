@@ -2,17 +2,28 @@ package com.mndk.kvm2m.core.vmap;
 
 import com.mndk.kvm2m.core.projection.Korea2010BeltProjection;
 import com.mndk.kvm2m.core.projection.Projections;
+import com.mndk.kvm2m.core.util.math.Vector2DH;
+import com.mndk.kvm2m.core.vmap.elem.VMapElement;
+import com.mndk.kvm2m.core.vmap.elem.line.VMapLineString;
+import com.mndk.kvm2m.core.vmap.elem.point.VMapPoint;
+import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
 import com.mndk.kvm2m.mod.event.ServerTickRepeater;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class VMapUtils {
 
+
+
 	private static final Pattern generalMapIdPattern = Pattern.compile("^\\(.{4}\\)수치지도_(\\d+)");
+	// private static final DecimalFormat decimalFormat = new DecimalFormat("#.0000000");
+
+
 
 	public static Korea2010BeltProjection getProjectionFromMapName(String fileName) {
 
@@ -42,22 +53,72 @@ public class VMapUtils {
 
 
 
-	public static int getScaleFromMapId(String id) {
-		switch(id.length()) {
-			case 3: return 250000;
-			case 5: return 50000;
-			case 6: return 25000;
-			case 7: return 10000;
-			case 8:
-				char last = id.charAt(7);
-				if(last >= '0' && last <= '9') // If the last character is v1 number:
-					return 5000;
-				else // Or else if it's an alphabet
-					return 2500;
-			case 9: return 1000;
-			case 10: return 500;
+	public static byte[] generateGeometryDataBytes(VMapElement element) throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(bos);
+
+		if(element instanceof VMapPoint) {
+			Vector2DH v = ((VMapPoint) element).getPosition();
+
+			dos.writeByte(VMapElementGeomType.POINT.ordinal());
+			dos.writeDouble(v.x);
+			dos.writeDouble(v.z);
 		}
-		return -1;
+		else {
+			if (element instanceof VMapPolygon) {
+				dos.writeByte(VMapElementGeomType.POLYGON.ordinal());
+			}
+			else if(element instanceof VMapLineString) {
+				dos.writeByte(VMapElementGeomType.LINESTRING.ordinal());
+			}
+			else {
+				return new byte[] { (byte) VMapElementGeomType.NULL.ordinal() };
+			}
+			Vector2DH[][] lines = ((VMapLineString) element).getVertexList();
+			dos.writeInt(lines.length);
+			for (Vector2DH[] line : lines) {
+				dos.writeInt(line.length);
+				for (Vector2DH point : line) {
+					dos.writeDouble(point.x);
+					dos.writeDouble(point.z);
+				}
+			}
+		}
+
+		return bos.toByteArray();
 	}
+
+
+	/**
+	 * @return Object part: Either a class of point (Vector2DH) or a list of lines (Vector2DH[][])
+	 */
+	public static VMapGeometryPayload<?> parseGeometryDataString(InputStream geometryStream) throws IOException {
+		DataInputStream dis = new DataInputStream(geometryStream);
+		int firstByte = dis.readByte();
+		VMapElementGeomType type = VMapElementGeomType.values()[firstByte];
+
+		switch(type) {
+			case POINT:
+				return new VMapGeometryPayload<>(
+						VMapElementGeomType.POINT,
+						new Vector2DH(dis.readDouble(), dis.readDouble())
+				);
+			case LINESTRING:
+			case POLYGON:
+				int lineCount = dis.readInt();
+				Vector2DH[][] result = new Vector2DH[lineCount][];
+				for(int i = 0; i < lineCount; ++i) {
+					int pointCount = dis.readInt();
+					result[i] = new Vector2DH[pointCount];
+					for(int j = 0; j < pointCount; ++j) {
+						result[i][j] = new Vector2DH(dis.readDouble(), dis.readDouble());
+					}
+				}
+				return new VMapGeometryPayload<>(type, result);
+			default:
+				return new VMapGeometryPayload<>(VMapElementGeomType.NULL, null);
+		}
+	}
+
 
 }

@@ -6,16 +6,17 @@ import lombok.ToString;
 
 @RequiredArgsConstructor
 @ToString
+@Getter
 public class TableColumn {
 
     public static final int PRIMARY_KEY = 1;
 
     public static final int NOT_NULL = 2;
 
-    private final @Getter String categoryId;
-    private final @Getter String categoryName;
-    private final @Getter ColumnType dataType;
-    private final @Getter int flag;
+    private final String categoryId;
+    private final String categoryName;
+    private final ColumnType dataType;
+    private final int flag;
 
     public TableColumn(String categoryId, String categoryName, ColumnType dataType) {
         this(categoryId, categoryName, dataType, 0);

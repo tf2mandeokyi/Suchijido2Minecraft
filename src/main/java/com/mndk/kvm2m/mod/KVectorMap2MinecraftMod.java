@@ -1,7 +1,7 @@
 package com.mndk.kvm2m.mod;
 
-import com.mndk.kvm2m.core.vmap.parser.NgiMapReader;
-import com.mndk.kvm2m.core.vmap.parser.ShpZipMapReader;
+import com.mndk.kvm2m.core.vmap.reader.NgiMapReader;
+import com.mndk.kvm2m.core.vmap.reader.ShpZipMapReader;
 import com.mndk.kvm2m.mod.commands.VMapGenCmd;
 import net.minecraft.command.ICommand;
 import net.minecraft.util.text.TextComponentString;

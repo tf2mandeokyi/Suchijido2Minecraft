@@ -4,12 +4,12 @@ import com.mndk.kvm2m.core.triangulator.cdt.ConstraintDelaunayTriangulator;
 import com.mndk.kvm2m.core.triangulator.cdt.IndexEdge;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vmap.VMapElementType;
+import com.mndk.kvm2m.core.vmap.VMapElementDataType;
 import com.mndk.kvm2m.core.vmap.VMapReaderResult;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
-import com.mndk.kvm2m.core.vmap.elem.line.VMapPolyline;
+import com.mndk.kvm2m.core.vmap.elem.line.VMapLineString;
 import com.mndk.kvm2m.core.vmap.elem.point.VMapElevationPoint;
 import com.mndk.kvm2m.core.vmap.elem.point.VMapPoint;
 import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
@@ -27,9 +27,9 @@ public class TerrainTriangulator {
 
 		TriangleList first = generateTerrain(extraction.getKey(), extraction.getValue(), Collections.emptyList());
 
-		TriangleList second = generateWithLayerPolylines(result, extraction, first, VMapElementType.도로중심선);
+		TriangleList second = generateWithLayerPolylines(result, extraction, first, VMapElementDataType.도로중심선);
 
-		return generateWithLayerPolylines(result, extraction, second, VMapElementType.도로경계);
+		return generateWithLayerPolylines(result, extraction, second, VMapElementDataType.도로경계);
 
 	}
 
@@ -39,18 +39,18 @@ public class TerrainTriangulator {
 			VMapReaderResult result,
 			Map.Entry<List<VMapContour>, List<Vector2DH>> extraction,
 			TriangleList previousResult,
-			VMapElementType layerType) {
+			VMapElementDataType layerType) {
 
-		List<VMapPolyline> roadCenterLines = new ArrayList<>();
+		List<VMapLineString> roadCenterLines = new ArrayList<>();
 
 		VMapLayer tempLayer;
 		if((tempLayer = result.getLayer(layerType)) != null) {
-			roadCenterLines = tempLayer.stream().map(element -> (VMapPolyline) element).collect(Collectors.toList());
+			roadCenterLines = tempLayer.stream().map(element -> (VMapLineString) element).collect(Collectors.toList());
 		}
 
 		List<Vector2DH[]> roadCenterLineEdges = new ArrayList<>();
 
-		for(VMapPolyline line : roadCenterLines) {
+		for(VMapLineString line : roadCenterLines) {
 			Vector2DH[][] vertexList = line.getVertexList();
 			for(Vector2DH[] vertex : vertexList) {
 				for(int i = 0; i < vertex.length - 1; ++i) {
@@ -111,18 +111,18 @@ public class TerrainTriangulator {
 		List<Vector2DH> elevationPoints = new ArrayList<>();
 		VMapLayer tempLayer;
 
-		if((tempLayer = result.getLayer(VMapElementType.등고선)) != null) {
+		if((tempLayer = result.getLayer(VMapElementDataType.등고선)) != null) {
 			contourList = tempLayer.stream().map(element -> (VMapContour) element).collect(Collectors.toList());
 		}
 
-		if((tempLayer = result.getLayer(VMapElementType.표고점)) != null) {
+		if((tempLayer = result.getLayer(VMapElementDataType.표고점)) != null) {
 			for(VMapElement pElem : tempLayer) {
 				assert pElem instanceof VMapElevationPoint;
 				VMapElevationPoint point = (VMapElevationPoint) pElem;
 
-				if( checkLayerContainsPoint(point, result.getLayer(VMapElementType.육교)) ||
-						checkLayerContainsPoint(point, result.getLayer(VMapElementType.교량)) ||
-						checkLayerContainsPoint(point, result.getLayer(VMapElementType.입체교차부))) {
+				if( checkLayerContainsPoint(point, result.getLayer(VMapElementDataType.육교)) ||
+						checkLayerContainsPoint(point, result.getLayer(VMapElementDataType.교량)) ||
+						checkLayerContainsPoint(point, result.getLayer(VMapElementDataType.입체교차부))) {
 
 					continue;
 				}

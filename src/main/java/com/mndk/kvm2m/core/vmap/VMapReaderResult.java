@@ -54,14 +54,14 @@ public class VMapReaderResult {
 	}
 
 	@Nullable
-	public VMapLayer getLayer(VMapElementType type) {
+	public VMapLayer getLayer(VMapElementDataType type) {
 		for(VMapLayer layer : this.layerList) {
 			if(layer.getType() == type) return layer;
 		}
 		return null;
 	}
 	
-	public boolean containsLayer(VMapElementType type) {
+	public boolean containsLayer(VMapElementDataType type) {
 		return getLayer(type) != null;
 	}
 }

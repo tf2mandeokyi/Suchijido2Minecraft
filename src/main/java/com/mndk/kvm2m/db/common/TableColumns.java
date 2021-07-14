@@ -1,7 +1,7 @@
 package com.mndk.kvm2m.db.common;
 
 
-import com.mndk.kvm2m.core.vmap.VMapElementType;
+import com.mndk.kvm2m.core.vmap.VMapElementDataType;
 import com.mndk.kvm2m.db.VMapSQLManager;
 import lombok.Getter;
 import lombok.ToString;
@@ -24,8 +24,9 @@ public class TableColumns {
     private final TableColumn[] columns;
     private final @Getter int primaryKeyIndex;
     private final @Getter int length;
-    private @Getter VMapElementType parentType;
-    public void setParentType(VMapElementType value) {
+    private @Getter
+    VMapElementDataType parentType;
+    public void setParentType(VMapElementDataType value) {
         if(parentType != null) throw new RuntimeException(new IllegalAccessException());
         this.parentType = value;
     }
@@ -33,14 +34,12 @@ public class TableColumns {
 
 
     public TableColumns(TableColumn... columns) {
-        int primaryKeyIndex = -1;
-
         this.columns = new TableColumn[columns.length + 1];
         this.length = columns.length + 1;
 
         this.columns[0] = new TableColumn("UFID", "UFID", new TableColumn.VarCharType(34),
                 TableColumn.PRIMARY_KEY | TableColumn.NOT_NULL);
-        primaryKeyIndex = 0;
+        int primaryKeyIndex = 0;
 
         for (int i = 0; i < columns.length; ++i) {
             this.columns[i + 1] = columns[i];

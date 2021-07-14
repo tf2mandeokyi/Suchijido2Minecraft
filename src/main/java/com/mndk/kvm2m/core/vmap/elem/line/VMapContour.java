@@ -10,7 +10,7 @@ import com.sk89q.worldedit.regions.FlatRegion;
 
 import net.minecraft.world.World;
 
-public class VMapContour extends VMapPolyline {
+public class VMapContour extends VMapLineString {
 
 	public final int elevation;
 	

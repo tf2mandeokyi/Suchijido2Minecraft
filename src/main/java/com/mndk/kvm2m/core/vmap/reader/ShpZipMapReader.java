@@ -1,16 +1,16 @@
-package com.mndk.kvm2m.core.vmap.parser;
+package com.mndk.kvm2m.core.vmap.reader;
 
 import com.mndk.kvm2m.core.projection.Korea2010BeltProjection;
 import com.mndk.kvm2m.core.util.file.DirectoryManager;
 import com.mndk.kvm2m.core.util.file.ZipManager;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vmap.VMapElementType;
+import com.mndk.kvm2m.core.vmap.VMapElementDataType;
 import com.mndk.kvm2m.core.vmap.VMapParserException;
 import com.mndk.kvm2m.core.vmap.VMapReaderResult;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
-import com.mndk.kvm2m.core.vmap.elem.line.VMapPolyline;
+import com.mndk.kvm2m.core.vmap.elem.line.VMapLineString;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapWall;
 import com.mndk.kvm2m.core.vmap.elem.point.VMapElevationPoint;
 import com.mndk.kvm2m.core.vmap.elem.point.VMapPoint;
@@ -88,7 +88,7 @@ public class ShpZipMapReader extends VMapReader {
 	
 	private VMapLayer fromShpFile(String filePath, String fileName) throws IOException {
 		
-		VMapElementType type = VMapElementType.fromLayerName(fileName);
+		VMapElementDataType type = VMapElementDataType.fromLayerName(fileName);
 
 		try(ShpDbfDataIterator iterator = new ShpDbfDataIterator(filePath, Charset.forName("cp949"))) {
 
@@ -148,7 +148,7 @@ public class ShpZipMapReader extends VMapReader {
 			}
 		}
 		
-		if(layer.getType() == VMapElementType.건물) {
+		if(layer.getType() == VMapElementDataType.건물) {
 			if(options.containsKey("gen-building-shells")) { 
 				return new VMapBuilding(layer, vertexList, record.dBase.data);
 			} else {
@@ -160,7 +160,7 @@ public class ShpZipMapReader extends VMapReader {
 	
 
 	
-	private VMapPolyline fromLine(VMapLayer layer, ShpDbfRecord record) {
+	private VMapLineString fromLine(VMapLayer layer, ShpDbfRecord record) {
 		ShapefileRecord.PolyLine shape = (ShapefileRecord.PolyLine) record.shape;
 		ShapeVector[][] points = shape.points;
 		Vector2DH[][] vertexList = new Vector2DH[shape.points.length][];
@@ -175,9 +175,9 @@ public class ShpZipMapReader extends VMapReader {
 			}
 		}
 		
-		if(layer.getType() == VMapElementType.등고선) { return new VMapContour(layer, vertexList[0], record.dBase.data); }
-		else if(layer.getType() == VMapElementType.옹벽) { return new VMapWall(layer, vertexList, record.dBase.data, false); }
-		else { return new VMapPolyline(layer, vertexList, record.dBase.data, false); }
+		if(layer.getType() == VMapElementDataType.등고선) { return new VMapContour(layer, vertexList[0], record.dBase.data); }
+		else if(layer.getType() == VMapElementDataType.옹벽) { return new VMapWall(layer, vertexList, record.dBase.data, false); }
+		else { return new VMapLineString(layer, vertexList, record.dBase.data, false); }
 	}
 	
 	
@@ -186,7 +186,7 @@ public class ShpZipMapReader extends VMapReader {
 		ShapefileRecord.Point shape = (ShapefileRecord.Point) record.shape;
 		Vector2DH vpoint = this.targetProjToWorldProjCoord(shape.vector.x, shape.vector.y);
 		
-		if(layer.getType() == VMapElementType.표고점) { return new VMapElevationPoint(layer, vpoint, record.dBase.data); }
+		if(layer.getType() == VMapElementDataType.표고점) { return new VMapElevationPoint(layer, vpoint, record.dBase.data); }
 		else { return new VMapPoint(layer, vpoint, record.dBase.data); }
 	}
 

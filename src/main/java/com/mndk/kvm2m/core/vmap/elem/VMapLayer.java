@@ -1,29 +1,29 @@
 package com.mndk.kvm2m.core.vmap.elem;
 
-import com.mndk.kvm2m.core.vmap.VMapElementType;
+import com.mndk.kvm2m.core.vmap.VMapElementDataType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class VMapLayer extends ArrayList<VMapElement> implements Comparable<VMapLayer> {
 
-	private final VMapElementType type;
+	private final VMapElementDataType type;
 	@Deprecated
 	private final String[] dataColumns;
 	
-	public VMapLayer(List<VMapElement> elements, VMapElementType type, String[] dataColumns) {
+	public VMapLayer(List<VMapElement> elements, VMapElementDataType type, String[] dataColumns) {
 		super(elements);
 		this.type = type;
 		this.dataColumns = dataColumns;
 	}
 	
-	public VMapLayer(VMapElementType type, String[] dataColumns) {
+	public VMapLayer(VMapElementDataType type, String[] dataColumns) {
 		super();
 		this.type = type;
 		this.dataColumns = dataColumns;
 	}
 	
-	public VMapElementType getType() {
+	public VMapElementDataType getType() {
 		return this.type;
 	}
 	

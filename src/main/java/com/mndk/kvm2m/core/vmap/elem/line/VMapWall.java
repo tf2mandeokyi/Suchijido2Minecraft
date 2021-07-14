@@ -11,7 +11,7 @@ import net.minecraft.world.World;
 
 import java.util.Map;
 
-public class VMapWall extends VMapPolyline {
+public class VMapWall extends VMapLineString {
 
 	
 	public VMapWall(VMapLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean isClosed) {
