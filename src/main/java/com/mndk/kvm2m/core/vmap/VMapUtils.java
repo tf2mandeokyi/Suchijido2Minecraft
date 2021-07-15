@@ -14,6 +14,8 @@ import com.mndk.kvm2m.core.vmap.elem.poly.VMapBuilding;
 import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
 import com.mndk.kvm2m.db.common.TableColumns;
 import com.mndk.kvm2m.mod.event.ServerTickRepeater;
+import net.buildtheearth.terraplusplus.projection.GeographicProjection;
+import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -99,7 +101,9 @@ public class VMapUtils {
 	/**
 	 * @return Object part: Either a class of point (Vector2DH) or a list of lines (Vector2DH[][])
 	 */
-	public static VMapGeometryPayload<?> parseGeometryDataString(InputStream geometryStream) throws IOException {
+	public static VMapGeometryPayload<?> parseGeometryDataString(
+			InputStream geometryStream, GeographicProjection projection) throws IOException, OutOfProjectionBoundsException {
+
 		DataInputStream dis = new DataInputStream(geometryStream);
 		int firstByte = dis.readByte();
 		VMapElementGeomType type = VMapElementGeomType.values()[firstByte];
@@ -118,7 +122,9 @@ public class VMapUtils {
 					int pointCount = dis.readInt();
 					result[i] = new Vector2DH[pointCount];
 					for(int j = 0; j < pointCount; ++j) {
-						result[i][j] = new Vector2DH(dis.readDouble(), dis.readDouble());
+						Vector2DH parsedPoint = new Vector2DH(dis.readDouble(), dis.readDouble());
+						double[] projResult = projection.fromGeo(parsedPoint.x, parsedPoint.z);
+						result[i][j] = new Vector2DH(projResult[0], projResult[1]);
 					}
 				}
 				return new VMapGeometryPayload<>(type, result);

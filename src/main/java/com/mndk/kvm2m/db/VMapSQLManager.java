@@ -5,6 +5,8 @@ import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.db.common.TableColumn;
 import com.mndk.kvm2m.db.common.TableColumns;
+import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
+import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,11 +38,13 @@ public class VMapSQLManager {
 
 
     private ResultSet executeQuery(String sql) throws SQLException {
+        if(connection == null) throw new SQLException("SQL Connection not initialized");
         try(Statement statement = this.connection.createStatement()) {
             return statement.executeQuery(sql);
         }
     }
     private void executeUpdate(String sql) throws SQLException {
+        if(connection == null) throw new SQLException("SQL Connection not initialized");
         try(Statement statement = this.connection.createStatement()) {
             statement.executeUpdate(sql);
         }
@@ -54,7 +58,10 @@ public class VMapSQLManager {
         properties.put("password", password);
         properties.put("serverTimezone", "Asia/Seoul");
         this.connection = DriverManager.getConnection(db_url, properties);
-        if(this.connection == null) throw new SQLException("Connection failed");
+        if(this.connection == null) throw new SQLException("SQL Connection failed");
+        if(KVectorMap2MinecraftMod.logger != null) {
+            KVectorMap2MinecraftMod.logger.info("SQL Connection established");
+        }
     }
 
 
@@ -102,6 +109,8 @@ public class VMapSQLManager {
     public void insertVMapLayerData(VMapLayer layer) throws SQLException, IOException {
         if(layer == null) return;
         if(layer.size() == 0) return;
+
+        if(connection == null) throw new SQLException("SQL Connection not initialized");
 
         VMapElementDataType type = layer.getType();
         TableColumns columns = type.getColumns();
@@ -159,7 +168,12 @@ public class VMapSQLManager {
 
 
 
-    public Map<String, VMapGeometryPayload<?>> getVMapGeometry(String mapNumber) throws SQLException, IOException {
+    private Map<String, VMapGeometryPayload<?>> getVMapGeometry(
+            String mapNumber,
+            GeographicProjection projection
+    ) throws Exception {
+
+        if(connection == null) throw new SQLException("SQL Connection not initialized");
 
         String sql = "SELECT * FROM `" + GEOMETRY_TABLE_NAME + "` WHERE `UFID` REGEXP(CONCAT('^1000', ?, '[A-Z]'));";
         Map<String, VMapGeometryPayload<?>> result = new HashMap<>();
@@ -171,7 +185,8 @@ public class VMapSQLManager {
 
             while(resultSet.next()) {
                 InputStream stream = resultSet.getBlob("geometry_data").getBinaryStream();
-                result.put(resultSet.getString("UFID"), VMapUtils.parseGeometryDataString(stream));
+                result.put(resultSet.getString("UFID"), VMapUtils.parseGeometryDataString(
+                        stream, projection));
             }
         }
         return result;
@@ -179,7 +194,9 @@ public class VMapSQLManager {
 
 
 
-    public Map<String, VMapDataPayload> getVMapData(String mapNumber) throws SQLException {
+    private Map<String, VMapDataPayload> getVMapData(String mapNumber) throws SQLException {
+
+        if(connection == null) throw new SQLException("SQL Connection not initialized");
 
         Map<String, VMapDataPayload> result = new HashMap<>();
 
@@ -216,6 +233,22 @@ public class VMapSQLManager {
 
 
 
+    public VMapReaderResult getVMapResult(
+            String mapNumber, GeographicProjection projection, Map<String, String> options) throws Exception {
+
+        synchronized (this) {
+            if (connection == null) throw new SQLException("SQL Connection not initialized");
+
+            return VMapUtils.combineVMapPayloads(
+                    this.getVMapGeometry(mapNumber, projection),
+                    this.getVMapData(mapNumber),
+                    options
+            );
+        }
+    }
+
+
+
     public static String getElementDataTableName(VMapElementDataType type) {
         return DATA_TABLE_NAME + "_" + type.name();
     }
@@ -230,8 +263,8 @@ public class VMapSQLManager {
 
     static {
         try {
-            DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
-        } catch (SQLException e) {
+            Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
     }

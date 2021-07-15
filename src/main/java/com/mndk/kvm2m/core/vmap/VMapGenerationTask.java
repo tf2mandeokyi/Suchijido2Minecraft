@@ -6,8 +6,8 @@ import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.reader.VMapReader;
+import com.mndk.kvm2m.db.VMapSQLManager;
 import com.sk89q.worldedit.regions.FlatRegion;
-import io.github.opencubicchunks.cubicchunks.core.server.CubeProviderServer;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.init.Blocks;
@@ -22,15 +22,21 @@ import java.util.concurrent.*;
 
 public class VMapGenerationTask implements Runnable {
 
-    private static final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    private final File[] files;
-    private final World world;
-    private final FlatRegion worldEditRegion;
-    private final GeographicProjection projection;
-    private final VMapReader parser;
-    private final ICommandSender commandSender;
-    private final Map<String, String> options;
+
+    protected static final ExecutorService executorService = Executors.newCachedThreadPool();
+
+
+
+    protected final File[] files;
+    protected final World world;
+    protected final FlatRegion worldEditRegion;
+    protected final GeographicProjection projection;
+    protected final VMapReader parser;
+    protected final ICommandSender commandSender;
+    protected final Map<String, String> options;
+
+
 
     public VMapGenerationTask(
             File[] files,
@@ -51,30 +57,37 @@ public class VMapGenerationTask implements Runnable {
     }
 
 
+
+    protected VMapReaderResult getResults() throws InterruptedException, ExecutionException {
+        VMapReaderResult finalResult = new VMapReaderResult();
+
+        commandSender.sendMessage(new TextComponentString("§dParsing files..."));
+        List<Callable<VMapReaderResult>> fileParsingTasks = new ArrayList<>();
+        for (final File file : files) {
+            fileParsingTasks.add(() -> this.parser.parse(file, projection, options));
+        }
+        List<Future<VMapReaderResult>> parserResults = executorService.invokeAll(fileParsingTasks);
+        for (Future<VMapReaderResult> result : parserResults) {
+            finalResult.append(result.get());
+        }
+
+        return finalResult;
+    }
+
+
+
     @Override
     public void run() {
         try {
 
-            VMapReaderResult finalResult = new VMapReaderResult();
-
-            commandSender.sendMessage(new TextComponentString("§dParsing files..."));
-            List<Callable<VMapReaderResult>> fileParsingTasks = new ArrayList<>();
-            for (final File file : files) {
-                fileParsingTasks.add(() -> this.parser.parse(file, projection, options));
-            }
-            List<Future<VMapReaderResult>> parserResults = executorService.invokeAll(fileParsingTasks);
-            for (Future<VMapReaderResult> result : parserResults) {
-                finalResult.append(result.get());
-            }
-
+            VMapReaderResult finalResult = this.getResults();
 
 
             commandSender.sendMessage(new TextComponentString("§dCalculating terrain..."));
             TriangleList triangleList = TerrainTriangulator.generateTerrain(finalResult);
 
 
-
-            CubeProviderServer cubeProviderServer = (CubeProviderServer) world.getChunkProvider();
+            // CubeProviderServer cubeProviderServer = (CubeProviderServer) world.getChunkProvider();
 
             if(!options.containsKey("no-terrain")) {
                 commandSender.sendMessage(new TextComponentString("§dGenerating terrain..."));
@@ -129,7 +142,50 @@ public class VMapGenerationTask implements Runnable {
             commandSender.sendMessage(new TextComponentString("§dDone!"));
 
         } catch(InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+            commandSender.sendMessage(new TextComponentString("§c" + e.getMessage()));
+        }
+    }
+
+
+
+    public static class DBFetcherTask extends VMapGenerationTask {
+
+
+        private final String[] ids;
+
+        private static final VMapReader EMPTY_READER = new VMapReader() {
+            @Override protected VMapReaderResult getResult() { return null; }
+        };
+
+
+        public DBFetcherTask(
+                String[] ids,
+                World world,
+                FlatRegion worldEditRegion,
+                GeographicProjection projection,
+                ICommandSender commandSender,
+                Map<String, String> options
+        ) {
+            super(new File[]{}, world, worldEditRegion, projection, EMPTY_READER, commandSender, options);
+            this.ids = ids;
+        }
+
+        @Override
+        protected VMapReaderResult getResults() throws InterruptedException, ExecutionException {
+
+            VMapReaderResult finalResult = new VMapReaderResult();
+
+            commandSender.sendMessage(new TextComponentString("§dFetching data..."));
+            List<Callable<VMapReaderResult>> fileParsingTasks = new ArrayList<>();
+            for (final String mapId : ids) {
+                fileParsingTasks.add(() -> VMapSQLManager.getInstance().getVMapResult(mapId, projection, options));
+            }
+            List<Future<VMapReaderResult>> parserResults = executorService.invokeAll(fileParsingTasks);
+            for (Future<VMapReaderResult> result : parserResults) {
+                finalResult.append(result.get());
+            }
+
+            return finalResult;
         }
     }
 }

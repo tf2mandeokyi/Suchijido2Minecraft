@@ -2,6 +2,8 @@ package com.mndk.kvm2m.mod;
 
 import com.mndk.kvm2m.core.vmap.reader.NgiMapReader;
 import com.mndk.kvm2m.core.vmap.reader.ShpZipMapReader;
+import com.mndk.kvm2m.db.VMapSQLManager;
+import com.mndk.kvm2m.mod.commands.GenVMapFromDBCmd;
 import com.mndk.kvm2m.mod.commands.VMapGenCmd;
 import net.minecraft.command.ICommand;
 import net.minecraft.util.text.TextComponentString;
@@ -12,6 +14,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.sql.SQLException;
 
 @Mod(
 		modid = KVectorMap2MinecraftMod.MODID, 
@@ -26,7 +29,8 @@ public class KVectorMap2MinecraftMod {
 
 	private static final ICommand[] serverCommands = {
 			new VMapGenCmd("genngimap", "ngi", new NgiMapReader()),
-			new VMapGenCmd("genshpzipmap", "zip", new ShpZipMapReader())
+			new VMapGenCmd("genshpzipmap", "zip", new ShpZipMapReader()),
+			new GenVMapFromDBCmd("genmapfromdb")
 	};
 
 	public static Logger logger;
@@ -43,7 +47,12 @@ public class KVectorMap2MinecraftMod {
 	public void serverStarting(FMLServerStartingEvent event) {
 		
 		this.registerCommands(event);
-		
+		try {
+			VMapSQLManager.getInstance().connect(KVM2MConfig.dburl, KVM2MConfig.id, KVM2MConfig.pw);
+		} catch (SQLException throwables) {
+			throwables.printStackTrace();
+		}
+
 	}
 	
 	private void registerCommands(FMLServerStartingEvent event) {

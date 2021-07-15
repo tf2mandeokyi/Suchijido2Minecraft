@@ -200,7 +200,7 @@ public class VMapGenCmd extends CommandBase {
 	
 	
 	
-	private static EntityPlayerMP commandSenderToPlayer(ICommandSender sender) throws CommandException {
+	protected static EntityPlayerMP commandSenderToPlayer(ICommandSender sender) throws CommandException {
 		
 		if(!(sender instanceof EntityPlayer)) {
 			throw new CommandException("Only players can run this command.");
@@ -212,10 +212,10 @@ public class VMapGenCmd extends CommandBase {
 		
 		return (EntityPlayerMP) sender;
 	}
-	
-	
-	
-	private static GeographicProjection getWorldProjection(World world) throws CommandException {
+
+
+
+	protected static GeographicProjection getWorldProjection(World world) throws CommandException {
 		
 		IChunkProvider chunkProvider = world.getChunkProvider();
 		if(!(chunkProvider instanceof CubeProviderServer)) {
@@ -231,10 +231,10 @@ public class VMapGenCmd extends CommandBase {
 
 		return generator.projection;
 	}
-	
-	
-	
-	private static FlatRegion validateWorldEditRegion(World world, EntityPlayerMP player) throws CommandException {
+
+
+
+	protected static FlatRegion validateWorldEditRegion(World world, EntityPlayerMP player) throws CommandException {
 		
 		ForgeWorld weWorld = ForgeWorldEdit.inst.getWorld(world);
 		LocalSession session = ForgeWorldEdit.inst.getSession(player);
