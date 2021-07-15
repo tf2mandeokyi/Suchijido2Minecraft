@@ -1,5 +1,6 @@
 package com.mndk.kvm2m.db;
 
+import com.mndk.kvm2m.core.util.shape.BoundingBoxDouble;
 import com.mndk.kvm2m.core.vmap.*;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
@@ -91,6 +92,10 @@ public class VMapSQLManager {
                 "CREATE TABLE IF NOT EXISTS `" + GEOMETRY_TABLE_NAME + "` (" +
                         TableColumns.UFID_COLUMN.toTableCreationSql() + "," +
                         "`geometry_data` MEDIUMBLOB NOT NULL," +
+                        "`min_lon` DECIMAL(10, 7) NOT NULL," +
+                        "`min_lat` DECIMAL(9, 7) NOT NULL," +
+                        "`max_lon` DECIMAL(10, 7) NOT NULL," +
+                        "`max_lat` DECIMAL(9, 7) NOT NULL," +
                         "PRIMARY KEY (`" + TableColumns.UFID_COLUMN.getCategoryName() + "`)" +
                 ")"
         );
@@ -127,8 +132,14 @@ public class VMapSQLManager {
 
             Blob geometryBlob = this.connection.createBlob();
             geometryBlob.setBytes(1, VMapUtils.generateGeometryDataBytes(element));
-            geometryStatement.setObject(2 * i + 1, element.getDataByColumn("UFID"));
-            geometryStatement.setBlob(2 * i + 2, geometryBlob);
+            BoundingBoxDouble bbox = element.getBoundingBoxDouble();
+
+            geometryStatement.setObject(6 * i + 1, element.getDataByColumn("UFID"));
+            geometryStatement.setBlob(6 * i + 2, geometryBlob);
+            geometryStatement.setDouble(6 * i + 3, bbox.xmin);
+            geometryStatement.setDouble(6 * i + 4, bbox.zmin);
+            geometryStatement.setDouble(6 * i + 5, bbox.xmax);
+            geometryStatement.setDouble(6 * i + 6, bbox.zmax);
 
             if(dataStatement != null) {
                 for (int j = 0; j < columns.getLength(); ++j) {
@@ -160,10 +171,15 @@ public class VMapSQLManager {
 
         StringBuilder qmarkString = new StringBuilder();
         for(int i = 0; i < elementSize; ++i) {
-            qmarkString.append("(?,?),");
+            qmarkString.append("(?,?,?,?,?,?),");
         }
         return result + qmarkString.substring(0, qmarkString.length() - 1) +
-            "ON DUPLICATE KEY UPDATE `geometry_data`=values(`geometry_data`);";
+            "ON DUPLICATE KEY UPDATE " +
+                "`geometry_data`=values(`geometry_data`)," +
+                "`min_lon`=values(`min_lon`)," +
+                "`min_lat`=values(`min_lat`)," +
+                "`max_lon`=values(`max_lon`)," +
+                "`max_lat`=values(`max_lat`);";
     }
 
 
@@ -173,7 +189,8 @@ public class VMapSQLManager {
 
         if(connection == null) throw new SQLException("SQL Connection not initialized");
 
-        String sql = "SELECT * FROM `" + GEOMETRY_TABLE_NAME + "` WHERE `UFID` REGEXP(CONCAT('^1000', ?, '[A-Z]'));";
+        String sql = "SELECT `UFID`, `geometry_data` FROM `" + GEOMETRY_TABLE_NAME + "` WHERE " +
+                "`UFID` REGEXP(CONCAT('^1000', ?, '[A-H]'));";
         Map<String, VMapGeometryPayload<?>> result = new HashMap<>();
 
         try(PreparedStatement statement = this.connection.prepareStatement(sql)) {
@@ -202,7 +219,8 @@ public class VMapSQLManager {
             TableColumns columns = type.getColumns();
 
             String tableName = getElementDataTableName(type);
-            String sql = "SELECT * FROM `" + tableName + "` WHERE `UFID` REGEXP(CONCAT('^1000', ?, '[A-Z]'));";
+            String sql = "SELECT * FROM `" + tableName + "` " +
+                    "WHERE `UFID` LIKE CONCAT('1000', ?, '" + type.getLayerNameHeader() + "%');";
 
             if(columns.hasTable()) {
                 PreparedStatement statement = this.connection.prepareStatement(sql);

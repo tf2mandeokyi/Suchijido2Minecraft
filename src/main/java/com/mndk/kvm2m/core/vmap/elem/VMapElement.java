@@ -1,20 +1,24 @@
 package com.mndk.kvm2m.core.vmap.elem;
 
+import com.mndk.kvm2m.core.util.shape.BoundingBoxDouble;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementGeomType;
 import com.sk89q.worldedit.regions.FlatRegion;
+import lombok.AllArgsConstructor;
 import net.minecraft.world.World;
 
 import java.util.Map;
 
+@AllArgsConstructor
 public abstract class VMapElement {
 	
 	
 	protected final VMapLayer parent;
 	public final Object[] dataRow;
 	protected VMapElementGeomType type;
-	
-	
+	protected BoundingBoxDouble bbox;
+
+
 	protected VMapElement(VMapLayer parent, Object[] dataRow, VMapElementGeomType type) {
 		this.parent = parent;
 		this.dataRow = dataRow;
@@ -43,6 +47,9 @@ public abstract class VMapElement {
 	
 	
 	public abstract void generateBlocks(FlatRegion region, World world, TriangleList triangles);
+	public BoundingBoxDouble getBoundingBoxDouble() {
+		return bbox;
+	}
 	
 	
 	@Override

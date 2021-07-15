@@ -2,7 +2,7 @@ package com.mndk.kvm2m.core.vmap.elem.poly;
 
 import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
+import com.mndk.kvm2m.core.util.shape.BoundingBoxInteger;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
@@ -62,7 +62,7 @@ public class VMapBuilding extends VMapPolygon {
 	
 	
 	@Override
-	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList, IntegerBoundingBox limitBox) {
+	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList, BoundingBoxInteger limitBox) {
 		
 		VMapElementStyle[] styles = VMapElementStyleSelector.getStyle(this);
 		VMapElementStyle style = styles != null ? styles[0] : null;

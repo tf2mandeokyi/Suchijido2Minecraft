@@ -1,6 +1,7 @@
 package com.mndk.kvm2m.core.vmap.elem.point;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
+import com.mndk.kvm2m.core.util.shape.BoundingBoxDouble;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementGeomType;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
@@ -21,11 +22,13 @@ public class VMapPoint extends VMapElement {
 	public VMapPoint(VMapLayer layer, Vector2DH point, Map<String, Object> dataRow) {
 		super(layer, dataRow, VMapElementGeomType.POINT);
 		this.point = point;
+		this.bbox = new BoundingBoxDouble(point.x, point.z, point.x, point.z);
 	}
 
 	public VMapPoint(VMapLayer layer, Vector2DH point, Object[] dataRow) {
 		super(layer, dataRow, VMapElementGeomType.POINT);
 		this.point = point;
+		this.bbox = new BoundingBoxDouble(point.x, point.z, point.x, point.z);
 	}
 	
 	public Vector2DH getPosition() {

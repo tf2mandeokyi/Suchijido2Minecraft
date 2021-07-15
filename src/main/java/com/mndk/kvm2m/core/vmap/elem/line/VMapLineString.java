@@ -2,7 +2,8 @@ package com.mndk.kvm2m.core.vmap.elem.line;
 
 import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
+import com.mndk.kvm2m.core.util.shape.BoundingBoxDouble;
+import com.mndk.kvm2m.core.util.shape.BoundingBoxInteger;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementGeomType;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
@@ -37,14 +38,14 @@ public class VMapLineString extends VMapElement {
 	public VMapLineString(VMapLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean isClosed) {
 		this(parent, dataRow, isClosed);
 		this.vertices = vertices;
-		this.getBoundingBox();
+		this.setupBoundingBox();
 	}
 	
 	
 	public VMapLineString(VMapLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean isClosed) {
 		this(parent, dataRow, isClosed);
 		this.vertices = vertices;
-		this.getBoundingBox();
+		this.setupBoundingBox();
 	}
 	
 	
@@ -55,27 +56,29 @@ public class VMapLineString extends VMapElement {
 		
 		return new VMapPolygon(this.parent, newVertexList, this.dataRow, this.isClosed);
 	}
-	
-	
-	private IntegerBoundingBox boundingBoxResult;
-	public IntegerBoundingBox getBoundingBox() {
-		if(boundingBoxResult != null) return boundingBoxResult;
-		int minX = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE, 
-			maxX = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
-		for(Vector2DH[] va : vertices) for(Vector2DH v : va) {
-			if(v.x < minX) minX = (int) Math.floor(v.x);
-			if(v.x > maxX) maxX = (int) Math.ceil(v.x);
-			if(v.z < minZ) minZ = (int) Math.floor(v.z);
-			if(v.z > maxZ) maxZ = (int) Math.ceil(v.z);
-		}
-		return boundingBoxResult = new IntegerBoundingBox(minX, minZ, maxX, maxZ);
+
+
+	public BoundingBoxInteger getBoundingBoxInteger() {
+		return bbox.toMaximumBoundingBoxInteger();
 	}
-	
+
+
+	private void setupBoundingBox() {
+		double minX = Double.MAX_VALUE, minZ = Double.MAX_VALUE, maxX = Double.MIN_VALUE, maxZ = Double.MIN_VALUE;
+		for(Vector2DH[] va : vertices) for(Vector2DH v : va) {
+			if(v.x < minX) minX = v.x;
+			if(v.x > maxX) maxX = v.x;
+			if(v.z < minZ) minZ = v.z;
+			if(v.z > maxZ) maxZ = v.z;
+		}
+		this.bbox = new BoundingBoxDouble(minX, minZ, maxX, maxZ);
+	}
+
 	
 	@Override
 	public void generateBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
-		IntegerBoundingBox box = this.getBoundingBox().getIntersectionArea(new IntegerBoundingBox(region));
+		BoundingBoxInteger box = this.getBoundingBoxInteger().getIntersectionArea(new BoundingBoxInteger(region));
 		if(!box.isValid()) return;
 			
 		this.generateOutline(region, w, triangleList);

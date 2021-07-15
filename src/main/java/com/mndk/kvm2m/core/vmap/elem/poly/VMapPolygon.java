@@ -2,7 +2,7 @@ package com.mndk.kvm2m.core.vmap.elem.poly;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.math.VectorMath;
-import com.mndk.kvm2m.core.util.shape.IntegerBoundingBox;
+import com.mndk.kvm2m.core.util.shape.BoundingBoxInteger;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementGeomType;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
@@ -40,14 +40,14 @@ public class VMapPolygon extends VMapLineString {
 	public VMapPolygon(VMapLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean doFill) {
 		this(parent, dataRow, doFill);
 		this.vertices = vertices;
-		this.getBoundingBox();
+		this.getBoundingBoxInteger();
 	}
 	
 	
 	public VMapPolygon(VMapLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean doFill) {
 		this(parent, dataRow, doFill);
 		this.vertices = vertices;
-		this.getBoundingBox();
+		this.getBoundingBoxInteger();
 	}
 	
 	
@@ -82,7 +82,7 @@ public class VMapPolygon extends VMapLineString {
 	@Override
 	public final void generateBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
-		IntegerBoundingBox box = this.getBoundingBox().getIntersectionArea(new IntegerBoundingBox(region));
+		BoundingBoxInteger box = this.getBoundingBoxInteger().getIntersectionArea(new BoundingBoxInteger(region));
 		if(!box.isValid()) return;
 		
 		this.generateOutline(region, w, triangleList);
@@ -93,7 +93,7 @@ public class VMapPolygon extends VMapLineString {
 	}
 	
 	
-	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList, IntegerBoundingBox limitBox) {
+	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList, BoundingBoxInteger limitBox) {
 		
 		VMapElementStyle[] styles = VMapElementStyleSelector.getStyle(this);
 		if(styles == null) return;
