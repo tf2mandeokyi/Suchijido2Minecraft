@@ -40,14 +40,14 @@ public class VMapPolygon extends VMapLineString {
 	public VMapPolygon(VMapLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean doFill) {
 		this(parent, dataRow, doFill);
 		this.vertices = vertices;
-		this.getBoundingBoxInteger();
+		this.setupBoundingBox();
 	}
 	
 	
 	public VMapPolygon(VMapLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean doFill) {
 		this(parent, dataRow, doFill);
 		this.vertices = vertices;
-		this.getBoundingBoxInteger();
+		this.setupBoundingBox();
 	}
 	
 	

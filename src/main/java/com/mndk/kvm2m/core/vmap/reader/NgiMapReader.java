@@ -40,7 +40,9 @@ public class NgiMapReader extends VMapReader {
 			try {
 				VMapLayer elementLayer = fromNgiLayer(layer);
 				result.addLayer(elementLayer);
-			} catch(NullPointerException ignored) {} // TODO I don't have a good feeling about this
+			} catch(NullPointerException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		return result;
@@ -66,7 +68,12 @@ public class NgiMapReader extends VMapReader {
 				if (element == null) continue;
 				elementLayer.add(element);
 			} catch(Exception e) {
-				KVectorMap2MinecraftMod.logger.error("Error occured while parsing layer " + type + ": " + e.getMessage());
+				if(KVectorMap2MinecraftMod.logger == null) {
+					e.printStackTrace();
+				}
+				else {
+					KVectorMap2MinecraftMod.logger.error("Error occured while parsing layer " + type + ": " + e.getMessage());
+				}
 			}
 		}
 		
@@ -115,7 +122,7 @@ public class NgiMapReader extends VMapReader {
 			if(options.containsKey("gen-building-shells")) {
 				return new VMapBuilding(layer, vertexArray, polygon.rowData);
 			} else {
-				return new VMapPolygon(layer, vertexArray, polygon.rowData, true);
+				return new VMapPolygon(layer, vertexArray, polygon.rowData, false);
 			}
 		}
 		else { return new VMapPolygon(layer, vertexArray, polygon.rowData, true); }

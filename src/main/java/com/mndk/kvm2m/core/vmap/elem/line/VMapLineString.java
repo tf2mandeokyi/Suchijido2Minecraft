@@ -10,7 +10,6 @@ import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
-import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
 import com.sk89q.worldedit.regions.FlatRegion;
 import net.minecraft.world.World;
 
@@ -20,7 +19,7 @@ public class VMapLineString extends VMapElement {
 
 	
 	protected Vector2DH[][] vertices;
-	private boolean isClosed;
+	private final boolean isClosed;
 
 	
 	protected VMapLineString(VMapLayer parent, Map<String, Object> dataRow, boolean isClosed) {
@@ -47,15 +46,17 @@ public class VMapLineString extends VMapElement {
 		this.vertices = vertices;
 		this.setupBoundingBox();
 	}
-	
-	
+
+
+	/*
 	public VMapPolygon merge(VMapLineString other) {
 		Vector2DH[][] newVertexList = new Vector2DH[this.vertices.length + other.vertices.length][];
 		System.arraycopy(this.vertices, 0, newVertexList, 0, this.vertices.length);
 		System.arraycopy(other.vertices, 0, newVertexList, this.vertices.length, other.vertices.length);
-		
+
 		return new VMapPolygon(this.parent, newVertexList, this.dataRow, this.isClosed);
 	}
+	*/
 
 
 	public BoundingBoxInteger getBoundingBoxInteger() {
@@ -63,7 +64,7 @@ public class VMapLineString extends VMapElement {
 	}
 
 
-	private void setupBoundingBox() {
+	protected void setupBoundingBox() {
 		double minX = Double.MAX_VALUE, minZ = Double.MAX_VALUE, maxX = Double.MIN_VALUE, maxZ = Double.MIN_VALUE;
 		for(Vector2DH[] va : vertices) for(Vector2DH v : va) {
 			if(v.x < minX) minX = v.x;

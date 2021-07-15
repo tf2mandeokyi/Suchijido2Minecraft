@@ -222,27 +222,25 @@ public class VMapSQLManager {
             String sql = "SELECT * FROM `" + tableName + "` " +
                     "WHERE `UFID` LIKE CONCAT('1000', ?, '" + type.getLayerNameHeader() + "%');";
 
-            if(columns.hasTable()) {
-                PreparedStatement statement = this.connection.prepareStatement(sql);
+            PreparedStatement statement = this.connection.prepareStatement(sql);
 
-                statement.setString(1, mapNumber);
-                ResultSet resultSet = statement.executeQuery();
+            statement.setString(1, mapNumber);
+            ResultSet resultSet = statement.executeQuery();
 
-                while (resultSet.next()) {
-                    String ufid = resultSet.getString("UFID");
-                    Object[] dataRow = new Object[columns.getLength()];
-                    for (int i = 0; i < columns.getLength(); ++i) {
-                        TableColumn column = columns.get(i);
-                        if (column.getDataType() instanceof TableColumn.VarCharType) {
-                            dataRow[i] = resultSet.getString(column.getCategoryName());
-                        } else if (column.getDataType() instanceof TableColumn.NumericType) {
-                            dataRow[i] = resultSet.getDouble(column.getCategoryName());
-                        }
+            while (resultSet.next()) {
+                String ufid = resultSet.getString("UFID");
+                Object[] dataRow = new Object[columns.getLength()];
+                for (int i = 0; i < columns.getLength(); ++i) {
+                    TableColumn column = columns.get(i);
+                    if (column.getDataType() instanceof TableColumn.VarCharType) {
+                        dataRow[i] = resultSet.getString(column.getCategoryName());
+                    } else if (column.getDataType() instanceof TableColumn.NumericType) {
+                        dataRow[i] = resultSet.getDouble(column.getCategoryName());
                     }
-                    result.put(ufid, new VMapDataPayload(type, dataRow));
                 }
-                statement.close();
+                result.put(ufid, new VMapDataPayload(type, dataRow));
             }
+            statement.close();
 
         }
 

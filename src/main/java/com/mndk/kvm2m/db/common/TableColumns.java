@@ -48,14 +48,7 @@ public class TableColumns {
 
 
 
-    public boolean hasTable() {
-        return /* this.length > 1 */ true;
-    }
-
-
-
     public String generateTableCreationSQL() {
-        if(!this.hasTable()) return null;
 
         StringBuilder result = new StringBuilder(
                 "CREATE TABLE IF NOT EXISTS `" + VMapSQLManager.getElementDataTableName(parentType) + "` (");
@@ -77,7 +70,6 @@ public class TableColumns {
 
 
     public String generateElementDataInsertionSQL(int elementCount) {
-        if(!this.hasTable()) return null;
 
         String columnString = "", qmarkString = "", dataUpdateString = "";
 
