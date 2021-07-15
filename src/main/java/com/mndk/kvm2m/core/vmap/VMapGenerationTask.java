@@ -58,7 +58,7 @@ public class VMapGenerationTask implements Runnable {
 
 
 
-    protected VMapReaderResult getResults() throws InterruptedException, ExecutionException {
+    protected VMapReaderResult getResults() throws Exception {
         VMapReaderResult finalResult = new VMapReaderResult();
 
         commandSender.sendMessage(new TextComponentString("§dParsing files..."));
@@ -138,11 +138,11 @@ public class VMapGenerationTask implements Runnable {
             }
 
 
-
             commandSender.sendMessage(new TextComponentString("§dDone!"));
 
-        } catch(InterruptedException | ExecutionException e) {
+        } catch(Exception e) {
             commandSender.sendMessage(new TextComponentString("§c" + e.getMessage()));
+            e.printStackTrace();
         }
     }
 
@@ -171,7 +171,7 @@ public class VMapGenerationTask implements Runnable {
         }
 
         @Override
-        protected VMapReaderResult getResults() throws InterruptedException, ExecutionException {
+        protected VMapReaderResult getResults() throws Exception {
 
             VMapReaderResult finalResult = new VMapReaderResult();
 

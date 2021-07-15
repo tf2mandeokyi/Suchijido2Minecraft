@@ -11,7 +11,7 @@ public abstract class VMapElement {
 	
 	
 	protected final VMapLayer parent;
-	protected final Object[] dataRow;
+	public final Object[] dataRow;
 	protected VMapElementGeomType type;
 	
 	

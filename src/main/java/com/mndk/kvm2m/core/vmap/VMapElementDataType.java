@@ -153,21 +153,21 @@ public enum VMapElementDataType {
 			new TableColumn("WIDT", "폭", new TableColumn.NumericType(5,2)),
 			new TableColumn("HEIG", "높이", new TableColumn.NumericType(5,2)),
 			new TableColumn("MARA", "면적", new TableColumn.NumericType(9,2)),
-			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
+			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
 	)),
 	부두("C002", new TableColumns(
 			new TableColumn("SERV", "용도", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
 			new TableColumn("QUAL", "재질", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
-			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
+			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
 	)),
 	선착장("C003", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
-			new TableColumn("SERV", "용도(설명)", new TableColumn.VarCharType(50))
+			new TableColumn("SERV", "용도", new TableColumn.VarCharType(50))
 	)),
 	선거("C004", new TableColumns(
-			new TableColumn("SERV", "용도(설명)", new TableColumn.VarCharType(50)),
+			new TableColumn("SERV", "용도", new TableColumn.VarCharType(50)),
 			new TableColumn("QUAL", "재질", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
-			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
+			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
 	)),
 	제방("C005", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
@@ -186,7 +186,7 @@ public enum VMapElementDataType {
 	암거("C007", new TableColumns()),
 	잔교("C008", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
-			new TableColumn("SERV", "용도(설명)", new TableColumn.VarCharType(50)),
+			new TableColumn("SERV", "용도", new TableColumn.VarCharType(50)),
 			new TableColumn("QUAL", "재질", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
 			new TableColumn("SCLS", "통합코드", new TableColumn.VarCharType(8), TableColumn.NOT_NULL),
 			new TableColumn("FMTA", "제작정보", new TableColumn.VarCharType(9))
@@ -197,7 +197,7 @@ public enum VMapElementDataType {
 	)),
 	관정("C010", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
-			new TableColumn("SERV", "용도(설명)", new TableColumn.VarCharType(50))
+			new TableColumn("SERV", "용도", new TableColumn.VarCharType(50))
 	)),
 	분수("C011", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100))
@@ -209,7 +209,7 @@ public enum VMapElementDataType {
 	)),
 	양식장("C013", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
-			new TableColumn("SERV", "용도(설명)", new TableColumn.VarCharType(50))
+			new TableColumn("SERV", "용도", new TableColumn.VarCharType(50))
 	)),
 	낚시터("C014", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100))
@@ -221,29 +221,29 @@ public enum VMapElementDataType {
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("SERV", "용도", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
 			new TableColumn("TYPE", "형태", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
-			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
+			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
 	)),
 	저장조("C017", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
-			new TableColumn("SERV", "용도(설명)", new TableColumn.VarCharType(50)),
+			new TableColumn("SERV", "용도", new TableColumn.VarCharType(50)),
 			new TableColumn("MARA", "면적", new TableColumn.NumericType(9,2)),
-			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
+			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
 	)),
 	탱크("C018", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
-			new TableColumn("SERV", "용도(설명)", new TableColumn.VarCharType(50)),
-			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
+			new TableColumn("SERV", "용도", new TableColumn.VarCharType(50)),
+			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
 	)),
 	광산("C019", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("STAT", "상태", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
-			new TableColumn("PRMR", "주생산광물(설명)", new TableColumn.VarCharType(50))
+			new TableColumn("PRMR", "주생산광물", new TableColumn.VarCharType(50))
 	)),
 	적치장("C020", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
-			new TableColumn("SERV", "용도(설명)", new TableColumn.VarCharType(50)),
-			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
+			new TableColumn("SERV", "용도", new TableColumn.VarCharType(50)),
+			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
 	)),
 	채취장("C021", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
@@ -261,7 +261,7 @@ public enum VMapElementDataType {
 	)),
 	소화전("C025", new TableColumns(
 			new TableColumn("TYPE", "형태", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
-			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
+			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
 	)),
 	관측소("C026", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
@@ -274,7 +274,7 @@ public enum VMapElementDataType {
 	묘지("C028", new TableColumns()),
 	묘지계("C029", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
-			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
+			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
 	)),
 	유적지("C030", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
@@ -302,7 +302,7 @@ public enum VMapElementDataType {
 	)),
 	동상("C035", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
-			new TableColumn("QUAL", "재질(설명)", new TableColumn.VarCharType(50))
+			new TableColumn("QUAL", "재질", new TableColumn.VarCharType(50))
 	)),
 	공중전화("C036", new TableColumns()),
 	우체통("C037", new TableColumns()),
@@ -344,11 +344,11 @@ public enum VMapElementDataType {
 	지하도입구("C046", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("SERV", "용도", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
-			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
+			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
 	)),
 	지하환기구("C047", new TableColumns(
 			new TableColumn("SERV", "용도", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
-			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
+			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
 	)),
 	굴뚝("C048", new TableColumns()),
 	신호등("C049", new TableColumns(
@@ -356,7 +356,7 @@ public enum VMapElementDataType {
 	)),
 	차단기("C050", new TableColumns(
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
-			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30)),
+			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30)),
 			new TableColumn("BJCD", "법정동코드", new TableColumn.VarCharType(10))
 	)),
 	도로반사경("C051", new TableColumns()),
@@ -372,7 +372,7 @@ public enum VMapElementDataType {
 	)),
 	헬기장("C055", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
-			new TableColumn("SERV", "용도(설명)", new TableColumn.VarCharType(50))
+			new TableColumn("SERV", "용도", new TableColumn.VarCharType(50))
 	)),
 
 
@@ -388,10 +388,10 @@ public enum VMapElementDataType {
 			new TableColumn("MNNU", "관리번호", new TableColumn.VarCharType(30)),
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
-			new TableColumn("RADI", "직경(둘레)", new TableColumn.NumericType(7,2)),
+			new TableColumn("RADI", "직경", new TableColumn.NumericType(7,2)),
 			new TableColumn("HEIG", "높이", new TableColumn.NumericType(5,2)),
 			new TableColumn("TRAG", "수령", new TableColumn.NumericType(5)),
-			new TableColumn("TRKI", "수종(설명)", new TableColumn.VarCharType(50)),
+			new TableColumn("TRKI", "수종", new TableColumn.VarCharType(50)),
 			new TableColumn("REST", "기타", new TableColumn.VarCharType(50))
 	)),
 	목장("D004", new TableColumns(
@@ -417,9 +417,9 @@ public enum VMapElementDataType {
 	), -1),
 	호수("E005", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
-			new TableColumn("SERV", "용도(설명)", new TableColumn.VarCharType(50)),
+			new TableColumn("SERV", "용도", new TableColumn.VarCharType(50)),
 			new TableColumn("MARA", "면적", new TableColumn.NumericType(11,2)),
-			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
+			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
 	), -1),
 	용수로("E006", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
@@ -427,7 +427,7 @@ public enum VMapElementDataType {
 			new TableColumn("SERV", "용도", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
 			new TableColumn("LENG", "연장", new TableColumn.NumericType(7,2)),
 			new TableColumn("WIDT", "폭", new TableColumn.NumericType(5,2)),
-			new TableColumn("MNGT", "관리기관(명칭)", new TableColumn.VarCharType(30))
+			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
 	), -1),
 	폭포("E007", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
@@ -439,7 +439,7 @@ public enum VMapElementDataType {
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(6), TableColumn.NOT_NULL)
 	), -1),
 	등심선("E009", new TableColumns(
-			new TableColumn("DIVI", "구분(설명)", new TableColumn.VarCharType(50)),
+			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(50)),
 			new TableColumn("CONT", "등심수치", new TableColumn.NumericType(7,2))
 	), -1),
 
@@ -493,7 +493,7 @@ public enum VMapElementDataType {
 			new TableColumn("TYPE", "형태", new TableColumn.VarCharType(6), TableColumn.NOT_NULL)
 	)),
 	기타경계("G003", new TableColumns(
-			new TableColumn("SERV", "용도(설명)", new TableColumn.VarCharType(100))
+			new TableColumn("SERV", "용도", new TableColumn.VarCharType(100))
 	)),
 
 
@@ -504,7 +504,7 @@ public enum VMapElementDataType {
 			new TableColumn("DYNM", "도엽명", new TableColumn.VarCharType(30), TableColumn.NOT_NULL)/*,
 			new TableColumn("PRDT", "제작방법", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
 			new TableColumn("SCAL", "축척", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
-			new TableColumn("MCOM", "작업기관(설명)", new TableColumn.VarCharType(50)),
+			new TableColumn("MCOM", "작업기관", new TableColumn.VarCharType(50)),
 			new TableColumn("MYMD", "제작년도", new TableColumn.VarCharType(4)),
 			new TableColumn("MZON", "지구명", new TableColumn.VarCharType(20)),
 			new TableColumn("PYMD", "촬영년도", new TableColumn.VarCharType(4)),
@@ -520,7 +520,7 @@ public enum VMapElementDataType {
 			new TableColumn("BJCD", "법정동코드", new TableColumn.VarCharType(10), TableColumn.NOT_NULL),
 			new TableColumn("PRDT", "제작방법", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
 			new TableColumn("SCAL", "축척", new TableColumn.VarCharType(6), TableColumn.NOT_NULL),
-			new TableColumn("MCOM", "작업기관(설명)", new TableColumn.VarCharType(50)),
+			new TableColumn("MCOM", "작업기관", new TableColumn.VarCharType(50)),
 			new TableColumn("MYMD", "제작년도", new TableColumn.VarCharType(4)),
 			new TableColumn("MZON", "지구명", new TableColumn.VarCharType(20)),
 			new TableColumn("PYMD", "촬영년도", new TableColumn.VarCharType(4)),

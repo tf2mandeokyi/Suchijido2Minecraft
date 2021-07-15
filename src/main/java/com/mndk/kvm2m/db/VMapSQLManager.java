@@ -168,10 +168,8 @@ public class VMapSQLManager {
 
 
 
-    private Map<String, VMapGeometryPayload<?>> getVMapGeometry(
-            String mapNumber,
-            GeographicProjection projection
-    ) throws Exception {
+    private Map<String, VMapGeometryPayload<?>> getVMapGeometry(String mapNumber, GeographicProjection projection)
+            throws Exception {
 
         if(connection == null) throw new SQLException("SQL Connection not initialized");
 
@@ -206,26 +204,28 @@ public class VMapSQLManager {
             String tableName = getElementDataTableName(type);
             String sql = "SELECT * FROM `" + tableName + "` WHERE `UFID` REGEXP(CONCAT('^1000', ?, '[A-Z]'));";
 
-            try(PreparedStatement statement = this.connection.prepareStatement(sql)) {
+            if(columns.hasTable()) {
+                PreparedStatement statement = this.connection.prepareStatement(sql);
 
                 statement.setString(1, mapNumber);
                 ResultSet resultSet = statement.executeQuery();
 
-                while(resultSet.next()) {
+                while (resultSet.next()) {
                     String ufid = resultSet.getString("UFID");
                     Object[] dataRow = new Object[columns.getLength()];
-                    for(int i = 0; i < columns.getLength(); ++i) {
+                    for (int i = 0; i < columns.getLength(); ++i) {
                         TableColumn column = columns.get(i);
-                        if(column.getDataType() instanceof TableColumn.VarCharType) {
+                        if (column.getDataType() instanceof TableColumn.VarCharType) {
                             dataRow[i] = resultSet.getString(column.getCategoryName());
-                        }
-                        else if(column.getDataType() instanceof TableColumn.NumericType) {
+                        } else if (column.getDataType() instanceof TableColumn.NumericType) {
                             dataRow[i] = resultSet.getDouble(column.getCategoryName());
                         }
                     }
                     result.put(ufid, new VMapDataPayload(type, dataRow));
                 }
+                statement.close();
             }
+
         }
 
         return result;

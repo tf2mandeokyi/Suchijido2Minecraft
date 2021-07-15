@@ -28,8 +28,9 @@ public class VMapLayer extends ArrayList<VMapElement> implements Comparable<VMap
 	}
 	
 	public int getDataColumnIndex(String columnName) {
+		columnName = columnName.replaceAll("\\([^()]+\\)", "");
 		for(int i = 0; i < this.dataColumns.length; ++i) {
-			if(columnName.equals(this.dataColumns[i])) {
+			if(columnName.equals(this.dataColumns[i].replaceAll("\\([^()]+\\)", ""))) {
 				return i;
 			}
 		}

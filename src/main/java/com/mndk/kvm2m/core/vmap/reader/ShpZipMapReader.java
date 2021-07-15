@@ -5,7 +5,7 @@ import com.mndk.kvm2m.core.util.file.DirectoryManager;
 import com.mndk.kvm2m.core.util.file.ZipManager;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vmap.VMapElementDataType;
-import com.mndk.kvm2m.core.vmap.VMapParserException;
+import com.mndk.kvm2m.core.vmap.VMapReaderException;
 import com.mndk.kvm2m.core.vmap.VMapReaderResult;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
@@ -42,11 +42,11 @@ public class ShpZipMapReader extends VMapReader {
 		// Set temporary destination directory
 		String mapFilePath = mapFile.getAbsolutePath();
 		Korea2010BeltProjection projection = getProjFromFileName(mapFile);
-		if(projection == null) throw new VMapParserException("Invalid projection!");
+		if(projection == null) throw new VMapReaderException("Invalid projection!");
 		File zipDestination = new File(mapFilePath.substring(0, mapFilePath.lastIndexOf(".zip")) + "/");
 		System.out.println(zipDestination);
 		if(zipDestination.isDirectory()) {
-			throw new VMapParserException(zipDestination.getAbsolutePath() + " directory already exists.");
+			throw new VMapReaderException(zipDestination.getAbsolutePath() + " directory already exists.");
 		}
 
 		try {

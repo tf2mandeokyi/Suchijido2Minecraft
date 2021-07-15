@@ -26,7 +26,10 @@ public class VMapElementStyleSelector {
 				return singleStyle(Blocks.CONCRETE, EnumDyeColor.SILVER, 3);
 			case 보도:
 			case 안전지대:
-				if("어린이보호구역".equals(element.getDataByColumn("구조"))) return null;
+				String type = (String) element.getDataByColumn("구조");
+				if(type != null && "어린이보호구역".startsWith(type)) {
+					return null;
+				}
 				return singleStyle(Blocks.DOUBLE_STONE_SLAB, 0);
 			case 승강장:
 				return singleStyle(Blocks.DOUBLE_STONE_SLAB, 1);
@@ -69,9 +72,6 @@ public class VMapElementStyleSelector {
 				return singleStyle(Blocks.LOG, 1);
 
 			// E types
-			/*case 하천중심선:
-			case 등심선:
-				return singleStyle("LAPIS_BLOCK", 0);*/
 			case 실폭하천:
 			case 호수:
 			case 해안선:
@@ -90,8 +90,9 @@ public class VMapElementStyleSelector {
 
 			// G types
 			case 기타경계:
-				if("기타콘크리트구조물".equals(element.getDataByColumn("용도")))
+				if("기타콘크리트구조물".equals(element.getDataByColumn("용도"))) {
 					return singleStyle(Blocks.CONCRETE, 0);
+				}
 					
 			
 			default:

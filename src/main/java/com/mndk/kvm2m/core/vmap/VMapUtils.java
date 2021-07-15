@@ -82,13 +82,18 @@ public class VMapUtils {
 			else {
 				return new byte[] { (byte) VMapElementGeomType.NULL.ordinal() };
 			}
-			Vector2DH[][] lines = ((VMapLineString) element).getVertexList();
+			VMapLineString lineString = (VMapLineString) element;
+			Vector2DH[][] lines = lineString.getVertexList();
 			dos.writeInt(lines.length);
 			for (Vector2DH[] line : lines) {
-				dos.writeInt(line.length);
+				dos.writeInt(lineString.isClosed() ? line.length + 1 : line.length);
 				for (Vector2DH point : line) {
 					dos.writeDouble(point.x);
 					dos.writeDouble(point.z);
+				}
+				if(lineString.isClosed()) {
+					dos.writeDouble(line[0].x);
+					dos.writeDouble(line[0].z);
 				}
 			}
 		}
@@ -111,8 +116,7 @@ public class VMapUtils {
 		switch(type) {
 			case POINT:
 				return new VMapGeometryPayload<>(
-						VMapElementGeomType.POINT,
-						new Vector2DH(dis.readDouble(), dis.readDouble())
+						VMapElementGeomType.POINT, readVector(dis, projection)
 				);
 			case LINESTRING:
 			case POLYGON:
@@ -122,15 +126,23 @@ public class VMapUtils {
 					int pointCount = dis.readInt();
 					result[i] = new Vector2DH[pointCount];
 					for(int j = 0; j < pointCount; ++j) {
-						Vector2DH parsedPoint = new Vector2DH(dis.readDouble(), dis.readDouble());
-						double[] projResult = projection.fromGeo(parsedPoint.x, parsedPoint.z);
-						result[i][j] = new Vector2DH(projResult[0], projResult[1]);
+						result[i][j] = readVector(dis, projection);
 					}
 				}
 				return new VMapGeometryPayload<>(type, result);
 			default:
 				return new VMapGeometryPayload<>(VMapElementGeomType.NULL, null);
 		}
+	}
+
+
+
+	private static Vector2DH readVector(DataInputStream dis, GeographicProjection projection)
+			throws IOException, OutOfProjectionBoundsException {
+
+		Vector2DH parsedPoint = new Vector2DH(dis.readDouble(), dis.readDouble());
+		double[] projResult = projection.fromGeo(parsedPoint.x, parsedPoint.z);
+		return new Vector2DH(projResult[0], projResult[1]);
 	}
 
 

@@ -21,8 +21,8 @@ public class TableColumns {
     private final TableColumn[] columns;
     private final @Getter int primaryKeyIndex;
     private final @Getter int length;
-    private @Getter
-    VMapElementDataType parentType;
+    private @Getter VMapElementDataType parentType;
+
     public void setParentType(VMapElementDataType value) {
         if(parentType != null) throw new RuntimeException(new IllegalAccessException());
         this.parentType = value;
@@ -48,8 +48,14 @@ public class TableColumns {
 
 
 
+    public boolean hasTable() {
+        return /* this.length > 1 */ true;
+    }
+
+
+
     public String generateTableCreationSQL() {
-        if(this.length == 1) return null;
+        if(!this.hasTable()) return null;
 
         StringBuilder result = new StringBuilder(
                 "CREATE TABLE IF NOT EXISTS `" + VMapSQLManager.getElementDataTableName(parentType) + "` (");
@@ -71,7 +77,7 @@ public class TableColumns {
 
 
     public String generateElementDataInsertionSQL(int elementCount) {
-        if(this.length == 1) return null;
+        if(!this.hasTable()) return null;
 
         String columnString = "", qmarkString = "", dataUpdateString = "";
 
