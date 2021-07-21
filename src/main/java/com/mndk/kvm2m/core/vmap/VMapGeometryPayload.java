@@ -4,10 +4,15 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-@RequiredArgsConstructor
-@Getter
-@ToString
-public class VMapGeometryPayload<T> {
-    private final VMapElementGeomType type;
-    private final T geometryData;
+import java.util.HashMap;
+
+public class VMapGeometryPayload extends HashMap<Integer, VMapGeometryPayload.Record<?>> {
+
+    @RequiredArgsConstructor
+    @Getter
+    @ToString
+    public static class Record<T> {
+        private final VMapElementGeomType type;
+        private final T geometryData;
+    }
 }

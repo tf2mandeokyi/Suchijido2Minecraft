@@ -22,7 +22,7 @@ public class VMapElevationPoint extends VMapPoint {
 			try {
 				value = Double.parseDouble((String) value);
 			} catch(NumberFormatException e) {
-				throw new IOException("Invalid 수치 data");
+				throw new IOException("Invalid 수치 data: \"" + value + "\"");
 			}
 		}
 		this.y = (int) Math.round((Double) value);

@@ -1,8 +1,9 @@
 package com.mndk.kvm2m.db.common;
 
 
+import com.google.gson.JsonObject;
 import com.mndk.kvm2m.core.vmap.VMapElementDataType;
-import com.mndk.kvm2m.db.VMapSQLManager;
+import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -10,10 +11,10 @@ import lombok.ToString;
 public class TableColumns {
 
 
-    public static final TableColumn UFID_COLUMN = new TableColumn(
-            "UFID",
-            "UFID",
-            new TableColumn.VarCharType(34),
+    public static final TableColumn ID_COLUMN = new TableColumn(
+            "ID",
+            "ID",
+            new TableColumn.BigIntType(),
             TableColumn.NOT_NULL
     );
 
@@ -31,13 +32,13 @@ public class TableColumns {
 
 
     public TableColumns(TableColumn... columns) {
-        this.columns = new TableColumn[columns.length + 1];
-        this.length = columns.length + 1;
+        this.columns = columns /*new TableColumn[columns.length + 1]*/;
+        this.length = columns.length/* + 1*/;
 
-        this.columns[0] = UFID_COLUMN;
-        this.primaryKeyIndex = 0;
+        /*this.columns[0] = ID_COLUMN;*/
+        this.primaryKeyIndex = /* 0 */ -1;
 
-        System.arraycopy(columns, 0, this.columns, 1, columns.length);
+        // System.arraycopy(columns, 0, this.columns, 1, columns.length);
     }
 
 
@@ -48,49 +49,28 @@ public class TableColumns {
 
 
 
-    public String generateTableCreationSQL() {
+    public JsonObject convertElementDataToJson(VMapElement element) {
+        JsonObject object = new JsonObject();
+        for(int i = 0; i < length; ++i) {
 
-        StringBuilder result = new StringBuilder(
-                "CREATE TABLE IF NOT EXISTS `" + VMapSQLManager.getElementDataTableName(parentType) + "` (");
+            String name = columns[i].getCategoryName();
+            Object value = element.getDataByColumn(name);
+            if(value == null) continue;
 
-        for (int i = 0; i < columns.length; ++i) {
-            TableColumn column = columns[i];
-            result.append(column.toTableCreationSql());
-            if(i != columns.length - 1) {
-                result.append(",");
+            if(value instanceof Number) {
+                object.addProperty(name, (Number) value);
+            }
+            if(value instanceof String) {
+                if (((String) value).length() == 0) { continue; }
+                object.addProperty(name, (String) value);
+            }
+            if(value instanceof Boolean) {
+                object.addProperty(name, (Boolean) value);
+            }
+            if(value instanceof Character) {
+                object.addProperty(name, (Character) value);
             }
         }
-
-        if(primaryKeyIndex != -1) {
-            result.append(", PRIMARY KEY (`").append(columns[primaryKeyIndex].getCategoryName()).append("`)");
-        }
-        return result + ") CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;";
-    }
-
-
-
-    public String generateElementDataInsertionSQL(int elementCount) {
-
-        String columnString = "", qmarkString = "", dataUpdateString = "";
-
-        for (TableColumn column : columns) {
-            String name = column.getCategoryName();
-            columnString += "`" + name + "`,";
-            qmarkString += "?,";
-            dataUpdateString += "`" + name + "`=values(`" + name + "`),";
-        }
-        columnString = columnString.substring(0, columnString.length() - 1);
-        qmarkString = "(" + qmarkString.substring(0, qmarkString.length() - 1) + ")";
-        dataUpdateString = dataUpdateString.substring(0, dataUpdateString.length() - 1);
-
-        String qmarkStrings = "";
-        for(int i = 0; i < elementCount; ++i) {
-            qmarkStrings += qmarkString + ",";
-        }
-        qmarkStrings = qmarkStrings.substring(0, qmarkStrings.length() - 1);
-
-        return "INSERT INTO `" + VMapSQLManager.getElementDataTableName(parentType) + "`" +
-                " (" + columnString + ") VALUES " + qmarkStrings +
-                (primaryKeyIndex != -1 ? " ON DUPLICATE KEY UPDATE " + dataUpdateString : "") + ";";
+        return object;
     }
 }

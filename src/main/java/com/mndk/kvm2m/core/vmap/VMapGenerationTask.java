@@ -110,7 +110,7 @@ public class VMapGenerationTask implements Runnable {
 
             List<Callable<Object>> layerGenerationTask = new ArrayList<>();
             if(!options.containsKey("terrain-only")) {
-                List<VMapLayer> layers = finalResult.getElementLayers();
+                List<VMapLayer> layers = finalResult.getLayers();
                 if (layers.isEmpty()) return;
 
                 commandSender.sendMessage(new TextComponentString("§dGenerating elements..."));
@@ -154,7 +154,7 @@ public class VMapGenerationTask implements Runnable {
         private final String[] ids;
 
         private static final VMapReader EMPTY_READER = new VMapReader() {
-            @Override protected VMapReaderResult getResult() { return null; }
+            @Override protected Map.Entry<VMapGeometryPayload, VMapDataPayload> getResult() { return null; }
         };
 
 

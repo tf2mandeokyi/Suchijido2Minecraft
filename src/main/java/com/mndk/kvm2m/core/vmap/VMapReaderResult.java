@@ -25,7 +25,7 @@ public class VMapReaderResult {
 		this.boundary = boundary;
 	}
 	
-	public List<VMapLayer> getElementLayers() {
+	public List<VMapLayer> getLayers() {
 		return this.layerList;
 	}
 	

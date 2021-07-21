@@ -12,10 +12,8 @@ import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Function;
 
 public class VMapSQLManager {
 
@@ -25,8 +23,7 @@ public class VMapSQLManager {
 
 
 
-    private static final String GEOMETRY_TABLE_NAME = "elementgeometry";
-    private static final String DATA_TABLE_NAME = "elementdata";
+    private static final String MAIN_TABLE_NAME = "elementdata";
 
 
 
@@ -39,13 +36,13 @@ public class VMapSQLManager {
 
 
     private ResultSet executeQuery(String sql) throws SQLException {
-        if(connection == null) throw new SQLException("SQL Connection not initialized");
+        if(connection == null) throw new SQLException("SQL Connection not established");
         try(Statement statement = this.connection.createStatement()) {
             return statement.executeQuery(sql);
         }
     }
     private void executeUpdate(String sql) throws SQLException {
-        if(connection == null) throw new SQLException("SQL Connection not initialized");
+        if(connection == null) throw new SQLException("SQL Connection not established");
         try(Statement statement = this.connection.createStatement()) {
             statement.executeUpdate(sql);
         }
@@ -58,6 +55,7 @@ public class VMapSQLManager {
         properties.put("user", user);
         properties.put("password", password);
         properties.put("serverTimezone", "Asia/Seoul");
+        properties.put("allowMultiQueries", "true");
         this.connection = DriverManager.getConnection(db_url, properties);
         if(this.connection == null) throw new SQLException("SQL Connection failed");
         if(KVectorMap2MinecraftMod.logger != null) {
@@ -68,50 +66,45 @@ public class VMapSQLManager {
 
 
     public void initializeDataTables() throws SQLException {
-        this.initializeDataTables(t -> true);
         this.initializeGeometryTable();
     }
 
 
 
-    public void initializeDataTables(Function<VMapElementDataType, Boolean> filter) throws SQLException {
-        for(VMapElementDataType type : VMapElementDataType.values()) {
-            if(!filter.apply(type)) continue;
-            String query = type.getColumns().generateTableCreationSQL();
-            if(query == null) continue;
-            try(Statement statement = connection.createStatement()){
-                statement.executeUpdate(query);
-            }
-        }
-    }
-
-
-
-    public void initializeGeometryTable() throws SQLException {
+    private void initializeGeometryTable() throws SQLException {
         this.executeUpdate("" +
-                "CREATE TABLE IF NOT EXISTS `" + GEOMETRY_TABLE_NAME + "` (" +
-                        TableColumns.UFID_COLUMN.toTableCreationSql() + "," +
-                        "`geometry_data` MEDIUMBLOB NOT NULL," +
-                        "`min_lon` DECIMAL(10, 7) NOT NULL," +
-                        "`min_lat` DECIMAL(9, 7) NOT NULL," +
-                        "`max_lon` DECIMAL(10, 7) NOT NULL," +
-                        "`max_lat` DECIMAL(9, 7) NOT NULL," +
-                        "PRIMARY KEY (`" + TableColumns.UFID_COLUMN.getCategoryName() + "`)" +
+                "CREATE TABLE IF NOT EXISTS `" + MAIN_TABLE_NAME + "` (" +
+                "    `" + TableColumns.ID_COLUMN.getCategoryName() + "` BIGINT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,\n" +
+                "    `map_index` VARCHAR(10) NOT NULL,\n" +
+                "    `geom_type` TINYINT UNSIGNED NOT NULL,\n" +
+                "    `geom` MEDIUMBLOB NOT NULL,\n" +
+                "    `min_lon` NUMERIC(10, 7) NOT NULL,\n" +
+                "    `max_lon` NUMERIC(10, 7) NOT NULL,\n" +
+                "    `min_lat` NUMERIC(9, 7) NOT NULL,\n" +
+                "    `max_lat` NUMERIC(9, 7) NOT NULL,\n" +
+                "    `data_type` VARCHAR(4) NOT NULL,\n" +
+                "    `data` JSON NOT NULL\n" +
                 ")"
         );
     }
 
 
 
-    public void insertVMapData(VMapReaderResult result) throws SQLException, IOException {
-        for(VMapLayer layer : result.getElementLayers()) {
-            insertVMapLayerData(layer);
+    public void refreshVMapData(VMapReaderResult result, String mapIndex) throws SQLException, IOException {
+        try(PreparedStatement statement = this.connection.prepareStatement(
+                "DELETE FROM `" + MAIN_TABLE_NAME + "` WHERE `map_index`=?")) {
+            statement.setString(1, mapIndex);
+            statement.executeUpdate();
+        }
+
+        for(VMapLayer layer : result.getLayers()) {
+            insertVMapLayerData(layer, mapIndex);
         }
     }
 
 
 
-    public void insertVMapLayerData(VMapLayer layer) throws SQLException, IOException {
+    private void insertVMapLayerData(VMapLayer layer, String mapIndex) throws SQLException, IOException {
         if(layer == null) return;
         if(layer.size() == 0) return;
 
@@ -120,13 +113,9 @@ public class VMapSQLManager {
         VMapElementDataType type = layer.getType();
         TableColumns columns = type.getColumns();
 
-        final String dataSql = columns.generateElementDataInsertionSQL(layer.size());
-        final String geometrySql = generateGeometryInsertionSql(layer.size());
+        final String dataInsertionQuery = generateDataInsertionSql(layer.size());
+        PreparedStatement statement = this.connection.prepareStatement(dataInsertionQuery);
 
-        PreparedStatement dataStatement = dataSql == null ? null : this.connection.prepareStatement(dataSql);
-        PreparedStatement geometryStatement = this.connection.prepareStatement(geometrySql);
-
-        int dataStatementIndex = 1;
         for(int i = 0 ; i < layer.size(); ++i) {
             VMapElement element = layer.get(i);
 
@@ -134,64 +123,49 @@ public class VMapSQLManager {
             geometryBlob.setBytes(1, VMapUtils.generateGeometryDataBytes(element));
             BoundingBoxDouble bbox = element.getBoundingBoxDouble();
 
-            geometryStatement.setObject(6 * i + 1, element.getDataByColumn("UFID"));
-            geometryStatement.setBlob(6 * i + 2, geometryBlob);
-            geometryStatement.setDouble(6 * i + 3, bbox.xmin);
-            geometryStatement.setDouble(6 * i + 4, bbox.zmin);
-            geometryStatement.setDouble(6 * i + 5, bbox.xmax);
-            geometryStatement.setDouble(6 * i + 6, bbox.zmax);
-
-            if(dataStatement != null) {
-                for (int j = 0; j < columns.getLength(); ++j) {
-                    TableColumn column = columns.get(j);
-                    String columnName = column.getCategoryName();
-                    Object o = element.getDataByColumn(columnName);
-
-                    if (column.getDataType() instanceof TableColumn.VarCharType) {
-                        TableColumn.VarCharType varCharType = (TableColumn.VarCharType) column.getDataType();
-                        if (o instanceof String && varCharType.getLength() < ((String) o).length()) {
-                            o = ((String) o).substring(0, varCharType.getLength());
-                        }
-                    }
-
-                    dataStatement.setObject(dataStatementIndex + j, o);
-                }
-                dataStatementIndex += columns.getLength();
-            }
+            statement.setString(9 * i + 1, mapIndex);
+            statement.setDouble(9 * i + 2, element.getGeometryType().ordinal());
+            statement.setBlob(9 * i + 3, geometryBlob);
+            statement.setDouble(9 * i + 4, bbox.xmin);
+            statement.setDouble(9 * i + 5, bbox.xmax);
+            statement.setDouble(9 * i + 6, bbox.zmin);
+            statement.setDouble(9 * i + 7, bbox.zmax);
+            statement.setString(9 * i + 8, type.getLayerNameHeader());
+            statement.setString(9 * i + 9, columns.convertElementDataToJson(element).toString());
         }
 
-        if(dataStatement != null) dataStatement.executeUpdate();
-        geometryStatement.executeUpdate();
+        statement.executeUpdate();
     }
 
 
 
-    private static String generateGeometryInsertionSql(int elementSize) {
-        String result = "INSERT INTO `" + GEOMETRY_TABLE_NAME + "` VALUES";
+    private static String generateDataInsertionSql(int elementSize) {
+
+        String queryString =
+                "INSERT INTO `" + MAIN_TABLE_NAME + "` (" +
+                        "map_index,geom_type,geom,min_lon,max_lon,min_lat,max_lat,data_type,data" +
+                ") VALUES ";
 
         StringBuilder qmarkString = new StringBuilder();
         for(int i = 0; i < elementSize; ++i) {
-            qmarkString.append("(?,?,?,?,?,?),");
+            qmarkString.append("(?,?,?,?,?,?,?,?,?)");
+            if(i != elementSize - 1) qmarkString.append(",");
         }
-        return result + qmarkString.substring(0, qmarkString.length() - 1) +
-            "ON DUPLICATE KEY UPDATE " +
-                "`geometry_data`=values(`geometry_data`)," +
-                "`min_lon`=values(`min_lon`)," +
-                "`min_lat`=values(`min_lat`)," +
-                "`max_lon`=values(`max_lon`)," +
-                "`max_lat`=values(`max_lat`);";
+
+        return queryString + qmarkString.toString();
+
     }
 
 
 
-    private Map<String, VMapGeometryPayload<?>> getVMapGeometry(String mapNumber, GeographicProjection projection)
+    private VMapGeometryPayload getVMapGeometry(String mapNumber, GeographicProjection projection)
             throws Exception {
 
         if(connection == null) throw new SQLException("SQL Connection not initialized");
 
-        String sql = "SELECT `UFID`, `geometry_data` FROM `" + GEOMETRY_TABLE_NAME + "` WHERE " +
+        String sql = "SELECT `UFID`, `geometry_data` FROM `" + MAIN_TABLE_NAME + "` WHERE " +
                 "`UFID` REGEXP(CONCAT('^1000', ?, '[A-H]'));";
-        Map<String, VMapGeometryPayload<?>> result = new HashMap<>();
+        VMapGeometryPayload result = new VMapGeometryPayload();
 
         try(PreparedStatement statement = this.connection.prepareStatement(sql)) {
 
@@ -200,8 +174,8 @@ public class VMapSQLManager {
 
             while(resultSet.next()) {
                 InputStream stream = resultSet.getBlob("geometry_data").getBinaryStream();
-                result.put(resultSet.getString("UFID"), VMapUtils.parseGeometryDataString(
-                        stream, projection));
+                /*result.put(resultSet.getString("UFID"), VMapUtils.parseGeometryDataString(
+                        stream, projection)); // TODO finish this*/
             }
         }
         return result;
@@ -209,16 +183,16 @@ public class VMapSQLManager {
 
 
 
-    private Map<String, VMapDataPayload> getVMapData(String mapNumber) throws SQLException {
+    private VMapDataPayload getVMapData(String mapNumber) throws SQLException {
 
         if(connection == null) throw new SQLException("SQL Connection not initialized");
 
-        Map<String, VMapDataPayload> result = new HashMap<>();
+        VMapDataPayload result = new VMapDataPayload();
 
         for(VMapElementDataType type : VMapElementDataType.values()) {
             TableColumns columns = type.getColumns();
 
-            String tableName = getElementDataTableName(type);
+            String tableName = "a"; // getDataTableName(type);
             String sql = "SELECT * FROM `" + tableName + "` " +
                     "WHERE `UFID` LIKE CONCAT('1000', ?, '" + type.getLayerNameHeader() + "%');";
 
@@ -228,17 +202,18 @@ public class VMapSQLManager {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                String ufid = resultSet.getString("UFID");
                 Object[] dataRow = new Object[columns.getLength()];
                 for (int i = 0; i < columns.getLength(); ++i) {
                     TableColumn column = columns.get(i);
                     if (column.getDataType() instanceof TableColumn.VarCharType) {
                         dataRow[i] = resultSet.getString(column.getCategoryName());
+                    } else if (column.getDataType() instanceof TableColumn.BigIntType) {
+                        dataRow[i] = resultSet.getLong(column.getCategoryName());
                     } else if (column.getDataType() instanceof TableColumn.NumericType) {
                         dataRow[i] = resultSet.getDouble(column.getCategoryName());
                     }
                 }
-                result.put(ufid, new VMapDataPayload(type, dataRow));
+                /*result.put(ufid, new VMapDataPayload.Record(type, dataRow)); // TODO finish this*/
             }
             statement.close();
 
@@ -261,12 +236,6 @@ public class VMapSQLManager {
                     options
             );
         }
-    }
-
-
-
-    public static String getElementDataTableName(VMapElementDataType type) {
-        return DATA_TABLE_NAME + "_" + type.name();
     }
 
 

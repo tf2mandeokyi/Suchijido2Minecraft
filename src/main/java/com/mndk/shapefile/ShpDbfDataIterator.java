@@ -1,17 +1,17 @@
 package com.mndk.shapefile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Iterator;
-
 import com.mndk.shapefile.dbf.DBaseDataIterator;
 import com.mndk.shapefile.dbf.DBaseHeader;
 import com.mndk.shapefile.shp.ShapefileDataIterator;
 import com.mndk.shapefile.shp.ShapefileHeader;
 import com.mndk.shapefile.util.AutoCloseableIterator;
+
+import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Iterator;
 
 /*
  * Reasons why I made this instead of using gt-shapefile:
@@ -26,9 +26,9 @@ public class ShpDbfDataIterator implements AutoCloseableIterator<ShpDbfRecord> {
 	
 	
 	
-	public ShpDbfDataIterator(String filePath, Charset charset) throws FileNotFoundException, IOException {
+	public ShpDbfDataIterator(String filePath, Charset charset) throws IOException {
 		
-		this.shpIterator = new ShapefileDataIterator(new FileInputStream(new File(filePath + ".shp")), charset);
+		this.shpIterator = new ShapefileDataIterator(new FileInputStream(filePath + ".shp"), charset);
 		
 		File dBaseFile = new File(filePath + ".dbf");
 		this.dBaseIterator = dBaseFile.exists() ? new DBaseDataIterator(new FileInputStream(dBaseFile), charset) : null;
@@ -71,7 +71,7 @@ public class ShpDbfDataIterator implements AutoCloseableIterator<ShpDbfRecord> {
 
 	
 	
-	@Override
+	@Override @Nonnull
 	public Iterator<ShpDbfRecord> iterator() {
 		return this;
 	}

@@ -25,14 +25,14 @@ public class VMapPolygon extends VMapLineString {
 	
 	private VMapPolygon(VMapLayer parent, Map<String, Object> dataRow, boolean doFill) {
 		super(parent, dataRow, true);
-		this.type = VMapElementGeomType.POLYGON;
+		this.geometryType = VMapElementGeomType.POLYGON;
 		this.doFill = doFill;
 	}
 
 	
 	private VMapPolygon(VMapLayer parent, Object[] dataRow, boolean doFill) {
 		super(parent, dataRow, true);
-		this.type = VMapElementGeomType.POLYGON;
+		this.geometryType = VMapElementGeomType.POLYGON;
 		this.doFill = doFill;
 	}
 	

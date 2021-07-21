@@ -1,74 +1,88 @@
 package com.mndk.kvm2m.core.vmap.reader;
 
-import com.mndk.kvm2m.core.projection.Korea2010BeltProjection;
 import com.mndk.kvm2m.core.util.file.DirectoryManager;
 import com.mndk.kvm2m.core.util.file.ZipManager;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
+import com.mndk.kvm2m.core.vmap.VMapDataPayload;
 import com.mndk.kvm2m.core.vmap.VMapElementDataType;
-import com.mndk.kvm2m.core.vmap.VMapReaderException;
-import com.mndk.kvm2m.core.vmap.VMapReaderResult;
-import com.mndk.kvm2m.core.vmap.elem.VMapElement;
-import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
-import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
-import com.mndk.kvm2m.core.vmap.elem.line.VMapLineString;
-import com.mndk.kvm2m.core.vmap.elem.line.VMapWall;
-import com.mndk.kvm2m.core.vmap.elem.point.VMapElevationPoint;
-import com.mndk.kvm2m.core.vmap.elem.point.VMapPoint;
-import com.mndk.kvm2m.core.vmap.elem.poly.VMapBuilding;
-import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
-import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
+import com.mndk.kvm2m.core.vmap.VMapElementGeomType;
+import com.mndk.kvm2m.core.vmap.VMapGeometryPayload;
+import com.mndk.kvm2m.db.common.TableColumn;
+import com.mndk.kvm2m.db.common.TableColumns;
 import com.mndk.shapefile.ShpDbfDataIterator;
 import com.mndk.shapefile.ShpDbfRecord;
-import com.mndk.shapefile.dbf.DBaseField;
 import com.mndk.shapefile.shp.ShapeVector;
 import com.mndk.shapefile.shp.ShapefileRecord;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-
+import java.util.AbstractMap;
+import java.util.Map;
 
 
 public class ShpZipMapReader extends VMapReader {
 
 
 	@Override
-	protected VMapReaderResult getResult() throws IOException {
-		
-		VMapReaderResult result = new VMapReaderResult();
+	protected Map.Entry<VMapGeometryPayload, VMapDataPayload> getResult() throws IOException {
+
+		VMapGeometryPayload geometryPayload = new VMapGeometryPayload();
+		VMapDataPayload dataPayload = new VMapDataPayload();
 		
 		Throwable throwable = null;
-		
-		// Set temporary destination directory
+
 		String mapFilePath = mapFile.getAbsolutePath();
-		Korea2010BeltProjection projection = getProjFromFileName(mapFile);
-		if(projection == null) throw new VMapReaderException("Invalid projection!");
 		File zipDestination = new File(mapFilePath.substring(0, mapFilePath.lastIndexOf(".zip")) + "/");
-		System.out.println(zipDestination);
-		if(zipDestination.isDirectory()) {
-			throw new VMapReaderException(zipDestination.getAbsolutePath() + " directory already exists.");
-		}
 
 		try {
-			
+
+			if(zipDestination.exists()) {
+				zipDestination.delete();
+			}
+
 			// Extract all files in map file
 			zipDestination.mkdir();
-			ZipManager.extractZipFile(mapFile, zipDestination);
+			ZipManager.extractZipFile(mapFile, zipDestination, "cp949");
 			
 			File[] shapeFiles = zipDestination.listFiles((dir, name) -> name.endsWith(".shp"));
 			assert shapeFiles != null;
+
+			int count = 0;
+
 			for(File shapeFile : shapeFiles) {
 				String filePath = shapeFile.getAbsolutePath();
 				filePath = filePath.substring(0, filePath.length() - 4);
 				String fileName = new File(filePath).getName();
-				VMapLayer elementLayer = fromShpFile(filePath, fileName);
-				result.addLayer(elementLayer);
+				VMapElementDataType type = VMapElementDataType.fromLayerName(fileName);
+				TableColumns columns = type.getColumns();
+
+				try(ShpDbfDataIterator iterator =
+							new ShpDbfDataIterator(filePath, Charset.forName("cp949"))) {
+
+					for (ShpDbfRecord record : iterator) {
+						// System.out.println(record.dBase);
+
+						VMapGeometryPayload.Record<?> geometryRecord = fromShpRecord(record.shape);
+
+						Object[] dataRow = new Object[columns.getLength()];
+						for(int i = 0; i < columns.getLength(); ++i) {
+							TableColumn column = columns.get(i);
+							dataRow[i] = record.dBase.getDataByField(column.getCategoryName());
+						}
+
+						VMapDataPayload.Record dataRecord = new VMapDataPayload.Record(type, dataRow);
+
+						geometryPayload.put(count, geometryRecord);
+						dataPayload.put(count, dataRecord);
+						++count;
+					}
+				}
 			}
 		} catch(Throwable t) {
 			throwable = t;
 		}
 
-		// I could use "finally" though
 		DirectoryManager.deleteDirectory(zipDestination);
 		
 		if(throwable != null) {
@@ -79,64 +93,34 @@ public class ShpZipMapReader extends VMapReader {
 				throw new RuntimeException(throwable);
 			}
 		}
-		
-		return result;
+
+		return new AbstractMap.SimpleEntry<>(geometryPayload, dataPayload);
 		
 	}
-	
-	
-	
-	private VMapLayer fromShpFile(String filePath, String fileName) throws IOException {
-		
-		VMapElementDataType type = VMapElementDataType.fromLayerName(fileName);
 
-		try(ShpDbfDataIterator iterator = new ShpDbfDataIterator(filePath, Charset.forName("cp949"))) {
 
-			DBaseField[] fields = iterator.getDBaseHeader().fields;
-			String[] columns = new String[fields.length];
-			for (int i = 0; i < fields.length; ++i) {
-				columns[i] = fields[i].name;
-			}
 
-			VMapLayer layer = new VMapLayer(type, columns);
-
-			// int i = 0;
-			for (ShpDbfRecord record : iterator) {
-				try {
-					VMapElement element = fromElement(layer, record);
-					if (element == null) continue;
-					layer.add(element);
-					// i++;
-				} catch(Exception e) {
-					KVectorMap2MinecraftMod.logger.error("Error occured while parsing layer " + type + ": " + e.getMessage());
-				}
-			}
-
-			return layer;
+	protected VMapGeometryPayload.Record<?> fromShpRecord(ShapefileRecord record) {
+		if(record instanceof ShapefileRecord.Polygon) {
+			return new VMapGeometryPayload.Record<>(
+					VMapElementGeomType.POLYGON, fromPolygon((ShapefileRecord.Polygon) record));
 		}
-	}
-	
-	
-	
-	private VMapElement fromElement(VMapLayer layer, ShpDbfRecord record) throws Exception {
-		if(record.shape instanceof ShapefileRecord.Polygon) {
-			return fromPolygon(layer, record);
+		else if(record instanceof ShapefileRecord.PolyLine) {
+			return new VMapGeometryPayload.Record<>(
+					VMapElementGeomType.LINESTRING, fromLine((ShapefileRecord.PolyLine) record));
 		}
-		else if(record.shape instanceof ShapefileRecord.PolyLine) {
-			return fromLine(layer, record);
-		}
-		else if(record.shape instanceof ShapefileRecord.Point) {
-			return fromPoint(layer, record);
+		else if(record instanceof ShapefileRecord.Point) {
+			return new VMapGeometryPayload.Record<>(
+					VMapElementGeomType.POINT, fromPoint((ShapefileRecord.Point) record));
 		}
 		return null;
 	}
 	
 	
 	
-	private VMapPolygon fromPolygon(VMapLayer layer, ShpDbfRecord record) {
-		ShapefileRecord.Polygon shape = (ShapefileRecord.Polygon) record.shape;
-		ShapeVector[][] points = shape.points;
-		Vector2DH[][] vertexList = new Vector2DH[shape.points.length][];
+	private Vector2DH[][] fromPolygon(ShapefileRecord.Polygon polygon) {
+		ShapeVector[][] points = polygon.points;
+		Vector2DH[][] vertexList = new Vector2DH[polygon.points.length][];
 		
 		for(int j = 0; j < points.length; ++j) {
 			int size = points[j].length;
@@ -147,23 +131,15 @@ public class ShpZipMapReader extends VMapReader {
 				vertexList[j][i] = this.targetProjToWorldProjCoord(vector.x, vector.y);
 			}
 		}
-		
-		if(layer.getType() == VMapElementDataType.건물) {
-			if(options.containsKey("gen-building-shells")) { 
-				return new VMapBuilding(layer, vertexList, record.dBase.data);
-			} else {
-				return new VMapPolygon(layer, vertexList, record.dBase.data, false);
-			}
-		}
-		else { return new VMapPolygon(layer, vertexList, record.dBase.data, true); }
+
+		return vertexList;
 	}
 	
 
 	
-	private VMapLineString fromLine(VMapLayer layer, ShpDbfRecord record) {
-		ShapefileRecord.PolyLine shape = (ShapefileRecord.PolyLine) record.shape;
-		ShapeVector[][] points = shape.points;
-		Vector2DH[][] vertexList = new Vector2DH[shape.points.length][];
+	private Vector2DH[][] fromLine(ShapefileRecord.PolyLine polyline) {
+		ShapeVector[][] points = polyline.points;
+		Vector2DH[][] vertexList = new Vector2DH[polyline.points.length][];
 		
 		for(int j = 0; j < points.length; ++j) {
 			int size = points[j].length;
@@ -174,20 +150,14 @@ public class ShpZipMapReader extends VMapReader {
 				vertexList[j][i] = this.targetProjToWorldProjCoord(vector.x, vector.y);
 			}
 		}
-		
-		if(layer.getType() == VMapElementDataType.등고선) { return new VMapContour(layer, vertexList[0], record.dBase.data); }
-		else if(layer.getType() == VMapElementDataType.옹벽) { return new VMapWall(layer, vertexList, record.dBase.data, false); }
-		else { return new VMapLineString(layer, vertexList, record.dBase.data, false); }
+
+		return vertexList;
 	}
 	
 	
 	
-	private VMapPoint fromPoint(VMapLayer layer, ShpDbfRecord record) throws Exception {
-		ShapefileRecord.Point shape = (ShapefileRecord.Point) record.shape;
-		Vector2DH vpoint = this.targetProjToWorldProjCoord(shape.vector.x, shape.vector.y);
-		
-		if(layer.getType() == VMapElementDataType.표고점) { return new VMapElevationPoint(layer, vpoint, record.dBase.data); }
-		else { return new VMapPoint(layer, vpoint, record.dBase.data); }
+	private Vector2DH fromPoint(ShapefileRecord.Point point) {
+		return this.targetProjToWorldProjCoord(point.vector.x, point.vector.y);
 	}
 
 }

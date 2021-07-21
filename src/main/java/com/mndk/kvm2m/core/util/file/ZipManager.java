@@ -1,9 +1,7 @@
 package com.mndk.kvm2m.core.util.file;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -11,9 +9,37 @@ public class ZipManager {
 	
 	
 
-	public static void extractZipFile(File sourceZip, File destination) throws IOException {
+	public static void extractZipFile(File sourceZip, File destination, String charset) throws IOException {
 
-		try (ZipInputStream zis = new ZipInputStream(new FileInputStream(sourceZip))) {
+		/*
+		try(InputStream inputStream = new FileInputStream(sourceZip);
+			ZipArchiveInputStream zipArchiveInputStream =
+					new ZipArchiveInputStream(inputStream, charset, false, true)) {
+
+			ArchiveEntry entry;
+			while ((entry = zipArchiveInputStream.getNextEntry()) != null) {
+				String entryFileName = entry.getName();
+				File entryFile = new File(destination, entryFileName);
+				byte[] buffer = new byte[1024];
+				try(OutputStream outputStream = new FileOutputStream(entryFile)) {
+					int length;
+					while((length = zipArchiveInputStream.read(buffer)) != -1) {
+						outputStream.write(buffer, 0, length);
+					}
+					outputStream.flush();
+				}
+			}
+		}
+		*/
+
+		InputStream stream = new FileInputStream(sourceZip);
+		DataInputStream dis = new DataInputStream(stream);
+		if(dis.readInt() != 0x504B0708) { // The sussy zip
+			stream.close();
+			stream = new FileInputStream(sourceZip);
+		}
+
+		try (ZipInputStream zis = new ZipInputStream(stream, Charset.forName(charset))) {
 			ZipEntry zipEntry = zis.getNextEntry();
 			byte[] buffer = new byte[1024];
 			while(zipEntry != null) {

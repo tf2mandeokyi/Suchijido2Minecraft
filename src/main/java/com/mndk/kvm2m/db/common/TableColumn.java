@@ -56,4 +56,13 @@ public class TableColumn {
         }
     }
 
+    public static class BigIntType extends NumericType {
+        public BigIntType() {
+            super(0, 0);
+        }
+        @Override public String toString() {
+            return "BIGINT";
+        }
+    }
+
 }

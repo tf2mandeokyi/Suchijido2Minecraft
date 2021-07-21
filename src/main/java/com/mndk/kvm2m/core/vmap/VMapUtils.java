@@ -29,18 +29,25 @@ public class VMapUtils {
 
 
 
-	private static final Pattern generalMapIdPattern = Pattern.compile("^\\(.{4}\\)수치지도_(\\d+)");
+	private static final Pattern generalMapIdPattern = Pattern.compile("^\\(.{4}\\)수치지도_(\\d+)_");
+
+
+
+	public static String getMapIndexFromFileName(String fileName) {
+		Matcher matcher = generalMapIdPattern.matcher(fileName);
+		if(matcher.find()) {
+			return matcher.group(1);
+		}
+		return fileName;
+	}
 
 
 
 	public static Korea2010BeltProjection getProjectionFromMapName(String fileName) {
 
-		Matcher matcher = generalMapIdPattern.matcher(fileName);
-		if(matcher.find()) {
-			fileName = matcher.group(1);
-		}
-
+		fileName = getMapIndexFromFileName(fileName);
 		char number = fileName.charAt(2);
+
 		if(number == '5') {
 			return Projections.KOREA2010_WEST;
 		} else if(number == '6' || number == '7') {
@@ -106,7 +113,7 @@ public class VMapUtils {
 	/**
 	 * @return Object part: Either a class of point (Vector2DH) or a list of lines (Vector2DH[][])
 	 */
-	public static VMapGeometryPayload<?> parseGeometryDataString(
+	public static VMapGeometryPayload.Record<?> parseGeometryDataString(
 			InputStream geometryStream, GeographicProjection projection) throws IOException, OutOfProjectionBoundsException {
 
 		DataInputStream dis = new DataInputStream(geometryStream);
@@ -115,7 +122,7 @@ public class VMapUtils {
 
 		switch(type) {
 			case POINT:
-				return new VMapGeometryPayload<>(
+				return new VMapGeometryPayload.Record<>(
 						VMapElementGeomType.POINT, readVector(dis, projection)
 				);
 			case LINESTRING:
@@ -129,9 +136,9 @@ public class VMapUtils {
 						result[i][j] = readVector(dis, projection);
 					}
 				}
-				return new VMapGeometryPayload<>(type, result);
+				return new VMapGeometryPayload.Record<>(type, result);
 			default:
-				return new VMapGeometryPayload<>(VMapElementGeomType.NULL, null);
+				return new VMapGeometryPayload.Record<>(VMapElementGeomType.NULL, null);
 		}
 	}
 
@@ -148,24 +155,24 @@ public class VMapUtils {
 
 
 	public static VMapReaderResult combineVMapPayloads(
-			Map<String, VMapGeometryPayload<?>> geometryPayloadMap,
-			Map<String, VMapDataPayload> dataPayloadMap,
+			VMapGeometryPayload geometryPayload,
+			VMapDataPayload dataPayload,
 			Map<String, String> options
 	) throws Exception {
 
 		VMapReaderResult result = new VMapReaderResult();
 
-		for(Map.Entry<String, VMapGeometryPayload<?>> entry : geometryPayloadMap.entrySet()) {
-			String ufid = entry.getKey();
-			VMapGeometryPayload<?> geometryPayload = entry.getValue();
-			VMapDataPayload dataPayload = dataPayloadMap.get(ufid);
+		for(Map.Entry<Integer, VMapGeometryPayload.Record<?>> entry : geometryPayload.entrySet()) {
+			int id = entry.getKey();
+			VMapGeometryPayload.Record<?> geometryRecord = entry.getValue();
+			VMapDataPayload.Record dataRecord = dataPayload.get(id);
 
-			if(dataPayload == null) continue;
+			if(dataRecord == null) continue;
 
-			Object[] dataRow = dataPayload.getDataRow();
+			Object[] dataRow = dataRecord.getDataRow();
 
-			VMapElementGeomType geometryType = geometryPayload.getType();
-			VMapElementDataType dataType = dataPayload.getType();
+			VMapElementGeomType geometryType = geometryRecord.getType();
+			VMapElementDataType dataType = dataRecord.getType();
 
 			VMapLayer layer = result.getLayer(dataType);
 			if(layer == null) {
@@ -182,7 +189,7 @@ public class VMapUtils {
 
 			switch(geometryType) {
 				case POINT:
-					Vector2DH point = (Vector2DH) geometryPayload.getGeometryData();
+					Vector2DH point = (Vector2DH) geometryRecord.getGeometryData();
 					if(dataType == VMapElementDataType.표고점) {
 						element = new VMapElevationPoint(layer, point, dataRow);
 					}
@@ -191,7 +198,7 @@ public class VMapUtils {
 					}
 					break;
 				case LINESTRING:
-					vertexList = (Vector2DH[][]) geometryPayload.getGeometryData();
+					vertexList = (Vector2DH[][]) geometryRecord.getGeometryData();
 					if(layer.getType() == VMapElementDataType.등고선) {
 						element = new VMapContour(layer, vertexList[0], dataRow);
 					}
@@ -203,7 +210,7 @@ public class VMapUtils {
 					}
 					break;
 				case POLYGON:
-					vertexList = (Vector2DH[][]) geometryPayload.getGeometryData();
+					vertexList = (Vector2DH[][]) geometryRecord.getGeometryData();
 
 					if(layer.getType() == VMapElementDataType.건물) {
 						if(options.containsKey("gen-building-shells")) {

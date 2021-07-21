@@ -4,10 +4,15 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-@RequiredArgsConstructor
-@Getter
-@ToString
-public class VMapDataPayload {
-    private final VMapElementDataType type;
-    private final Object[] dataRow;
+import java.util.HashMap;
+
+public class VMapDataPayload extends HashMap<Integer, VMapDataPayload.Record> {
+
+    @RequiredArgsConstructor
+    @Getter
+    @ToString
+    public static class Record {
+        private final VMapElementDataType type;
+        private final Object[] dataRow;
+    }
 }

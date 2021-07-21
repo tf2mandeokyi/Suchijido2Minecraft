@@ -1,8 +1,9 @@
 package com.mndk.kvm2m.mod.commands;
 
 import com.mndk.kvm2m.core.util.KeyRestrictedMap;
+import com.mndk.kvm2m.core.vmap.VMapDataPayload;
 import com.mndk.kvm2m.core.vmap.VMapGenerationTask;
-import com.mndk.kvm2m.core.vmap.VMapReaderResult;
+import com.mndk.kvm2m.core.vmap.VMapGeometryPayload;
 import com.mndk.kvm2m.core.vmap.reader.VMapReader;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import com.sk89q.worldedit.regions.FlatRegion;
@@ -25,7 +26,7 @@ public class GenVMapFromDBCmd extends VMapGenCmd {
 
     public GenVMapFromDBCmd(String name) {
         super(name, "", new VMapReader() {
-            @Override protected VMapReaderResult getResult() { return null; }
+            @Override protected Map.Entry<VMapGeometryPayload, VMapDataPayload> getResult() { return null; }
         });
     }
 

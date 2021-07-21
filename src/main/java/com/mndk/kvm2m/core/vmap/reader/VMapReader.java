@@ -2,6 +2,8 @@ package com.mndk.kvm2m.core.vmap.reader;
 
 import com.mndk.kvm2m.core.projection.Korea2010BeltProjection;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
+import com.mndk.kvm2m.core.vmap.VMapDataPayload;
+import com.mndk.kvm2m.core.vmap.VMapGeometryPayload;
 import com.mndk.kvm2m.core.vmap.VMapReaderResult;
 import com.mndk.kvm2m.core.vmap.VMapUtils;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
@@ -22,21 +24,25 @@ public abstract class VMapReader {
 	
 	
 	
-	public final VMapReaderResult parse(File mapFile, GeographicProjection worldProjection, Map<String, String> options) throws IOException {
+	public final VMapReaderResult parse(
+			File mapFile,
+			GeographicProjection worldProjection,
+			Map<String, String> options) throws Exception {
 
 		synchronized (this) {
 			this.mapFile = mapFile;
 			this.worldProjection = worldProjection;
 			this.options = options;
 			this.targetProjection = this.getTargetProjection();
-			return getResult();
+			Map.Entry<VMapGeometryPayload, VMapDataPayload> tuple = getResult();
+			return VMapUtils.combineVMapPayloads(tuple.getKey(), tuple.getValue(), options);
 		}
 		
 	}
 	
 	
 	
-	protected abstract VMapReaderResult getResult() throws IOException;
+	protected abstract Map.Entry<VMapGeometryPayload, VMapDataPayload> getResult() throws IOException;
 	
 	
 	

@@ -1,109 +1,104 @@
 package com.mndk.kvm2m.core.vmap.reader;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
+import com.mndk.kvm2m.core.vmap.VMapDataPayload;
 import com.mndk.kvm2m.core.vmap.VMapElementDataType;
-import com.mndk.kvm2m.core.vmap.VMapReaderResult;
-import com.mndk.kvm2m.core.vmap.elem.VMapElement;
-import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
-import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
-import com.mndk.kvm2m.core.vmap.elem.line.VMapLineString;
-import com.mndk.kvm2m.core.vmap.elem.line.VMapWall;
-import com.mndk.kvm2m.core.vmap.elem.point.VMapElevationPoint;
-import com.mndk.kvm2m.core.vmap.elem.point.VMapPoint;
-import com.mndk.kvm2m.core.vmap.elem.poly.VMapBuilding;
-import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
-import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
+import com.mndk.kvm2m.core.vmap.VMapElementGeomType;
+import com.mndk.kvm2m.core.vmap.VMapGeometryPayload;
+import com.mndk.kvm2m.db.common.TableColumn;
+import com.mndk.kvm2m.db.common.TableColumns;
 import com.mndk.ngiparser.NgiParser;
-import com.mndk.ngiparser.nda.NdaDataColumn;
 import com.mndk.ngiparser.ngi.NgiLayer;
 import com.mndk.ngiparser.ngi.NgiParserResult;
 import com.mndk.ngiparser.ngi.element.*;
 import com.mndk.ngiparser.ngi.vertex.NgiVector;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class NgiMapReader extends VMapReader {
 
 
 	@Override
-	protected VMapReaderResult getResult() throws IOException {
+	protected Map.Entry<VMapGeometryPayload, VMapDataPayload> getResult() throws IOException {
 
-		VMapReaderResult result = new VMapReaderResult();
+		VMapGeometryPayload geometryPayload = new VMapGeometryPayload();
+		VMapDataPayload dataPayload = new VMapDataPayload();
+
 		NgiParserResult parseResult = NgiParser.parse(mapFile.getAbsolutePath(), "MS949", true);
 		
 		Collection<NgiLayer> layers = parseResult.getLayers().values();
+
+		int count = 0;
+
 		for(NgiLayer layer : layers) {
 			if(layer.header.dimensions != 2) continue;
 			try {
-				VMapLayer elementLayer = fromNgiLayer(layer);
-				result.addLayer(elementLayer);
-			} catch(NullPointerException e) {
+				VMapElementDataType type = VMapElementDataType.fromLayerName(layer.name);
+				TableColumns columns = type.getColumns();
+
+				Collection<NgiRecord<?>> ngiElements = layer.data.values();
+
+				for(NgiRecord<?> ngiElement : ngiElements) {
+
+					VMapGeometryPayload.Record<?> geometryRecord = fromNgiRecord(ngiElement);
+					if(geometryRecord == null) continue;
+
+					Object[] dataRow = new Object[columns.getLength()];
+					for(int i = 0; i < columns.getLength(); ++i) {
+						TableColumn column = columns.get(i);
+						dataRow[i] = ngiElement.getRowData(column.getCategoryName());
+					}
+
+					VMapDataPayload.Record dataRecord = new VMapDataPayload.Record(type, dataRow);
+
+					geometryPayload.put(count, geometryRecord);
+					dataPayload.put(count, dataRecord);
+					++count;
+				}
+			} catch(Exception e) {
 				e.printStackTrace();
 			}
 		}
 		
-		return result;
+		return new AbstractMap.SimpleEntry<>(geometryPayload, dataPayload);
 		
 	}
-	
-	
-	
-	private VMapLayer fromNgiLayer(NgiLayer ngiLayer) {
-		VMapElementDataType type = VMapElementDataType.fromLayerName(ngiLayer.name);
-		
-		NdaDataColumn[] columns = ngiLayer.header.columns;
-		String[] layerColumns = new String[columns.length];
-		for(int i = 0; i < columns.length; ++i) {
-			layerColumns[i] = columns[i].name;
-		}
-		VMapLayer elementLayer = new VMapLayer(type, layerColumns);
-		
-		Collection<NgiRecord<?>> ngiElements = ngiLayer.data.values();
-		for(NgiRecord<?> ngiElement : ngiElements) {
-			try {
-				VMapElement element = fromElement(elementLayer, ngiElement);
-				if (element == null) continue;
-				elementLayer.add(element);
-			} catch(Exception e) {
-				if(KVectorMap2MinecraftMod.logger == null) {
-					e.printStackTrace();
-				}
-				else {
-					KVectorMap2MinecraftMod.logger.error("Error occured while parsing layer " + type + ": " + e.getMessage());
-				}
-			}
-		}
-		
-		return elementLayer;
-	}
-	
-	
-	
-	private VMapElement fromElement(VMapLayer layer, NgiRecord<?> ngiElement) throws Exception {
+
+
+
+	@Nullable
+	private VMapGeometryPayload.Record<?> fromNgiRecord(NgiRecord<?> ngiElement) throws Exception {
+
 		if(ngiElement instanceof NgiMultiPolygon) {
-			return fromMultiPolygon(layer, (NgiMultiPolygon) ngiElement);
+			return new VMapGeometryPayload.Record<>(
+					VMapElementGeomType.POLYGON, fromMultiPolygon((NgiMultiPolygon) ngiElement));
 		}
 		else if(ngiElement instanceof NgiPolygon) {
-			return fromPolygon(layer, (NgiPolygon) ngiElement);
+			return new VMapGeometryPayload.Record<>(
+					VMapElementGeomType.POLYGON, fromPolygon((NgiPolygon) ngiElement));
 		}
 		else if(ngiElement instanceof NgiLine) {
-			return fromLine(layer, (NgiLine) ngiElement);
+			return new VMapGeometryPayload.Record<>(
+					VMapElementGeomType.LINESTRING, fromLine((NgiLine) ngiElement));
 		}
 		else if(ngiElement instanceof NgiPoint) {
-			return fromPoint(layer, (NgiPoint) ngiElement);
+			return new VMapGeometryPayload.Record<>(
+					VMapElementGeomType.POINT, fromPoint((NgiPoint) ngiElement));
 		}
-		return null;
+		else if(ngiElement instanceof NgiText) {
+			return null;
+		}
+		else throw new Exception("Invalid record type: " + ngiElement.getClass().getName());
 	}
 
 
 
-	private VMapPolygon fromMultiPolygon(VMapLayer layer, NgiMultiPolygon polygon) {
+	private Vector2DH[][] fromMultiPolygon(NgiMultiPolygon polygon) {
 		List<Vector2DH[]> vertexList = new ArrayList<>();
 		Vector2DH[] tempArray;
-		
+
 		for(int k = 0; k < polygon.vertexData.length; ++k) {
 			for (int j = 0; j < polygon.vertexData[k].length; ++j) {
 				int size = polygon.vertexData[k][j].getSize();
@@ -115,22 +110,13 @@ public class NgiMapReader extends VMapReader {
 				}
 			}
 		}
-		
-		Vector2DH[][] vertexArray = vertexList.toArray(new Vector2DH[0][]);
 
-		if(layer.getType() == VMapElementDataType.건물) {
-			if(options.containsKey("gen-building-shells")) {
-				return new VMapBuilding(layer, vertexArray, polygon.rowData);
-			} else {
-				return new VMapPolygon(layer, vertexArray, polygon.rowData, false);
-			}
-		}
-		else { return new VMapPolygon(layer, vertexArray, polygon.rowData, true); }
+		return vertexList.toArray(new Vector2DH[0][]);
 	}
 	
 	
 	
-	private VMapPolygon fromPolygon(VMapLayer layer, NgiPolygon polygon) {
+	private Vector2DH[][] fromPolygon(NgiPolygon polygon) {
 		Vector2DH[][] vertexList = new Vector2DH[polygon.vertexData.length][];
 		
 		for(int j = 0; j < polygon.vertexData.length; ++j) {
@@ -142,20 +128,13 @@ public class NgiMapReader extends VMapReader {
 				vertexList[j][i] = this.targetProjToWorldProjCoord(vertex.getAxis(0), vertex.getAxis(1));
 			}
 		}
-		
-		if(layer.getType() == VMapElementDataType.건물) {
-			if(options.containsKey("gen-building-shells")) { 
-				return new VMapBuilding(layer, vertexList, polygon.rowData);
-			} else {
-				return new VMapPolygon(layer, vertexList, polygon.rowData, false);
-			}
-		}
-		else { return new VMapPolygon(layer, vertexList, polygon.rowData, true); }
+
+		return vertexList;
 	}
 	
 
 	
-	private VMapLineString fromLine(VMapLayer layer, NgiLine line) {
+	private Vector2DH[][] fromLine(NgiLine line) {
 		int size = line.lineData.getSize();
 		Vector2DH[] vertexList = new Vector2DH[size];
 		
@@ -163,19 +142,14 @@ public class NgiMapReader extends VMapReader {
 			NgiVector vertex = line.lineData.getVertex(i);
 			vertexList[i] = this.targetProjToWorldProjCoord(vertex.getAxis(0), vertex.getAxis(1));
 		}
-		
-		if(layer.getType() == VMapElementDataType.등고선) { return new VMapContour(layer, vertexList, line.rowData); }
-		else if(layer.getType() == VMapElementDataType.옹벽) { return new VMapWall(layer, new Vector2DH[][] {vertexList}, line.rowData, false); }
-		else { return new VMapLineString(layer, new Vector2DH[][] {vertexList}, line.rowData, false); }
+
+		return new Vector2DH[][] { vertexList };
 	}
 	
 	
 	
-	private VMapPoint fromPoint(VMapLayer layer, NgiPoint point) throws Exception {
-		Vector2DH vpoint = this.targetProjToWorldProjCoord(point.position.getAxis(0), point.position.getAxis(1));
-		
-		if(layer.getType() == VMapElementDataType.표고점) { return new VMapElevationPoint(layer, vpoint, point.rowData); }
-		else { return new VMapPoint(layer, vpoint, point.rowData); }
+	private Vector2DH fromPoint(NgiPoint point) {
+		return this.targetProjToWorldProjCoord(point.position.getAxis(0), point.position.getAxis(1));
 	}
 	
 }

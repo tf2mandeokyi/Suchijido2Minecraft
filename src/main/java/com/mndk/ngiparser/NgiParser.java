@@ -560,11 +560,4 @@ public class NgiParser {
 	private static String replaceLast(String text, String regex, String replacement) {
 		return text.replaceFirst("(?s)"+regex+"(?!.*?"+regex+")", replacement);
 	}
-
-
-
-	public static void main(String[] args) throws IOException {
-		Map<Integer, NgiLayer> layers = NgiParser.parse("test/377051683.ngi", "MS949", true).getLayers();
-		System.out.println(layers.size());
-	}
 }

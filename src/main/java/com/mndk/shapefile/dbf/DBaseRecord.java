@@ -1,16 +1,16 @@
 package com.mndk.shapefile.dbf;
 
+import com.mndk.shapefile.util.ShapefileCustomInputStream;
+
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-import com.mndk.shapefile.util.ShapefileCustomInputStream;
-
 public class DBaseRecord {
 
 	
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("YYYYMMDD");
+	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
 	
 	
 	
@@ -81,7 +81,9 @@ public class DBaseRecord {
 	
 	
 	public Object getDataByField(String fieldName) {
-		return this.data[parent.getFieldIndexByName(fieldName)];
+		int index = parent.getFieldIndexByName(fieldName);
+		if(index == -1) return null;
+		return this.data[index];
 	}
 	
 	

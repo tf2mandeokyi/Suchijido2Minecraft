@@ -5,6 +5,7 @@ import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.VMapElementGeomType;
 import com.sk89q.worldedit.regions.FlatRegion;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import net.minecraft.world.World;
 
 import java.util.Map;
@@ -15,19 +16,19 @@ public abstract class VMapElement {
 	
 	protected final VMapLayer parent;
 	public final Object[] dataRow;
-	protected VMapElementGeomType type;
+	@Getter protected VMapElementGeomType geometryType;
 	protected BoundingBoxDouble bbox;
 
 
-	protected VMapElement(VMapLayer parent, Object[] dataRow, VMapElementGeomType type) {
+	protected VMapElement(VMapLayer parent, Object[] dataRow, VMapElementGeomType geometryType) {
 		this.parent = parent;
 		this.dataRow = dataRow;
-		this.type = type;
+		this.geometryType = geometryType;
 	}
 	
 	
-	public VMapElement(VMapLayer parent, Map<String, Object> dataRow, VMapElementGeomType type) {
-		this(parent, new Object[dataRow.size()], type);
+	public VMapElement(VMapLayer parent, Map<String, Object> dataRow, VMapElementGeomType geometryType) {
+		this(parent, new Object[dataRow.size()], geometryType);
 		for(Map.Entry<String, Object> data : dataRow.entrySet()) {
 			int columnIndex = parent.getDataColumnIndex(data.getKey());
 			if(columnIndex == -1) continue;
