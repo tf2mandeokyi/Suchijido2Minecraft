@@ -6,7 +6,7 @@ import lombok.ToString;
 
 import java.util.HashMap;
 
-public class VMapDataPayload extends HashMap<Integer, VMapDataPayload.Record> {
+public class VMapDataPayload extends HashMap<Long, VMapDataPayload.Record> {
 
     @RequiredArgsConstructor
     @Getter

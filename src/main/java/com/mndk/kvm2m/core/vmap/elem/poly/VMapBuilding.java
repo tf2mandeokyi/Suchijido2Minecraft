@@ -105,7 +105,7 @@ public class VMapBuilding extends VMapPolygon {
 	@Override
 	public String toString() {
 		if(!Bootstrap.isRegistered()) {
-			return "VMapBuilding{vertexLen=" + vertices[0].length + ",floor=" + this.getDataByColumn("층수") + "}";
+			return "VMapBuilding{vertexLen=" + vertices[0].length + ",floor=" + this.getData("층수") + "}";
 		}
 		return "VMapBuilding{vertexLen=" + vertices[0].length + ",height=" + VMapElementStyleSelector.getStyle(this)[0].y + "}";
 	}

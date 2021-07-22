@@ -48,7 +48,7 @@ public class ShpZipMapReader extends VMapReader {
 			File[] shapeFiles = zipDestination.listFiles((dir, name) -> name.endsWith(".shp"));
 			assert shapeFiles != null;
 
-			int count = 0;
+			long count = 0;
 
 			for(File shapeFile : shapeFiles) {
 				String filePath = shapeFile.getAbsolutePath();

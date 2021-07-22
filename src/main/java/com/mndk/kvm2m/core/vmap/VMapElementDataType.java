@@ -567,7 +567,7 @@ public enum VMapElementDataType {
 
 
 
-	private static final Pattern layerTypePattern = Pattern.compile("([A-H]\\d{7})");
+	private static final Pattern layerTypePattern = Pattern.compile("^([A-H]\\d{3})");
 
 
 

@@ -1,5 +1,9 @@
 package com.mndk.kvm2m.db;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import com.mndk.kvm2m.core.util.shape.BoundingBoxDouble;
 import com.mndk.kvm2m.core.vmap.*;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
@@ -24,6 +28,8 @@ public class VMapSQLManager {
 
 
     private static final String MAIN_TABLE_NAME = "elementdata";
+
+    private static final JsonParser JSON_PARSER = new JsonParser();
 
 
 
@@ -158,84 +164,71 @@ public class VMapSQLManager {
 
 
 
-    private VMapGeometryPayload getVMapGeometry(String mapNumber, GeographicProjection projection)
-            throws Exception {
+    public VMapReaderResult getVMapData(
+            String map_index, GeographicProjection projection, Map<String, String> options) throws Exception {
 
         if(connection == null) throw new SQLException("SQL Connection not initialized");
 
-        String sql = "SELECT `UFID`, `geometry_data` FROM `" + MAIN_TABLE_NAME + "` WHERE " +
-                "`UFID` REGEXP(CONCAT('^1000', ?, '[A-H]'));";
-        VMapGeometryPayload result = new VMapGeometryPayload();
+        String idColumn = TableColumns.ID_COLUMN.getCategoryName();
+
+        String sql =
+                "SELECT " +
+                        "`" + idColumn + "`, " +
+                        "`geom`, " +
+                        "`data_type`, " +
+                        "`data` " +
+                "FROM `" + MAIN_TABLE_NAME + "` WHERE `map_index` = ?;";
+
+        VMapGeometryPayload geometryPayload = new VMapGeometryPayload();
+        VMapDataPayload dataPayload = new VMapDataPayload();
 
         try(PreparedStatement statement = this.connection.prepareStatement(sql)) {
 
-            statement.setString(1, mapNumber);
+            statement.setString(1, map_index);
             ResultSet resultSet = statement.executeQuery();
 
             while(resultSet.next()) {
-                InputStream stream = resultSet.getBlob("geometry_data").getBinaryStream();
-                /*result.put(resultSet.getString("UFID"), VMapUtils.parseGeometryDataString(
-                        stream, projection)); // TODO finish this*/
-            }
-        }
-        return result;
-    }
 
+                long id = resultSet.getLong(idColumn);
+                InputStream stream = resultSet.getBlob("geom").getBinaryStream();
+                geometryPayload.put(id, VMapUtils.parseGeometryDataString(stream, projection));
 
+                VMapElementDataType type = VMapElementDataType.fromLayerName(
+                        resultSet.getString("data_type"));
+                TableColumns columns = type.getColumns();
 
-    private VMapDataPayload getVMapData(String mapNumber) throws SQLException {
-
-        if(connection == null) throw new SQLException("SQL Connection not initialized");
-
-        VMapDataPayload result = new VMapDataPayload();
-
-        for(VMapElementDataType type : VMapElementDataType.values()) {
-            TableColumns columns = type.getColumns();
-
-            String tableName = "a"; // getDataTableName(type);
-            String sql = "SELECT * FROM `" + tableName + "` " +
-                    "WHERE `UFID` LIKE CONCAT('1000', ?, '" + type.getLayerNameHeader() + "%');";
-
-            PreparedStatement statement = this.connection.prepareStatement(sql);
-
-            statement.setString(1, mapNumber);
-            ResultSet resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
+                JsonObject jsonObject = JSON_PARSER.parse(resultSet.getString("data")).getAsJsonObject();
                 Object[] dataRow = new Object[columns.getLength()];
-                for (int i = 0; i < columns.getLength(); ++i) {
+                for(int i = 0; i < columns.getLength(); ++i) {
                     TableColumn column = columns.get(i);
+                    JsonElement element = jsonObject.get(column.getCategoryName());
+
                     if (column.getDataType() instanceof TableColumn.VarCharType) {
-                        dataRow[i] = resultSet.getString(column.getCategoryName());
-                    } else if (column.getDataType() instanceof TableColumn.BigIntType) {
-                        dataRow[i] = resultSet.getLong(column.getCategoryName());
+                        if(element == null) {
+                            dataRow[i] = "";
+                        }
+                        else {
+                            JsonPrimitive primitive = element.getAsJsonPrimitive();
+                            dataRow[i] = primitive.getAsString();
+                        }
                     } else if (column.getDataType() instanceof TableColumn.NumericType) {
-                        dataRow[i] = resultSet.getDouble(column.getCategoryName());
+                        if(element == null) dataRow[i] = null;
+                        else {
+                            JsonPrimitive primitive = element.getAsJsonPrimitive();
+                            if(column.getDataType() instanceof TableColumn.BigIntType) {
+                                dataRow[i] = primitive.getAsLong();
+                            }
+                            else {
+                                dataRow[i] = primitive.getAsDouble();
+                            }
+                        }
                     }
                 }
-                /*result.put(ufid, new VMapDataPayload.Record(type, dataRow)); // TODO finish this*/
+                dataPayload.put(id, new VMapDataPayload.Record(type, dataRow));
             }
-            statement.close();
-
         }
 
-        return result;
-    }
-
-
-
-    public VMapReaderResult getVMapResult(
-            String mapNumber, GeographicProjection projection, Map<String, String> options) throws Exception {
-
-        synchronized (this) {
-            if (connection == null) throw new SQLException("SQL Connection not initialized");
-
-            return VMapUtils.combineVMapPayloads(
-                    this.getVMapGeometry(mapNumber, projection),
-                    this.getVMapData(mapNumber),
-                    options
-            );
-        }
+        return VMapUtils.combineVMapPayloads(geometryPayload, dataPayload, options);
     }
 
 

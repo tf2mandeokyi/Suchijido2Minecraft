@@ -162,8 +162,8 @@ public class VMapUtils {
 
 		VMapReaderResult result = new VMapReaderResult();
 
-		for(Map.Entry<Integer, VMapGeometryPayload.Record<?>> entry : geometryPayload.entrySet()) {
-			int id = entry.getKey();
+		for(Map.Entry<Long, VMapGeometryPayload.Record<?>> entry : geometryPayload.entrySet()) {
+			long id = entry.getKey();
 			VMapGeometryPayload.Record<?> geometryRecord = entry.getValue();
 			VMapDataPayload.Record dataRecord = dataPayload.get(id);
 

@@ -17,7 +17,7 @@ public class VMapElevationPoint extends VMapPoint {
 	
 	public VMapElevationPoint(VMapLayer layer, Vector2DH point, Object[] rowData) throws Exception {
 		super(layer, point, rowData);
-		Object value = this.getDataByColumn("수치");
+		Object value = this.getData("수치");
 		if(value instanceof String) {
 			try {
 				value = Double.parseDouble((String) value);
@@ -25,7 +25,7 @@ public class VMapElevationPoint extends VMapPoint {
 				throw new IOException("Invalid 수치 data: \"" + value + "\"");
 			}
 		}
-		this.y = (int) Math.round((Double) value);
+		this.y = (int) Math.round(((Number) value).doubleValue());
 	}
 	
 	public Vector2DH getPosition() {

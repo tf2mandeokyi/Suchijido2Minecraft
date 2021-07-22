@@ -178,7 +178,7 @@ public class VMapGenerationTask implements Runnable {
             commandSender.sendMessage(new TextComponentString("§dFetching data..."));
             List<Callable<VMapReaderResult>> fileParsingTasks = new ArrayList<>();
             for (final String mapId : ids) {
-                fileParsingTasks.add(() -> VMapSQLManager.getInstance().getVMapResult(mapId, projection, options));
+                fileParsingTasks.add(() -> VMapSQLManager.getInstance().getVMapData(mapId, projection, options));
             }
             List<Future<VMapReaderResult>> parserResults = executorService.invokeAll(fileParsingTasks);
             for (Future<VMapReaderResult> result : parserResults) {

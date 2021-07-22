@@ -37,7 +37,7 @@ public abstract class VMapElement {
 	}
 	
 	
-	public Object getDataByColumn(String columnName) {
+	public Object getData(String columnName) {
 		int index = parent.getDataColumnIndex(columnName);
 		if(index == -1) return null;
 		return dataRow[index];

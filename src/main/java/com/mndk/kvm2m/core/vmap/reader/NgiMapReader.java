@@ -30,7 +30,7 @@ public class NgiMapReader extends VMapReader {
 		
 		Collection<NgiLayer> layers = parseResult.getLayers().values();
 
-		int count = 0;
+		long count = 0;
 
 		for(NgiLayer layer : layers) {
 			if(layer.header.dimensions != 2) continue;

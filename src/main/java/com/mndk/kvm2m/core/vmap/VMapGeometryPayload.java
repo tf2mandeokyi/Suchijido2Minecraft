@@ -6,7 +6,7 @@ import lombok.ToString;
 
 import java.util.HashMap;
 
-public class VMapGeometryPayload extends HashMap<Integer, VMapGeometryPayload.Record<?>> {
+public class VMapGeometryPayload extends HashMap<Long, VMapGeometryPayload.Record<?>> {
 
     @RequiredArgsConstructor
     @Getter

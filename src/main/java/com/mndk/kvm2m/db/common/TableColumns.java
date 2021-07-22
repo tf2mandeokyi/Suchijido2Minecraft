@@ -54,7 +54,7 @@ public class TableColumns {
         for(int i = 0; i < length; ++i) {
 
             String name = columns[i].getCategoryName();
-            Object value = element.getDataByColumn(name);
+            Object value = element.getData(name);
             if(value == null) continue;
 
             if(value instanceof Number) {

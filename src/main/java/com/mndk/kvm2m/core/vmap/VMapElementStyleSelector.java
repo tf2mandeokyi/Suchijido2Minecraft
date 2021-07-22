@@ -26,7 +26,7 @@ public class VMapElementStyleSelector {
 				return singleStyle(Blocks.CONCRETE, EnumDyeColor.SILVER, 3);
 			case 보도:
 			case 안전지대:
-				String type = (String) element.getDataByColumn("구조");
+				String type = (String) element.getData("구조");
 				if(type != null && "어린이보호구역".startsWith(type)) {
 					return null;
 				}
@@ -47,9 +47,9 @@ public class VMapElementStyleSelector {
 			// B types
 			case 건물:
 				if(element instanceof VMapBuilding) {
-					Object floorCount = element.getDataByColumn("층수");
-					if(floorCount instanceof Integer) height = (Integer) element.getDataByColumn("층수");
-					else height = (int) Math.round((Double) element.getDataByColumn("층수"));
+					Object floorCount = element.getData("층수");
+					if(floorCount instanceof Integer) height = (Integer) floorCount;
+					else height = (int) Math.round(((Number) floorCount).doubleValue());
 
 					height = (int) (height * VMapBuilding.FLOOR_HEIGHT);
 
@@ -79,18 +79,20 @@ public class VMapElementStyleSelector {
 
 			// F types
 			case 등고선:
-				return singleStyle(Blocks.DIAMOND_BLOCK, (int) Math.round((Double) element.getDataByColumn("등고수치")));
+				return singleStyle(Blocks.DIAMOND_BLOCK,
+						(int) Math.round(((Number) element.getData("등고수치")).doubleValue()));
 			case 표고점:
-				return singleStyle(Blocks.DIAMOND_BLOCK, (int) Math.round((Double) element.getDataByColumn("수치")));
+				return singleStyle(Blocks.DIAMOND_BLOCK,
+						(int) Math.round(((Number) element.getData("수치")).doubleValue()));
 			case 절토:
 				return singleStyle(Blocks.END_BRICKS, 1);
 			case 옹벽:
-				height = (int) Math.round((Double) element.getDataByColumn("높이"));
+				height = (int) Math.round(((Number) element.getData("높이")).doubleValue());
 				return singleStyle(Blocks.END_BRICKS, height);
 
 			// G types
 			case 기타경계:
-				if("기타콘크리트구조물".equals(element.getDataByColumn("용도"))) {
+				if("기타콘크리트구조물".equals(element.getData("용도"))) {
 					return singleStyle(Blocks.CONCRETE, 0);
 				}
 					
