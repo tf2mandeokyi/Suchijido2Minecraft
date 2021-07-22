@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.db.common;
+package com.mndk.kvm2m.core.db.common;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

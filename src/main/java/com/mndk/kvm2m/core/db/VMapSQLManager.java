@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.db;
+package com.mndk.kvm2m.core.db;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -8,8 +8,8 @@ import com.mndk.kvm2m.core.util.shape.BoundingBoxDouble;
 import com.mndk.kvm2m.core.vmap.*;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
-import com.mndk.kvm2m.db.common.TableColumn;
-import com.mndk.kvm2m.db.common.TableColumns;
+import com.mndk.kvm2m.core.db.common.TableColumn;
+import com.mndk.kvm2m.core.db.common.TableColumns;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 
@@ -179,8 +179,8 @@ public class VMapSQLManager {
                         "`data` " +
                 "FROM `" + MAIN_TABLE_NAME + "` WHERE `map_index` = ?;";
 
-        VMapGeometryPayload geometryPayload = new VMapGeometryPayload();
-        VMapDataPayload dataPayload = new VMapDataPayload();
+        VMapPayload.Geometry geometryPayload = new VMapPayload.Geometry();
+        VMapPayload.Data dataPayload = new VMapPayload.Data();
 
         try(PreparedStatement statement = this.connection.prepareStatement(sql)) {
 
@@ -224,11 +224,11 @@ public class VMapSQLManager {
                         }
                     }
                 }
-                dataPayload.put(id, new VMapDataPayload.Record(type, dataRow));
+                dataPayload.put(id, new VMapPayload.Data.Record(type, dataRow));
             }
         }
 
-        return VMapUtils.combineVMapPayloads(geometryPayload, dataPayload, options);
+        return VMapPayload.combineVMapPayloads(geometryPayload, dataPayload, options);
     }
 
 

@@ -2,7 +2,7 @@ package com.mndk.kvm2m.mod;
 
 import com.mndk.kvm2m.core.vmap.reader.NgiMapReader;
 import com.mndk.kvm2m.core.vmap.reader.ShpZipMapReader;
-import com.mndk.kvm2m.db.VMapSQLManager;
+import com.mndk.kvm2m.core.db.VMapSQLManager;
 import com.mndk.kvm2m.mod.commands.GenVMapFromDBCmd;
 import com.mndk.kvm2m.mod.commands.VMapGenCmd;
 import net.minecraft.command.ICommand;

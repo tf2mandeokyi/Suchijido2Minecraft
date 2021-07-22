@@ -6,7 +6,7 @@ import com.mndk.kvm2m.core.util.shape.TriangleList;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.reader.VMapReader;
-import com.mndk.kvm2m.db.VMapSQLManager;
+import com.mndk.kvm2m.core.db.VMapSQLManager;
 import com.sk89q.worldedit.regions.FlatRegion;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.minecraft.command.ICommandSender;
@@ -154,7 +154,7 @@ public class VMapGenerationTask implements Runnable {
         private final String[] ids;
 
         private static final VMapReader EMPTY_READER = new VMapReader() {
-            @Override protected Map.Entry<VMapGeometryPayload, VMapDataPayload> getResult() { return null; }
+            @Override protected Map.Entry<VMapPayload.Geometry, VMapPayload.Data> getResult() { return null; }
         };
 
 

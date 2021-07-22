@@ -1,12 +1,9 @@
 package com.mndk.kvm2m.core.vmap.reader;
 
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vmap.VMapDataPayload;
-import com.mndk.kvm2m.core.vmap.VMapElementDataType;
-import com.mndk.kvm2m.core.vmap.VMapElementGeomType;
-import com.mndk.kvm2m.core.vmap.VMapGeometryPayload;
-import com.mndk.kvm2m.db.common.TableColumn;
-import com.mndk.kvm2m.db.common.TableColumns;
+import com.mndk.kvm2m.core.vmap.*;
+import com.mndk.kvm2m.core.db.common.TableColumn;
+import com.mndk.kvm2m.core.db.common.TableColumns;
 import com.mndk.ngiparser.NgiParser;
 import com.mndk.ngiparser.ngi.NgiLayer;
 import com.mndk.ngiparser.ngi.NgiParserResult;
@@ -21,10 +18,10 @@ public class NgiMapReader extends VMapReader {
 
 
 	@Override
-	protected Map.Entry<VMapGeometryPayload, VMapDataPayload> getResult() throws IOException {
+	protected Map.Entry<VMapPayload.Geometry, VMapPayload.Data> getResult() throws IOException {
 
-		VMapGeometryPayload geometryPayload = new VMapGeometryPayload();
-		VMapDataPayload dataPayload = new VMapDataPayload();
+		VMapPayload.Geometry geometryPayload = new VMapPayload.Geometry();
+		VMapPayload.Data dataPayload = new VMapPayload.Data();
 
 		NgiParserResult parseResult = NgiParser.parse(mapFile.getAbsolutePath(), "MS949", true);
 		
@@ -42,7 +39,7 @@ public class NgiMapReader extends VMapReader {
 
 				for(NgiRecord<?> ngiElement : ngiElements) {
 
-					VMapGeometryPayload.Record<?> geometryRecord = fromNgiRecord(ngiElement);
+					VMapPayload.Geometry.Record<?> geometryRecord = fromNgiRecord(ngiElement);
 					if(geometryRecord == null) continue;
 
 					Object[] dataRow = new Object[columns.getLength()];
@@ -51,7 +48,7 @@ public class NgiMapReader extends VMapReader {
 						dataRow[i] = ngiElement.getRowData(column.getCategoryName());
 					}
 
-					VMapDataPayload.Record dataRecord = new VMapDataPayload.Record(type, dataRow);
+					VMapPayload.Data.Record dataRecord = new VMapPayload.Data.Record(type, dataRow);
 
 					geometryPayload.put(count, geometryRecord);
 					dataPayload.put(count, dataRecord);
@@ -69,22 +66,22 @@ public class NgiMapReader extends VMapReader {
 
 
 	@Nullable
-	private VMapGeometryPayload.Record<?> fromNgiRecord(NgiRecord<?> ngiElement) throws Exception {
+	private VMapPayload.Geometry.Record<?> fromNgiRecord(NgiRecord<?> ngiElement) throws Exception {
 
 		if(ngiElement instanceof NgiMultiPolygon) {
-			return new VMapGeometryPayload.Record<>(
+			return new VMapPayload.Geometry.Record<>(
 					VMapElementGeomType.POLYGON, fromMultiPolygon((NgiMultiPolygon) ngiElement));
 		}
 		else if(ngiElement instanceof NgiPolygon) {
-			return new VMapGeometryPayload.Record<>(
+			return new VMapPayload.Geometry.Record<>(
 					VMapElementGeomType.POLYGON, fromPolygon((NgiPolygon) ngiElement));
 		}
 		else if(ngiElement instanceof NgiLine) {
-			return new VMapGeometryPayload.Record<>(
+			return new VMapPayload.Geometry.Record<>(
 					VMapElementGeomType.LINESTRING, fromLine((NgiLine) ngiElement));
 		}
 		else if(ngiElement instanceof NgiPoint) {
-			return new VMapGeometryPayload.Record<>(
+			return new VMapPayload.Geometry.Record<>(
 					VMapElementGeomType.POINT, fromPoint((NgiPoint) ngiElement));
 		}
 		else if(ngiElement instanceof NgiText) {

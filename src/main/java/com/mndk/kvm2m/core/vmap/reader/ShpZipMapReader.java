@@ -3,12 +3,9 @@ package com.mndk.kvm2m.core.vmap.reader;
 import com.mndk.kvm2m.core.util.file.DirectoryManager;
 import com.mndk.kvm2m.core.util.file.ZipManager;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
-import com.mndk.kvm2m.core.vmap.VMapDataPayload;
-import com.mndk.kvm2m.core.vmap.VMapElementDataType;
-import com.mndk.kvm2m.core.vmap.VMapElementGeomType;
-import com.mndk.kvm2m.core.vmap.VMapGeometryPayload;
-import com.mndk.kvm2m.db.common.TableColumn;
-import com.mndk.kvm2m.db.common.TableColumns;
+import com.mndk.kvm2m.core.vmap.*;
+import com.mndk.kvm2m.core.db.common.TableColumn;
+import com.mndk.kvm2m.core.db.common.TableColumns;
 import com.mndk.shapefile.ShpDbfDataIterator;
 import com.mndk.shapefile.ShpDbfRecord;
 import com.mndk.shapefile.shp.ShapeVector;
@@ -25,10 +22,10 @@ public class ShpZipMapReader extends VMapReader {
 
 
 	@Override
-	protected Map.Entry<VMapGeometryPayload, VMapDataPayload> getResult() throws IOException {
+	protected Map.Entry<VMapPayload.Geometry, VMapPayload.Data> getResult() throws IOException {
 
-		VMapGeometryPayload geometryPayload = new VMapGeometryPayload();
-		VMapDataPayload dataPayload = new VMapDataPayload();
+		VMapPayload.Geometry geometryPayload = new VMapPayload.Geometry();
+		VMapPayload.Data dataPayload = new VMapPayload.Data();
 		
 		Throwable throwable = null;
 
@@ -63,7 +60,7 @@ public class ShpZipMapReader extends VMapReader {
 					for (ShpDbfRecord record : iterator) {
 						// System.out.println(record.dBase);
 
-						VMapGeometryPayload.Record<?> geometryRecord = fromShpRecord(record.shape);
+						VMapPayload.Geometry.Record<?> geometryRecord = fromShpRecord(record.shape);
 
 						Object[] dataRow = new Object[columns.getLength()];
 						for(int i = 0; i < columns.getLength(); ++i) {
@@ -71,7 +68,7 @@ public class ShpZipMapReader extends VMapReader {
 							dataRow[i] = record.dBase.getDataByField(column.getCategoryName());
 						}
 
-						VMapDataPayload.Record dataRecord = new VMapDataPayload.Record(type, dataRow);
+						VMapPayload.Data.Record dataRecord = new VMapPayload.Data.Record(type, dataRow);
 
 						geometryPayload.put(count, geometryRecord);
 						dataPayload.put(count, dataRecord);
@@ -100,17 +97,17 @@ public class ShpZipMapReader extends VMapReader {
 
 
 
-	protected VMapGeometryPayload.Record<?> fromShpRecord(ShapefileRecord record) {
+	protected VMapPayload.Geometry.Record<?> fromShpRecord(ShapefileRecord record) {
 		if(record instanceof ShapefileRecord.Polygon) {
-			return new VMapGeometryPayload.Record<>(
+			return new VMapPayload.Geometry.Record<>(
 					VMapElementGeomType.POLYGON, fromPolygon((ShapefileRecord.Polygon) record));
 		}
 		else if(record instanceof ShapefileRecord.PolyLine) {
-			return new VMapGeometryPayload.Record<>(
+			return new VMapPayload.Geometry.Record<>(
 					VMapElementGeomType.LINESTRING, fromLine((ShapefileRecord.PolyLine) record));
 		}
 		else if(record instanceof ShapefileRecord.Point) {
-			return new VMapGeometryPayload.Record<>(
+			return new VMapPayload.Geometry.Record<>(
 					VMapElementGeomType.POINT, fromPoint((ShapefileRecord.Point) record));
 		}
 		return null;

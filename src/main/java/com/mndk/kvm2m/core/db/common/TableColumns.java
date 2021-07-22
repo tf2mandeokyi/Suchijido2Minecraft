@@ -1,4 +1,4 @@
-package com.mndk.kvm2m.db.common;
+package com.mndk.kvm2m.core.db.common;
 
 
 import com.google.gson.JsonObject;
@@ -20,7 +20,6 @@ public class TableColumns {
 
 
     private final TableColumn[] columns;
-    private final @Getter int primaryKeyIndex;
     private final @Getter int length;
     private @Getter VMapElementDataType parentType;
 
@@ -32,13 +31,8 @@ public class TableColumns {
 
 
     public TableColumns(TableColumn... columns) {
-        this.columns = columns /*new TableColumn[columns.length + 1]*/;
-        this.length = columns.length/* + 1*/;
-
-        /*this.columns[0] = ID_COLUMN;*/
-        this.primaryKeyIndex = /* 0 */ -1;
-
-        // System.arraycopy(columns, 0, this.columns, 1, columns.length);
+        this.columns = columns;
+        this.length = columns.length;
     }
 
 

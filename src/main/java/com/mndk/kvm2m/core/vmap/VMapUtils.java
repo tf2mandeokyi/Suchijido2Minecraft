@@ -4,15 +4,9 @@ import com.mndk.kvm2m.core.projection.Korea2010BeltProjection;
 import com.mndk.kvm2m.core.projection.Projections;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
-import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
-import com.mndk.kvm2m.core.vmap.elem.line.VMapContour;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapLineString;
-import com.mndk.kvm2m.core.vmap.elem.line.VMapWall;
-import com.mndk.kvm2m.core.vmap.elem.point.VMapElevationPoint;
 import com.mndk.kvm2m.core.vmap.elem.point.VMapPoint;
-import com.mndk.kvm2m.core.vmap.elem.poly.VMapBuilding;
 import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
-import com.mndk.kvm2m.db.common.TableColumns;
 import com.mndk.kvm2m.mod.event.ServerTickRepeater;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
@@ -21,7 +15,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.io.*;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -113,7 +106,7 @@ public class VMapUtils {
 	/**
 	 * @return Object part: Either a class of point (Vector2DH) or a list of lines (Vector2DH[][])
 	 */
-	public static VMapGeometryPayload.Record<?> parseGeometryDataString(
+	public static VMapPayload.Geometry.Record<?> parseGeometryDataString(
 			InputStream geometryStream, GeographicProjection projection) throws IOException, OutOfProjectionBoundsException {
 
 		DataInputStream dis = new DataInputStream(geometryStream);
@@ -122,7 +115,7 @@ public class VMapUtils {
 
 		switch(type) {
 			case POINT:
-				return new VMapGeometryPayload.Record<>(
+				return new VMapPayload.Geometry.Record<>(
 						VMapElementGeomType.POINT, readVector(dis, projection)
 				);
 			case LINESTRING:
@@ -136,9 +129,9 @@ public class VMapUtils {
 						result[i][j] = readVector(dis, projection);
 					}
 				}
-				return new VMapGeometryPayload.Record<>(type, result);
+				return new VMapPayload.Geometry.Record<>(type, result);
 			default:
-				return new VMapGeometryPayload.Record<>(VMapElementGeomType.NULL, null);
+				return new VMapPayload.Geometry.Record<>(VMapElementGeomType.NULL, null);
 		}
 	}
 
@@ -150,88 +143,6 @@ public class VMapUtils {
 		Vector2DH parsedPoint = new Vector2DH(dis.readDouble(), dis.readDouble());
 		double[] projResult = projection.fromGeo(parsedPoint.x, parsedPoint.z);
 		return new Vector2DH(projResult[0], projResult[1]);
-	}
-
-
-
-	public static VMapReaderResult combineVMapPayloads(
-			VMapGeometryPayload geometryPayload,
-			VMapDataPayload dataPayload,
-			Map<String, String> options
-	) throws Exception {
-
-		VMapReaderResult result = new VMapReaderResult();
-
-		for(Map.Entry<Long, VMapGeometryPayload.Record<?>> entry : geometryPayload.entrySet()) {
-			long id = entry.getKey();
-			VMapGeometryPayload.Record<?> geometryRecord = entry.getValue();
-			VMapDataPayload.Record dataRecord = dataPayload.get(id);
-
-			if(dataRecord == null) continue;
-
-			Object[] dataRow = dataRecord.getDataRow();
-
-			VMapElementGeomType geometryType = geometryRecord.getType();
-			VMapElementDataType dataType = dataRecord.getType();
-
-			VMapLayer layer = result.getLayer(dataType);
-			if(layer == null) {
-				TableColumns columns = dataType.getColumns();
-				String[] stringColumns = new String[columns.getLength()];
-				for(int i = 0; i < stringColumns.length; ++i) {
-					stringColumns[i] = columns.get(i).getCategoryName();
-				}
-				result.addLayer(layer = new VMapLayer(dataType, stringColumns));
-			}
-
-			VMapElement element;
-			Vector2DH[][] vertexList;
-
-			switch(geometryType) {
-				case POINT:
-					Vector2DH point = (Vector2DH) geometryRecord.getGeometryData();
-					if(dataType == VMapElementDataType.표고점) {
-						element = new VMapElevationPoint(layer, point, dataRow);
-					}
-					else {
-						element = new VMapPoint(layer, point, dataRow);
-					}
-					break;
-				case LINESTRING:
-					vertexList = (Vector2DH[][]) geometryRecord.getGeometryData();
-					if(layer.getType() == VMapElementDataType.등고선) {
-						element = new VMapContour(layer, vertexList[0], dataRow);
-					}
-					else if(layer.getType() == VMapElementDataType.옹벽) {
-						element = new VMapWall(layer, vertexList, dataRow, false);
-					}
-					else {
-						element = new VMapLineString(layer, vertexList, dataRow, false);
-					}
-					break;
-				case POLYGON:
-					vertexList = (Vector2DH[][]) geometryRecord.getGeometryData();
-
-					if(layer.getType() == VMapElementDataType.건물) {
-						if(options.containsKey("gen-building-shells")) {
-							element = new VMapBuilding(layer, vertexList, dataRow);
-						} else {
-							element = new VMapLineString(layer, vertexList, dataRow, false);
-						}
-					}
-					else {
-						element = new VMapPolygon(layer, vertexList, dataRow, true);
-					}
-					break;
-				default: continue;
-			}
-
-			layer.add(element);
-
-		}
-
-		return result;
-
 	}
 
 

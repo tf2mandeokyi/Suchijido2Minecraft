@@ -1,7 +1,7 @@
 package com.mndk.kvm2m.core.vmap;
 
-import com.mndk.kvm2m.db.common.TableColumn;
-import com.mndk.kvm2m.db.common.TableColumns;
+import com.mndk.kvm2m.core.db.common.TableColumn;
+import com.mndk.kvm2m.core.db.common.TableColumns;
 import lombok.Getter;
 
 import java.util.regex.Matcher;
