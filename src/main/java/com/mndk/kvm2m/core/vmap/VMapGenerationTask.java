@@ -7,6 +7,7 @@ import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.vmap.reader.VMapReader;
 import com.mndk.kvm2m.core.db.VMapSQLManager;
+import com.mndk.kvm2m.core.vmap.type.VMapElementDataType;
 import com.sk89q.worldedit.regions.FlatRegion;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.minecraft.command.ICommandSender;

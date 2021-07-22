@@ -1,6 +1,6 @@
 package com.mndk.kvm2m.core.vmap.elem;
 
-import com.mndk.kvm2m.core.vmap.VMapElementDataType;
+import com.mndk.kvm2m.core.vmap.type.VMapElementDataType;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -10,6 +10,7 @@ import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.mndk.kvm2m.core.db.common.TableColumn;
 import com.mndk.kvm2m.core.db.common.TableColumns;
+import com.mndk.kvm2m.core.vmap.type.VMapElementDataType;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 
@@ -80,7 +81,7 @@ public class VMapSQLManager {
     private void initializeGeometryTable() throws SQLException {
         this.executeUpdate("" +
                 "CREATE TABLE IF NOT EXISTS `" + MAIN_TABLE_NAME + "` (" +
-                "    `" + TableColumns.ID_COLUMN.getCategoryName() + "` BIGINT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,\n" +
+                "    `" + TableColumns.ID_COLUMN.getName() + "` BIGINT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,\n" +
                 "    `map_index` VARCHAR(10) NOT NULL,\n" +
                 "    `geom_type` TINYINT UNSIGNED NOT NULL,\n" +
                 "    `geom` MEDIUMBLOB NOT NULL,\n" +
@@ -169,7 +170,7 @@ public class VMapSQLManager {
 
         if(connection == null) throw new SQLException("SQL Connection not initialized");
 
-        String idColumn = TableColumns.ID_COLUMN.getCategoryName();
+        String idColumn = TableColumns.ID_COLUMN.getName();
 
         String sql =
                 "SELECT " +
@@ -201,7 +202,7 @@ public class VMapSQLManager {
                 Object[] dataRow = new Object[columns.getLength()];
                 for(int i = 0; i < columns.getLength(); ++i) {
                     TableColumn column = columns.get(i);
-                    JsonElement element = jsonObject.get(column.getCategoryName());
+                    JsonElement element = jsonObject.get(column.getName());
 
                     if (column.getDataType() instanceof TableColumn.VarCharType) {
                         if(element == null) {

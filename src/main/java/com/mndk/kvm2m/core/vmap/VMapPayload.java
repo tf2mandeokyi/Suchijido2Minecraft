@@ -11,6 +11,8 @@ import com.mndk.kvm2m.core.vmap.elem.point.VMapElevationPoint;
 import com.mndk.kvm2m.core.vmap.elem.point.VMapPoint;
 import com.mndk.kvm2m.core.vmap.elem.poly.VMapBuilding;
 import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
+import com.mndk.kvm2m.core.vmap.type.VMapElementDataType;
+import com.mndk.kvm2m.core.vmap.type.VMapElementGeomType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -46,7 +48,7 @@ public class VMapPayload {
                 TableColumns columns = dataType.getColumns();
                 String[] stringColumns = new String[columns.getLength()];
                 for(int i = 0; i < stringColumns.length; ++i) {
-                    stringColumns[i] = columns.get(i).getCategoryName();
+                    stringColumns[i] = columns.get(i).getName();
                 }
                 result.addLayer(layer = new VMapLayer(dataType, stringColumns));
             }

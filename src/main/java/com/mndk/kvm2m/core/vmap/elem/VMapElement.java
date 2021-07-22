@@ -2,7 +2,7 @@ package com.mndk.kvm2m.core.vmap.elem;
 
 import com.mndk.kvm2m.core.util.shape.BoundingBoxDouble;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vmap.VMapElementGeomType;
+import com.mndk.kvm2m.core.vmap.type.VMapElementGeomType;
 import com.sk89q.worldedit.regions.FlatRegion;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

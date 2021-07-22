@@ -6,6 +6,8 @@ import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.vmap.*;
 import com.mndk.kvm2m.core.db.common.TableColumn;
 import com.mndk.kvm2m.core.db.common.TableColumns;
+import com.mndk.kvm2m.core.vmap.type.VMapElementDataType;
+import com.mndk.kvm2m.core.vmap.type.VMapElementGeomType;
 import com.mndk.shapefile.ShpDbfDataIterator;
 import com.mndk.shapefile.ShpDbfRecord;
 import com.mndk.shapefile.shp.ShapeVector;
@@ -65,7 +67,7 @@ public class ShpZipMapReader extends VMapReader {
 						Object[] dataRow = new Object[columns.getLength()];
 						for(int i = 0; i < columns.getLength(); ++i) {
 							TableColumn column = columns.get(i);
-							dataRow[i] = record.dBase.getDataByField(column.getCategoryName());
+							dataRow[i] = record.dBase.getDataByField(column.getName());
 						}
 
 						VMapPayload.Data.Record dataRecord = new VMapPayload.Data.Record(type, dataRow);

@@ -7,6 +7,7 @@ import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.line.VMapLineString;
 import com.mndk.kvm2m.core.vmap.elem.point.VMapPoint;
 import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
+import com.mndk.kvm2m.core.vmap.type.VMapElementGeomType;
 import com.mndk.kvm2m.mod.event.ServerTickRepeater;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;

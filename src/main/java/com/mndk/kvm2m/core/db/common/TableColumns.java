@@ -2,7 +2,7 @@ package com.mndk.kvm2m.core.db.common;
 
 
 import com.google.gson.JsonObject;
-import com.mndk.kvm2m.core.vmap.VMapElementDataType;
+import com.mndk.kvm2m.core.vmap.type.VMapElementDataType;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import lombok.Getter;
 import lombok.ToString;
@@ -15,7 +15,7 @@ public class TableColumns {
             "ID",
             "ID",
             new TableColumn.BigIntType(),
-            TableColumn.NOT_NULL
+            true
     );
 
 
@@ -47,7 +47,7 @@ public class TableColumns {
         JsonObject object = new JsonObject();
         for(int i = 0; i < length; ++i) {
 
-            String name = columns[i].getCategoryName();
+            String name = columns[i].getName();
             Object value = element.getData(name);
             if(value == null) continue;
 

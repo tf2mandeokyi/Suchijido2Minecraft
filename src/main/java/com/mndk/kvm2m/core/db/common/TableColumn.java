@@ -9,21 +9,19 @@ import lombok.ToString;
 @Getter
 public class TableColumn {
 
-    public static final int NOT_NULL = 1;
-
-    private final String categoryId;
-    private final String categoryName;
+    private final String id;
+    private final String name;
     private final ColumnType dataType;
-    private final int flag;
+    private final boolean notNull;
 
-    public TableColumn(String categoryId, String categoryName, ColumnType dataType) {
-        this(categoryId, categoryName, dataType, 0);
+    public TableColumn(String id, String name, ColumnType dataType) {
+        this(id, name, dataType, false);
     }
 
 
     public String toTableCreationSql() {
-        String result = "`" + this.categoryName + "` " + this.dataType;
-        if ((this.flag & TableColumn.NOT_NULL) == TableColumn.NOT_NULL) {
+        String result = "`" + this.name + "` " + this.dataType;
+        if (notNull) {
             result += " NOT NULL";
         }
         return result;

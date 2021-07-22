@@ -1,6 +1,5 @@
-package com.mndk.kvm2m.core.vmap;
+package com.mndk.kvm2m.core.vmap.elem;
 
-import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.poly.VMapBuilding;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockColored;

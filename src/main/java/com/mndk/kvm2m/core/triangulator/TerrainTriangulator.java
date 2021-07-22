@@ -4,7 +4,7 @@ import com.mndk.kvm2m.core.triangulator.cdt.ConstraintDelaunayTriangulator;
 import com.mndk.kvm2m.core.triangulator.cdt.IndexEdge;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vmap.VMapElementDataType;
+import com.mndk.kvm2m.core.vmap.type.VMapElementDataType;
 import com.mndk.kvm2m.core.vmap.VMapReaderResult;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;

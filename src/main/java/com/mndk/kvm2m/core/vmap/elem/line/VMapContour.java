@@ -3,8 +3,8 @@ package com.mndk.kvm2m.core.vmap.elem.line;
 import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector;
-import com.mndk.kvm2m.core.vmap.VMapElementStyleSelector.VMapElementStyle;
+import com.mndk.kvm2m.core.vmap.elem.VMapElementStyleSelector;
+import com.mndk.kvm2m.core.vmap.elem.VMapElementStyleSelector.VMapElementStyle;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
 import com.sk89q.worldedit.regions.FlatRegion;
 
