@@ -43,9 +43,13 @@ public class ShpZipMapReader extends VMapReader {
 			// Extract all files in map file
 			zipDestination.mkdir();
 			ZipManager.extractZipFile(mapFile, zipDestination, "cp949");
-			
+
 			File[] shapeFiles = zipDestination.listFiles((dir, name) -> name.endsWith(".shp"));
 			assert shapeFiles != null;
+
+			if(shapeFiles.length == 0) {
+				System.err.println("Huh? I can't found any .shp file in this folder! >:(");
+			}
 
 			long count = 0;
 

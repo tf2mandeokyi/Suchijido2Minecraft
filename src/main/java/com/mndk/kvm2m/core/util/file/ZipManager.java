@@ -1,7 +1,12 @@
 package com.mndk.kvm2m.core.util.file;
 
+import net.buildtheearth.terraplusplus.dep.com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
+
 import java.io.*;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.nio.file.StandardOpenOption;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -11,32 +16,16 @@ public class ZipManager {
 
 	public static void extractZipFile(File sourceZip, File destination, String charset) throws IOException {
 
-		/*
-		try(InputStream inputStream = new FileInputStream(sourceZip);
-			ZipArchiveInputStream zipArchiveInputStream =
-					new ZipArchiveInputStream(inputStream, charset, false, true)) {
-
-			ArchiveEntry entry;
-			while ((entry = zipArchiveInputStream.getNextEntry()) != null) {
-				String entryFileName = entry.getName();
-				File entryFile = new File(destination, entryFileName);
-				byte[] buffer = new byte[1024];
-				try(OutputStream outputStream = new FileOutputStream(entryFile)) {
-					int length;
-					while((length = zipArchiveInputStream.read(buffer)) != -1) {
-						outputStream.write(buffer, 0, length);
-					}
-					outputStream.flush();
-				}
-			}
-		}
-		*/
-
-		InputStream stream = new FileInputStream(sourceZip);
+		FileChannel channel = FileChannel.open(sourceZip.toPath(), StandardOpenOption.READ);
+		MappedByteBuffer mappedByteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+		InputStream stream = new ByteBufferBackedInputStream(mappedByteBuffer);
 		DataInputStream dis = new DataInputStream(stream);
-		if(dis.readInt() != 0x504B0708) { // The sussy zip
+		if(dis.readInt() != 0x504B0708) { // Check if the file is "spanned ZIP archive"
+			// Oops, the file wasn't "spanned ZIP archive"...
+			// I should probably reinitialize the stream :)
 			stream.close();
-			stream = new FileInputStream(sourceZip);
+			mappedByteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+			stream = new ByteBufferBackedInputStream(mappedByteBuffer);
 		}
 
 		try (ZipInputStream zis = new ZipInputStream(stream, Charset.forName(charset))) {
@@ -65,6 +54,9 @@ public class ZipManager {
 			     }
 			     zipEntry = zis.getNextEntry();
 			}
+		} finally {
+			stream.close();
+			channel.close();
 		}
 	}
 
