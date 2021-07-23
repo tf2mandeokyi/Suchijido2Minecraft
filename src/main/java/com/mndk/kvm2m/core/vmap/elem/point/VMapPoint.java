@@ -1,14 +1,15 @@
 package com.mndk.kvm2m.core.vmap.elem.point;
 
+import com.google.gson.JsonObject;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.BoundingBoxDouble;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vmap.type.VMapElementGeomType;
-import com.mndk.kvm2m.core.vmap.elem.VMapElementStyleSelector;
-import com.mndk.kvm2m.core.vmap.elem.VMapElementStyleSelector.VMapElementStyle;
 import com.mndk.kvm2m.core.vmap.VMapUtils;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
+import com.mndk.kvm2m.core.vmap.elem.VMapElementStyleSelector;
+import com.mndk.kvm2m.core.vmap.elem.VMapElementStyleSelector.VMapElementStyle;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
+import com.mndk.kvm2m.core.vmap.type.VMapElementGeomType;
 import com.sk89q.worldedit.regions.FlatRegion;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -50,8 +51,16 @@ public class VMapPoint extends VMapElement {
 			}
 		}
 	}
-	
-	
+
+	@Override
+	protected JsonObject getJsonGeometryData() {
+		JsonObject result = new JsonObject();
+		result.addProperty("type", "Point");
+		result.add("coordinates", this.point.toJsonArray());
+		return result;
+	}
+
+
 	@Override
 	public String toString() {
 		return "VMapPoint{type=" + parent.getType() + ",pos=" + this.point + "}";

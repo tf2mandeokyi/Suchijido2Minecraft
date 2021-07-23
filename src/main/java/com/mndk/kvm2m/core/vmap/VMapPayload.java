@@ -85,7 +85,7 @@ public class VMapPayload {
                         if(options.containsKey("gen-building-shells")) {
                             element = new VMapBuilding(layer, vertexList, dataRow);
                         } else {
-                            element = new VMapLineString(layer, vertexList, dataRow, false);
+                            element = new VMapPolygon(layer, vertexList, dataRow, false);
                         }
                     }
                     else {

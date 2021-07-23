@@ -13,10 +13,12 @@ import com.mndk.kvm2m.core.db.common.TableColumns;
 import com.mndk.kvm2m.core.vmap.type.VMapElementDataType;
 import com.mndk.kvm2m.mod.KVectorMap2MinecraftMod;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
+import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
+import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -166,70 +168,95 @@ public class VMapSQLManager {
 
 
     public VMapReaderResult getVMapData(
-            String map_index, GeographicProjection projection, Map<String, String> options) throws Exception {
+            String map_index, GeographicProjection targetProjection, Map<String, String> options) throws Exception {
 
         if(connection == null) throw new SQLException("SQL Connection not initialized");
 
         String idColumn = TableColumns.ID_COLUMN.getName();
 
-        String sql =
-                "SELECT " +
-                        "`" + idColumn + "`, " +
-                        "`geom`, " +
-                        "`data_type`, " +
-                        "`data` " +
-                "FROM `" + MAIN_TABLE_NAME + "` WHERE `map_index` = ?;";
+        String query = "SELECT `" + idColumn + "`, `geom`, `data_type`, `data` FROM `" + MAIN_TABLE_NAME + "` " +
+                "WHERE `map_index` = ?;";
+
+        try(PreparedStatement statement = this.connection.prepareStatement(query)) {
+            statement.setString(1, map_index);
+            ResultSet resultSet = statement.executeQuery();
+            Map.Entry<VMapPayload.Geometry, VMapPayload.Data> entry = resultSetToVMapData(resultSet, targetProjection);
+            return VMapPayload.combineVMapPayloads(entry.getKey(), entry.getValue(), options);
+        }
+    }
+
+
+
+    public VMapReaderResult getVMapData(
+            BoundingBoxDouble bbox, GeographicProjection targetProjection, Map<String, String> options
+    ) throws Exception {
+
+        String idColumn = TableColumns.ID_COLUMN.getName();
+
+        String query = "SELECT `" + idColumn + "`, `geom`, `data_type`, `data` FROM `" + MAIN_TABLE_NAME + "` " +
+                "WHERE `max_lon` >= ? AND ? >= `min_lon` AND `max_lat` >= ? AND ? >= `min_lat`;";
+
+        try(PreparedStatement statement = this.connection.prepareStatement(query)) {
+            statement.setDouble(1, bbox.xmin);
+            statement.setDouble(2, bbox.xmax);
+            statement.setDouble(3, bbox.zmin);
+            statement.setDouble(4, bbox.zmax);
+            ResultSet resultSet = statement.executeQuery();
+            Map.Entry<VMapPayload.Geometry, VMapPayload.Data> entry = resultSetToVMapData(resultSet, targetProjection);
+            return VMapPayload.combineVMapPayloads(entry.getKey(), entry.getValue(), options);
+        }
+    }
+
+
+
+    private static Map.Entry<VMapPayload.Geometry, VMapPayload.Data> resultSetToVMapData(
+            ResultSet resultSet, GeographicProjection targetProjection
+    ) throws SQLException, IOException, OutOfProjectionBoundsException {
 
         VMapPayload.Geometry geometryPayload = new VMapPayload.Geometry();
         VMapPayload.Data dataPayload = new VMapPayload.Data();
 
-        try(PreparedStatement statement = this.connection.prepareStatement(sql)) {
+        while(resultSet.next()) {
 
-            statement.setString(1, map_index);
-            ResultSet resultSet = statement.executeQuery();
+            long id = resultSet.getLong(TableColumns.ID_COLUMN.getName());
+            InputStream stream = resultSet.getBlob("geom").getBinaryStream();
+            geometryPayload.put(id, VMapUtils.parseGeometryDataString(stream, targetProjection));
 
-            while(resultSet.next()) {
+            VMapElementDataType type = VMapElementDataType.fromLayerName(
+                    resultSet.getString("data_type"));
+            TableColumns columns = type.getColumns();
 
-                long id = resultSet.getLong(idColumn);
-                InputStream stream = resultSet.getBlob("geom").getBinaryStream();
-                geometryPayload.put(id, VMapUtils.parseGeometryDataString(stream, projection));
+            JsonObject jsonObject = JsonParser.parseString(resultSet.getString("data")).getAsJsonObject();
+            Object[] dataRow = new Object[columns.getLength()];
+            for(int i = 0; i < columns.getLength(); ++i) {
+                TableColumn column = columns.get(i);
+                JsonElement element = jsonObject.get(column.getName());
 
-                VMapElementDataType type = VMapElementDataType.fromLayerName(
-                        resultSet.getString("data_type"));
-                TableColumns columns = type.getColumns();
-
-                JsonObject jsonObject = JSON_PARSER.parse(resultSet.getString("data")).getAsJsonObject();
-                Object[] dataRow = new Object[columns.getLength()];
-                for(int i = 0; i < columns.getLength(); ++i) {
-                    TableColumn column = columns.get(i);
-                    JsonElement element = jsonObject.get(column.getName());
-
-                    if (column.getDataType() instanceof TableColumn.VarCharType) {
-                        if(element == null) {
-                            dataRow[i] = "";
+                if (column.getDataType() instanceof TableColumn.VarCharType) {
+                    if(element == null) {
+                        dataRow[i] = "";
+                    }
+                    else {
+                        JsonPrimitive primitive = element.getAsJsonPrimitive();
+                        dataRow[i] = primitive.getAsString();
+                    }
+                } else if (column.getDataType() instanceof TableColumn.NumericType) {
+                    if(element == null) dataRow[i] = null;
+                    else {
+                        JsonPrimitive primitive = element.getAsJsonPrimitive();
+                        if(column.getDataType() instanceof TableColumn.BigIntType) {
+                            dataRow[i] = primitive.getAsLong();
                         }
                         else {
-                            JsonPrimitive primitive = element.getAsJsonPrimitive();
-                            dataRow[i] = primitive.getAsString();
-                        }
-                    } else if (column.getDataType() instanceof TableColumn.NumericType) {
-                        if(element == null) dataRow[i] = null;
-                        else {
-                            JsonPrimitive primitive = element.getAsJsonPrimitive();
-                            if(column.getDataType() instanceof TableColumn.BigIntType) {
-                                dataRow[i] = primitive.getAsLong();
-                            }
-                            else {
-                                dataRow[i] = primitive.getAsDouble();
-                            }
+                            dataRow[i] = primitive.getAsDouble();
                         }
                     }
                 }
-                dataPayload.put(id, new VMapPayload.Data.Record(type, dataRow));
             }
+            dataPayload.put(id, new VMapPayload.Data.Record(type, dataRow));
         }
 
-        return VMapPayload.combineVMapPayloads(geometryPayload, dataPayload, options);
+        return new AbstractMap.SimpleEntry<>(geometryPayload, dataPayload);
     }
 
 

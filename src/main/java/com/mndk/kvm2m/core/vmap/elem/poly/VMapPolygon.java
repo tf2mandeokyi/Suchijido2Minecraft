@@ -1,5 +1,7 @@
 package com.mndk.kvm2m.core.vmap.elem.poly;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.math.VectorMath;
 import com.mndk.kvm2m.core.util.shape.BoundingBoxInteger;
@@ -77,8 +79,25 @@ public class VMapPolygon extends VMapLineString {
 		
 		return new VMapPolygon(this.parent, newVertexList, this.dataRow, this.doFill);
 	}
-	
-	
+
+
+	@Override
+	protected JsonObject getJsonGeometryData() {
+		JsonObject result = new JsonObject();
+		result.addProperty("type", "Polygon");
+		JsonArray polygon = new JsonArray();
+		for(Vector2DH[] l : this.vertices) {
+			JsonArray line = new JsonArray();
+			for(Vector2DH p : l) {
+				line.add(p.toJsonArray());
+			}
+			polygon.add(line);
+		}
+		result.add("coordinates", polygon);
+		return result;
+	}
+
+
 	@Override
 	public final void generateBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		

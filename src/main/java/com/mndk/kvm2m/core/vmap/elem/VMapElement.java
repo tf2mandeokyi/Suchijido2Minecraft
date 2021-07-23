@@ -1,7 +1,9 @@
 package com.mndk.kvm2m.core.vmap.elem;
 
+import com.google.gson.JsonObject;
 import com.mndk.kvm2m.core.util.shape.BoundingBoxDouble;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
+import com.mndk.kvm2m.core.vmap.elem.poly.VMapPolygon;
 import com.mndk.kvm2m.core.vmap.type.VMapElementGeomType;
 import com.sk89q.worldedit.regions.FlatRegion;
 import lombok.AllArgsConstructor;
@@ -9,6 +11,7 @@ import lombok.Getter;
 import net.minecraft.world.World;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 @AllArgsConstructor
 public abstract class VMapElement {
@@ -37,8 +40,8 @@ public abstract class VMapElement {
 	}
 	
 	
-	public Object getData(String columnName) {
-		int index = parent.getDataColumnIndex(columnName);
+	public Object getData(String key) {
+		int index = parent.getDataColumnIndex(key);
 		if(index == -1) return null;
 		return dataRow[index];
 	}
@@ -51,8 +54,31 @@ public abstract class VMapElement {
 	public BoundingBoxDouble getBoundingBoxDouble() {
 		return bbox;
 	}
-	
-	
+
+
+	protected abstract JsonObject getJsonGeometryData();
+	public JsonObject toJsonObject() {
+		JsonObject result = new JsonObject();
+
+		result.addProperty("type", "Feature");
+
+		result.add("geometry", this.getJsonGeometryData());
+
+		JsonObject properties = new JsonObject();
+		BiConsumer<VMapElement, JsonObject> jsonPropertyFunction =
+				this.parent.getType().getJsonPropertyFunction();
+		if(jsonPropertyFunction != null) {
+			jsonPropertyFunction.accept(this, properties);
+			if(this instanceof VMapPolygon) {
+				properties.addProperty("area", "yes");
+			}
+		}
+		result.add("properties", properties);
+
+		return result;
+	}
+
+
 	@Override
 	public String toString() {
 		return "VMapElement{type=" + parent.getType() + "}";

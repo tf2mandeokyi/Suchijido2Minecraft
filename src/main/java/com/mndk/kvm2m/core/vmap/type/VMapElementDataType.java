@@ -1,16 +1,23 @@
 package com.mndk.kvm2m.core.vmap.type;
 
+import com.google.gson.JsonObject;
 import com.mndk.kvm2m.core.db.common.TableColumn;
 import com.mndk.kvm2m.core.db.common.TableColumns;
+import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import lombok.Getter;
 
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public enum VMapElementDataType {
 	
 	// A타입 - 교통
-	도로경계("road_boundary", "A001", new TableColumns()),
+	도로경계("road_boundary", "A001", new TableColumns(),
+			(e, j) -> {
+				j.addProperty("highway", "unclassified");
+			}
+	),
 	도로중심선("road_centerline", "A002", new TableColumns(
 			new TableColumn("RDNU", "도로번호", new TableColumn.VarCharType(30)),
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
@@ -24,7 +31,31 @@ public enum VMapElementDataType {
 			new TableColumn("ONSD", "일방통행", new TableColumn.VarCharType(6), true),
 			new TableColumn("REST", "기타", new TableColumn.VarCharType(50)),
 			new TableColumn("RDNM", "도로명", new TableColumn.VarCharType(30))
-	)),
+	), (e, j) -> {
+		if(e.getData("도로구분") instanceof String) {
+			switch ((String) e.getData("도로구분")) {
+				case "RD001": case "고속국도": j.addProperty("highway", "motorway"); break;
+				case "RD002": case "일반국도": j.addProperty("highway", "trunk"); break;
+				case "RD003": case "지방도": j.addProperty("highway", "primary"); break;
+				case "RD004": case "특별시도":
+				case "RD005": case "광역시도":
+				case "RD006": case "시도": j.addProperty("highway", "secondary"); break;
+				case "RD007": case "군도":
+				case "RD008": case "면리간도로": j.addProperty("highway", "tertiary"); break;
+				case "RD009": case "소로": j.addProperty("highway", "residental"); break;
+				case "RD000": case "미분류":
+				default: j.addProperty("highway", "unclassified");
+			}
+		}
+		else { j.addProperty("highway", "unclassified"); }
+
+		j.addProperty("lanes", (Number) e.getData("차로수"));
+		j.addProperty("width", (Number) e.getData("도로폭"));
+		if("일방통행".equals(e.getData("일방통행"))) {
+			j.addProperty("oneway", "yes");
+		}
+
+	}),
 	보도("sidewalk", "A003", new TableColumns(
 			new TableColumn("WIDT", "폭", new TableColumn.NumericType(5,2)),
 			new TableColumn("QUAL", "재질", new TableColumn.VarCharType(6), true),
@@ -138,7 +169,28 @@ public enum VMapElementDataType {
 			// new TableColumn("BONU", "건물번호본번", new TableColumn.NumericType(4)),
 			// new TableColumn("BUNU", "건물번호부번", new TableColumn.NumericType(4)),
 			// new TableColumn("POST", "우편번호", new TableColumn.VarCharType(10))
-	)),
+	), (e, j) -> {
+		j.remove("area");
+		if(e.getData("종류") instanceof String) {
+			switch ((String) e.getData("종류")) {
+				case "BDK001": case "일반주택":
+				case "BDK002": case "연립주택": j.addProperty("building", "residential"); break;
+				case "BDK003": case "아파트": j.addProperty("building", "apartments"); break;
+				case "BDK004": case "주택외건물":
+				case "BDK005": case "무벽건물":
+				case "BDK006": case "온실":
+				case "BDK007": case "공사중건물":
+				case "BDK008": case "가건물":
+				case "BDK000": case "미분류":
+				default: j.addProperty("building", "yes");
+			}
+		}
+		if(e.getData("명칭") instanceof String) {
+			String name = (String) e.getData("명칭");
+			if(name.length() != 0) j.addProperty("name", name);
+		}
+		j.addProperty("building:levels", (Number) e.getData("층수"));
+	}),
 	담장("wall", "B002", new TableColumns(
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(6), true),
 			new TableColumn("QUAL", "재질", new TableColumn.VarCharType(6), true)
@@ -543,7 +595,8 @@ public enum VMapElementDataType {
 	private final @Getter String layerNameHeader;
 	private final @Getter int priority;
 	private final @Getter TableColumns columns;
-	
+	private final @Getter BiConsumer<VMapElement, JsonObject> jsonPropertyFunction;
+
 
 
 
@@ -554,11 +607,31 @@ public enum VMapElementDataType {
 
 
 	VMapElementDataType(String englishName, String layerNameHeader, TableColumns columns, int priority) {
+		this(englishName, layerNameHeader, columns, priority, (e, j) -> {});
+	}
+
+
+
+	VMapElementDataType(String englishName,
+						String layerNameHeader,
+						TableColumns columns,
+						BiConsumer<VMapElement, JsonObject> jsonPropertyFunction) {
+		this(englishName, layerNameHeader, columns, 0, jsonPropertyFunction);
+	}
+
+
+
+	VMapElementDataType(String englishName,
+						String layerNameHeader,
+						TableColumns columns,
+						int priority,
+						BiConsumer<VMapElement, JsonObject> jsonPropertyFunction) {
 		this.englishName = englishName;
 		this.layerNameHeader = layerNameHeader;
 		this.columns = columns;
 		this.columns.setParentType(this);
 		this.priority = priority;
+		this.jsonPropertyFunction = jsonPropertyFunction;
 	}
 
 

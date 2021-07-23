@@ -87,12 +87,18 @@ public class VMapUtils {
 			Vector2DH[][] lines = lineString.getVertexList();
 			dos.writeInt(lines.length);
 			for (Vector2DH[] line : lines) {
-				dos.writeInt(lineString.isClosed() ? line.length + 1 : line.length);
+				boolean closed = lineString.isClosed();
+				if(closed) {
+					if(line[line.length - 1].equalsXZ(line[0])) {
+						closed = false;
+					}
+				}
+				dos.writeInt(closed ? line.length + 1 : line.length);
 				for (Vector2DH point : line) {
 					dos.writeDouble(point.x);
 					dos.writeDouble(point.z);
 				}
-				if(lineString.isClosed()) {
+				if(closed) {
 					dos.writeDouble(line[0].x);
 					dos.writeDouble(line[0].z);
 				}

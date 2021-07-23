@@ -1,15 +1,17 @@
 package com.mndk.kvm2m.core.vmap.elem.line;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.mndk.kvm2m.core.util.LineGenerator;
 import com.mndk.kvm2m.core.util.math.Vector2DH;
 import com.mndk.kvm2m.core.util.shape.BoundingBoxDouble;
 import com.mndk.kvm2m.core.util.shape.BoundingBoxInteger;
 import com.mndk.kvm2m.core.util.shape.TriangleList;
-import com.mndk.kvm2m.core.vmap.type.VMapElementGeomType;
+import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapElementStyleSelector;
 import com.mndk.kvm2m.core.vmap.elem.VMapElementStyleSelector.VMapElementStyle;
-import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import com.mndk.kvm2m.core.vmap.elem.VMapLayer;
+import com.mndk.kvm2m.core.vmap.type.VMapElementGeomType;
 import com.sk89q.worldedit.regions.FlatRegion;
 import net.minecraft.world.World;
 
@@ -48,17 +50,6 @@ public class VMapLineString extends VMapElement {
 	}
 
 
-	/*
-	public VMapPolygon merge(VMapLineString other) {
-		Vector2DH[][] newVertexList = new Vector2DH[this.vertices.length + other.vertices.length][];
-		System.arraycopy(this.vertices, 0, newVertexList, 0, this.vertices.length);
-		System.arraycopy(other.vertices, 0, newVertexList, this.vertices.length, other.vertices.length);
-
-		return new VMapPolygon(this.parent, newVertexList, this.dataRow, this.isClosed);
-	}
-	*/
-
-
 	public BoundingBoxInteger getBoundingBoxInteger() {
 		return bbox.toMaximumBoundingBoxInteger();
 	}
@@ -84,8 +75,21 @@ public class VMapLineString extends VMapElement {
 			
 		this.generateOutline(region, w, triangleList);
 	}
-	
-	
+
+
+	@Override
+	protected JsonObject getJsonGeometryData() {
+		JsonObject result = new JsonObject();
+		result.addProperty("type", "LineString");
+		JsonArray line = new JsonArray();
+		for(Vector2DH p : this.vertices[0]) {
+			line.add(p.toJsonArray());
+		}
+		result.add("coordinates", line);
+		return result;
+	}
+
+
 	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
 		
 		VMapElementStyle[] styles = VMapElementStyleSelector.getStyle(this);

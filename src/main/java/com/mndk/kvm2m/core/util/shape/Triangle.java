@@ -193,7 +193,7 @@ public class Triangle {
 	public boolean equals(Object o) {
 		if(!(o instanceof Triangle)) return false;
 		Triangle t = (Triangle) o;
-		return this.v1.xyequals(t.v1) && this.v2.xyequals(t.v2) && this.v3.xyequals(t.v3);
+		return this.v1.equalsXZ(t.v1) && this.v2.equalsXZ(t.v2) && this.v3.equalsXZ(t.v3);
 	}
 	
 }

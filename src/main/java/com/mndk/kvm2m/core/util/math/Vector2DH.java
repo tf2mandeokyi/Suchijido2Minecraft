@@ -1,11 +1,11 @@
 package com.mndk.kvm2m.core.util.math;
 
+import com.google.gson.JsonArray;
+
 import java.util.Objects;
 
 public class Vector2DH {
-	
-	public static final Vector2DH UNIT_X = new Vector2DH(1, 0, 0);
-	
+
 	public double x, height, z;
 	
 	public Vector2DH(double x, double height, double z) {
@@ -90,8 +90,15 @@ public class Vector2DH {
 		return Objects.hash(x, height, z);
 	}
 
-	public boolean xyequals(Vector2DH v) {
+	public boolean equalsXZ(Vector2DH v) {
 		return x == v.x && z == v.z;
+	}
+
+	public JsonArray toJsonArray() {
+		JsonArray array = new JsonArray();
+		array.add(Math.round(x * 100000000) / 100000000.);
+		array.add(Math.round(z * 100000000) / 100000000.);
+		return array;
 	}
 	
 }

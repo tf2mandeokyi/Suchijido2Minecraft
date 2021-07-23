@@ -107,6 +107,7 @@ dependencies {
 
     shade 'org.osgeo:proj4j:0.1.0'
     shade 'mysql:mysql-connector-java:8.0.21'
+    shade 'com.google.code.gson:gson:2.8.7'
 
     runtime "org.apache.commons:commons-imaging:1.0-alpha2"
     runtime("net.daporkchop:leveldb-mcpe-jni:0.0.10-SNAPSHOT")  {
