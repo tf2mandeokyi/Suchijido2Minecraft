@@ -24,27 +24,27 @@ public class VMapLineString extends VMapElement {
 	private final boolean isClosed;
 
 	
-	protected VMapLineString(VMapLayer parent, Map<String, Object> dataRow, boolean isClosed) {
-		super(parent, dataRow, VMapElementGeomType.LINESTRING);
+	protected VMapLineString(VMapLayer parent, String id, Map<String, Object> dataRow, boolean isClosed) {
+		super(parent, id, dataRow, VMapElementGeomType.LINESTRING);
 		this.isClosed = isClosed;
 	}
 
 	
-	protected VMapLineString(VMapLayer parent, Object[] dataRow, boolean isClosed) {
-		super(parent, dataRow, VMapElementGeomType.LINESTRING);
+	protected VMapLineString(VMapLayer parent, String id, Object[] dataRow, boolean isClosed) {
+		super(parent, id, dataRow, VMapElementGeomType.LINESTRING);
 		this.isClosed = isClosed;
 	}
 	
 	
-	public VMapLineString(VMapLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean isClosed) {
-		this(parent, dataRow, isClosed);
+	public VMapLineString(VMapLayer parent, String id, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean isClosed) {
+		this(parent, id, dataRow, isClosed);
 		this.vertices = vertices;
 		this.setupBoundingBox();
 	}
 	
 	
-	public VMapLineString(VMapLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean isClosed) {
-		this(parent, dataRow, isClosed);
+	public VMapLineString(VMapLayer parent, String id, Vector2DH[][] vertices, Object[] dataRow, boolean isClosed) {
+		this(parent, id, dataRow, isClosed);
 		this.vertices = vertices;
 		this.setupBoundingBox();
 	}

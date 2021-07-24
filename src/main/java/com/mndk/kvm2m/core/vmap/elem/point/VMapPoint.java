@@ -20,14 +20,14 @@ public class VMapPoint extends VMapElement {
 
 	private final Vector2DH point;
 
-	public VMapPoint(VMapLayer layer, Vector2DH point, Map<String, Object> dataRow) {
-		super(layer, dataRow, VMapElementGeomType.POINT);
+	public VMapPoint(VMapLayer layer, String id, Vector2DH point, Map<String, Object> dataRow) {
+		super(layer, id, dataRow, VMapElementGeomType.POINT);
 		this.point = point;
 		this.bbox = new BoundingBoxDouble(point.x, point.z, point.x, point.z);
 	}
 
-	public VMapPoint(VMapLayer layer, Vector2DH point, Object[] dataRow) {
-		super(layer, dataRow, VMapElementGeomType.POINT);
+	public VMapPoint(VMapLayer layer, String id, Vector2DH point, Object[] dataRow) {
+		super(layer, id, dataRow, VMapElementGeomType.POINT);
 		this.point = point;
 		this.bbox = new BoundingBoxDouble(point.x, point.z, point.x, point.z);
 	}

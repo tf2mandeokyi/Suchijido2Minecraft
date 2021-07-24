@@ -25,29 +25,29 @@ public class VMapPolygon extends VMapLineString {
 	private final boolean doFill;
 
 	
-	private VMapPolygon(VMapLayer parent, Map<String, Object> dataRow, boolean doFill) {
-		super(parent, dataRow, true);
+	private VMapPolygon(VMapLayer parent, String id, Map<String, Object> dataRow, boolean doFill) {
+		super(parent, id, dataRow, true);
 		this.geometryType = VMapElementGeomType.POLYGON;
 		this.doFill = doFill;
 	}
 
 	
-	private VMapPolygon(VMapLayer parent, Object[] dataRow, boolean doFill) {
-		super(parent, dataRow, true);
+	private VMapPolygon(VMapLayer parent, String id, Object[] dataRow, boolean doFill) {
+		super(parent, id, dataRow, true);
 		this.geometryType = VMapElementGeomType.POLYGON;
 		this.doFill = doFill;
 	}
 	
 	
-	public VMapPolygon(VMapLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean doFill) {
-		this(parent, dataRow, doFill);
+	public VMapPolygon(VMapLayer parent, String id, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean doFill) {
+		this(parent, id, dataRow, doFill);
 		this.vertices = vertices;
 		this.setupBoundingBox();
 	}
 	
 	
-	public VMapPolygon(VMapLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean doFill) {
-		this(parent, dataRow, doFill);
+	public VMapPolygon(VMapLayer parent, String id, Vector2DH[][] vertices, Object[] dataRow, boolean doFill) {
+		this(parent, id, dataRow, doFill);
 		this.vertices = vertices;
 		this.setupBoundingBox();
 	}
@@ -77,7 +77,7 @@ public class VMapPolygon extends VMapLineString {
 		System.arraycopy(this.vertices, 0, newVertexList, 0, this.vertices.length);
 		System.arraycopy(other.vertices, 0, newVertexList, this.vertices.length, other.vertices.length);
 		
-		return new VMapPolygon(this.parent, newVertexList, this.dataRow, this.doFill);
+		return new VMapPolygon(this.parent, this.id, newVertexList, this.dataRow, this.doFill);
 	}
 
 

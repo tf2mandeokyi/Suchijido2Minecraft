@@ -22,13 +22,13 @@ public class VMapBuilding extends VMapPolygon {
 	public static final double FLOOR_HEIGHT = 3.5;
 	
 	
-	public VMapBuilding(VMapLayer layer, Vector2DH[][] polygon, Map<String, Object> dataRow) {
-		super(layer, polygon, dataRow, true);
+	public VMapBuilding(VMapLayer layer, String id, Vector2DH[][] polygon, Map<String, Object> dataRow) {
+		super(layer, id, polygon, dataRow, true);
 	}
 	
 	
-	public VMapBuilding(VMapLayer layer, Vector2DH[][] polygon, Object[] dataRow) {
-		super(layer, polygon, dataRow, true);
+	public VMapBuilding(VMapLayer layer, String id, Vector2DH[][] polygon, Object[] dataRow) {
+		super(layer, id, polygon, dataRow, true);
 	}
 	
 	
@@ -107,7 +107,9 @@ public class VMapBuilding extends VMapPolygon {
 		if(!Bootstrap.isRegistered()) {
 			return "VMapBuilding{vertexLen=" + vertices[0].length + ",floor=" + this.getData("층수") + "}";
 		}
-		return "VMapBuilding{vertexLen=" + vertices[0].length + ",height=" + VMapElementStyleSelector.getStyle(this)[0].y + "}";
+		VMapElementStyle[] styles = VMapElementStyleSelector.getStyle(this);
+		assert styles != null;
+		return "VMapBuilding{vertexLen=" + vertices[0].length + ",height=" + styles[0].y + "}";
 	}
 
 }

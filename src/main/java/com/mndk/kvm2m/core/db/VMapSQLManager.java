@@ -32,7 +32,12 @@ public class VMapSQLManager {
 
     private static final String MAIN_TABLE_NAME = "elementdata";
 
-    private static final JsonParser JSON_PARSER = new JsonParser();
+    public static final TableColumn ID_COLUMN = new TableColumn(
+            "ID",
+            "ID",
+            new TableColumn.BigIntType(),
+            true
+    );
 
 
 
@@ -83,7 +88,7 @@ public class VMapSQLManager {
     private void initializeGeometryTable() throws SQLException {
         this.executeUpdate("" +
                 "CREATE TABLE IF NOT EXISTS `" + MAIN_TABLE_NAME + "` (" +
-                "    `" + TableColumns.ID_COLUMN.getName() + "` BIGINT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,\n" +
+                "    `" + ID_COLUMN.getName() + "` BIGINT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,\n" +
                 "    `map_index` VARCHAR(10) NOT NULL,\n" +
                 "    `geom_type` TINYINT UNSIGNED NOT NULL,\n" +
                 "    `geom` MEDIUMBLOB NOT NULL,\n" +
@@ -172,7 +177,7 @@ public class VMapSQLManager {
 
         if(connection == null) throw new SQLException("SQL Connection not initialized");
 
-        String idColumn = TableColumns.ID_COLUMN.getName();
+        String idColumn = ID_COLUMN.getName();
 
         String query = "SELECT `" + idColumn + "`, `geom`, `data_type`, `data` FROM `" + MAIN_TABLE_NAME + "` " +
                 "WHERE `map_index` = ?;";
@@ -191,7 +196,7 @@ public class VMapSQLManager {
             BoundingBoxDouble bbox, GeographicProjection targetProjection, Map<String, String> options
     ) throws Exception {
 
-        String idColumn = TableColumns.ID_COLUMN.getName();
+        String idColumn = ID_COLUMN.getName();
 
         String query = "SELECT `" + idColumn + "`, `geom`, `data_type`, `data` FROM `" + MAIN_TABLE_NAME + "` " +
                 "WHERE `max_lon` >= ? AND ? >= `min_lon` AND `max_lat` >= ? AND ? >= `min_lat`;";
@@ -240,7 +245,7 @@ public class VMapSQLManager {
 
         while(resultSet.next()) {
 
-            long id = resultSet.getLong(TableColumns.ID_COLUMN.getName());
+            long id = resultSet.getLong(ID_COLUMN.getName());
             InputStream stream = resultSet.getBlob("geom").getBinaryStream();
             geometryPayload.put(id, VMapUtils.parseGeometryDataString(stream, targetProjection));
 

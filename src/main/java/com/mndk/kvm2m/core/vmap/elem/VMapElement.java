@@ -21,17 +21,19 @@ public abstract class VMapElement {
 	public final Object[] dataRow;
 	@Getter protected VMapElementGeomType geometryType;
 	protected BoundingBoxDouble bbox;
+	protected final String id;
 
 
-	protected VMapElement(VMapLayer parent, Object[] dataRow, VMapElementGeomType geometryType) {
+	protected VMapElement(VMapLayer parent, String id, Object[] dataRow, VMapElementGeomType geometryType) {
 		this.parent = parent;
 		this.dataRow = dataRow;
 		this.geometryType = geometryType;
+		this.id = id;
 	}
 	
 	
-	public VMapElement(VMapLayer parent, Map<String, Object> dataRow, VMapElementGeomType geometryType) {
-		this(parent, new Object[dataRow.size()], geometryType);
+	public VMapElement(VMapLayer parent, String id, Map<String, Object> dataRow, VMapElementGeomType geometryType) {
+		this(parent, id, new Object[dataRow.size()], geometryType);
 		for(Map.Entry<String, Object> data : dataRow.entrySet()) {
 			int columnIndex = parent.getDataColumnIndex(data.getKey());
 			if(columnIndex == -1) continue;
@@ -74,6 +76,8 @@ public abstract class VMapElement {
 			jsonPropertyFunction.accept(this, properties);
 		}
 		result.add("properties", properties);
+
+		result.addProperty("id", this.id);
 
 		return result;
 	}

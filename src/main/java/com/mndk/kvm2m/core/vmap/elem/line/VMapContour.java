@@ -15,7 +15,7 @@ public class VMapContour extends VMapLineString {
 	public final int elevation;
 	
 	public VMapContour(VMapLayer parent, Vector2DH[] vertices, Object[] rowData) {
-		super(parent, new Vector2DH[][] { vertices }, rowData, false);
+		super(parent, "", new Vector2DH[][] { vertices }, rowData, false);
 		this.elevation = (int) Math.round(((Number) this.getData("등고수치")).doubleValue());
 		for(Vector2DH vs : vertices) {
 			vs.height = elevation;

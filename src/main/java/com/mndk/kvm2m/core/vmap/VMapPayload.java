@@ -63,7 +63,7 @@ public class VMapPayload {
                         element = new VMapElevationPoint(layer, point, dataRow);
                     }
                     else {
-                        element = new VMapPoint(layer, point, dataRow);
+                        element = new VMapPoint(layer, Long.toString(id), point, dataRow);
                     }
                     break;
                 case LINESTRING:
@@ -72,10 +72,10 @@ public class VMapPayload {
                         element = new VMapContour(layer, vertexList[0], dataRow);
                     }
                     else if(layer.getType() == VMapElementDataType.옹벽) {
-                        element = new VMapWall(layer, vertexList, dataRow, false);
+                        element = new VMapWall(layer, Long.toString(id), vertexList, dataRow, false);
                     }
                     else {
-                        element = new VMapLineString(layer, vertexList, dataRow, false);
+                        element = new VMapLineString(layer, Long.toString(id), vertexList, dataRow, false);
                     }
                     break;
                 case POLYGON:
@@ -83,13 +83,13 @@ public class VMapPayload {
 
                     if(layer.getType() == VMapElementDataType.건물) {
                         if(options.containsKey("gen-building-shells")) {
-                            element = new VMapBuilding(layer, vertexList, dataRow);
+                            element = new VMapBuilding(layer, Long.toString(id), vertexList, dataRow);
                         } else {
-                            element = new VMapPolygon(layer, vertexList, dataRow, false);
+                            element = new VMapPolygon(layer, Long.toString(id), vertexList, dataRow, false);
                         }
                     }
                     else {
-                        element = new VMapPolygon(layer, vertexList, dataRow, true);
+                        element = new VMapPolygon(layer, Long.toString(id), vertexList, dataRow, true);
                     }
                     break;
                 default: continue;

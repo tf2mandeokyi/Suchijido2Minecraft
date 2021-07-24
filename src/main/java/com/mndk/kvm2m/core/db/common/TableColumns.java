@@ -11,14 +11,6 @@ import lombok.ToString;
 public class TableColumns {
 
 
-    public static final TableColumn ID_COLUMN = new TableColumn(
-            "ID",
-            "ID",
-            new TableColumn.BigIntType(),
-            true
-    );
-
-
     private final TableColumn[] columns;
     private final @Getter int length;
     private @Getter VMapElementDataType parentType;

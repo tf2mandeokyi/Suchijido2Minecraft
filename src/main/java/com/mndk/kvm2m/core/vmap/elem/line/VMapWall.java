@@ -15,13 +15,13 @@ import java.util.Map;
 public class VMapWall extends VMapLineString {
 
 	
-	public VMapWall(VMapLayer parent, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean isClosed) {
-		super(parent, vertices, dataRow, isClosed);
+	public VMapWall(VMapLayer parent, String id, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean isClosed) {
+		super(parent, id, vertices, dataRow, isClosed);
 	}
 	
 	
-	public VMapWall(VMapLayer parent, Vector2DH[][] vertices, Object[] dataRow, boolean isClosed) {
-		super(parent, vertices, dataRow, isClosed);
+	public VMapWall(VMapLayer parent, String id, Vector2DH[][] vertices, Object[] dataRow, boolean isClosed) {
+		super(parent, id, vertices, dataRow, isClosed);
 	}
 	
 	
@@ -54,7 +54,9 @@ public class VMapWall extends VMapLineString {
 		if(!Bootstrap.isRegistered()) {
 			return "VMapWall{type=" + parent.getType() + ",vertexLen=" + vertices[0].length + "}";
 		}
-		return "VMapWall{type=" + parent.getType() + ",vertexLen=" + vertices[0].length + ",height=" + VMapElementStyleSelector.getStyle(this)[0].y + "}";
+		VMapElementStyle[] styles = VMapElementStyleSelector.getStyle(this);
+		assert styles != null;
+		return "VMapWall{type=" + parent.getType() + ",vertexLen=" + vertices[0].length + ",height=" + styles[0].y + "}";
 	}
 
 }

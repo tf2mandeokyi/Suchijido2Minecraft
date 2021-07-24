@@ -14,9 +14,9 @@ import java.io.IOException;
 public class VMapElevationPoint extends VMapPoint {
 	
 	public final int y;
-	
+
 	public VMapElevationPoint(VMapLayer layer, Vector2DH point, Object[] rowData) throws Exception {
-		super(layer, point, rowData);
+		super(layer, "", point, rowData);
 		Object value = this.getData("수치");
 		if(value instanceof String) {
 			try {
@@ -27,7 +27,7 @@ public class VMapElevationPoint extends VMapPoint {
 		}
 		this.y = (int) Math.round(((Number) value).doubleValue());
 	}
-	
+
 	public Vector2DH getPosition() {
 		return super.getPosition().withHeight(this.y);
 	}
@@ -47,7 +47,7 @@ public class VMapElevationPoint extends VMapPoint {
 			}
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		return "VMapElevationPoint{pos=" + this.getPosition() + "}";
