@@ -65,13 +65,13 @@ public abstract class VMapElement {
 		result.add("geometry", this.getJsonGeometryData());
 
 		JsonObject properties = new JsonObject();
-		BiConsumer<VMapElement, JsonObject> jsonPropertyFunction =
-				this.parent.getType().getJsonPropertyFunction();
+		if(this instanceof VMapPolygon) {
+			properties.addProperty("area", "yes");
+		}
+
+		BiConsumer<VMapElement, JsonObject> jsonPropertyFunction = this.parent.getType().getJsonPropertyFunction();
 		if(jsonPropertyFunction != null) {
 			jsonPropertyFunction.accept(this, properties);
-			if(this instanceof VMapPolygon) {
-				properties.addProperty("area", "yes");
-			}
 		}
 		result.add("properties", properties);
 

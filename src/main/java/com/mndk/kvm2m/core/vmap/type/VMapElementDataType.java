@@ -6,6 +6,7 @@ import com.mndk.kvm2m.core.db.common.TableColumns;
 import com.mndk.kvm2m.core.vmap.elem.VMapElement;
 import lombok.Getter;
 
+import javax.annotation.Nullable;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -595,7 +596,7 @@ public enum VMapElementDataType {
 	private final @Getter String layerNameHeader;
 	private final @Getter int priority;
 	private final @Getter TableColumns columns;
-	private final @Getter BiConsumer<VMapElement, JsonObject> jsonPropertyFunction;
+	private final @Getter @Nullable BiConsumer<VMapElement, JsonObject> jsonPropertyFunction;
 
 
 
@@ -607,7 +608,7 @@ public enum VMapElementDataType {
 
 
 	VMapElementDataType(String englishName, String layerNameHeader, TableColumns columns, int priority) {
-		this(englishName, layerNameHeader, columns, priority, (e, j) -> {});
+		this(englishName, layerNameHeader, columns, priority, null);
 	}
 
 

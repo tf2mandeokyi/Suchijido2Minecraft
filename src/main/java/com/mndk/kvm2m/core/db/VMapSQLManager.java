@@ -209,6 +209,28 @@ public class VMapSQLManager {
 
 
 
+    public VMapReaderResult getVMapData(
+            int x, int y, double zFactor, GeographicProjection targetProjection, Map<String, String> options
+    ) throws Exception {
+        return this.getVMapData(
+                new BoundingBoxDouble(x / zFactor, y / zFactor, (x + 1) / zFactor, (y + 1) / zFactor),
+                targetProjection, options
+        );
+    }
+
+
+
+    public VMapReaderResult getVMapData(
+            int x, int y, GeographicProjection targetProjection, Map<String, String> options
+    ) throws Exception {
+        return this.getVMapData(
+                new BoundingBoxDouble(x / 64., y / 64., (x + 1) / 64., (y + 1) / 64.),
+                targetProjection, options
+        );
+    }
+
+
+
     private static Map.Entry<VMapPayload.Geometry, VMapPayload.Data> resultSetToVMapData(
             ResultSet resultSet, GeographicProjection targetProjection
     ) throws SQLException, IOException, OutOfProjectionBoundsException {

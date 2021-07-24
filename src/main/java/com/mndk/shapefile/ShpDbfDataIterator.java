@@ -6,6 +6,7 @@ import com.mndk.shapefile.shp.ShapefileDataIterator;
 import com.mndk.shapefile.shp.ShapefileHeader;
 import com.mndk.shapefile.util.AutoCloseableIterator;
 import net.buildtheearth.terraplusplus.dep.com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
+import sun.misc.Cleaner;
 
 import javax.annotation.Nonnull;
 import java.io.*;
@@ -28,26 +29,28 @@ public class ShpDbfDataIterator implements AutoCloseableIterator<ShpDbfRecord> {
 	private final DBaseDataIterator dBaseIterator;
 
 	private final FileChannel shpChannel, dbfChannel;
+	private final MappedByteBuffer shpBuffer, dbfBuffer;
 	public final boolean containsDbfFile;
 	
 	
 	
 	public ShpDbfDataIterator(String filePath, Charset charset) throws IOException {
 		this.shpChannel = FileChannel.open(Paths.get(filePath + ".shp"), StandardOpenOption.READ);
-		MappedByteBuffer shpBuffer = shpChannel.map(FileChannel.MapMode.READ_ONLY, 0, shpChannel.size());
-		InputStream shpInputStream = new ByteBufferBackedInputStream(shpBuffer);
+		this.shpBuffer = shpChannel.map(FileChannel.MapMode.READ_ONLY, 0, shpChannel.size());
+		InputStream shpInputStream = new ByteBufferBackedInputStream(this.shpBuffer);
 		this.shpIterator = new ShapefileDataIterator(shpInputStream, charset);
-		
+
 		File dBaseFile = new File(filePath + ".dbf");
 		if(dBaseFile.exists()) {
 			this.dbfChannel = FileChannel.open(dBaseFile.toPath(), StandardOpenOption.READ);
-			MappedByteBuffer dbfBuffer = dbfChannel.map(FileChannel.MapMode.READ_ONLY, 0, dbfChannel.size());
-			InputStream dbfInputStream = new ByteBufferBackedInputStream(dbfBuffer);
+			this.dbfBuffer = dbfChannel.map(FileChannel.MapMode.READ_ONLY, 0, dbfChannel.size());
+			InputStream dbfInputStream = new ByteBufferBackedInputStream(this.dbfBuffer);
 			this.dBaseIterator = new DBaseDataIterator(dbfInputStream, charset);
 			this.containsDbfFile = true;
 		}
 		else {
 			this.dbfChannel = null;
+			this.dbfBuffer = null;
 			this.dBaseIterator = null;
 			this.containsDbfFile = false;
 		}
@@ -84,9 +87,12 @@ public class ShpDbfDataIterator implements AutoCloseableIterator<ShpDbfRecord> {
 	
 	@Override
 	public void close() throws IOException {
+		Cleaner cleaner;
+		if((cleaner = ((sun.nio.ch.DirectBuffer) shpBuffer).cleaner()) != null) cleaner.clean();
 		shpIterator.close();
 		shpChannel.close();
 		if(containsDbfFile) {
+			if((cleaner = ((sun.nio.ch.DirectBuffer) dbfBuffer).cleaner()) != null) cleaner.clean();
 			dBaseIterator.close();
 			dbfChannel.close();
 		}

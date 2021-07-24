@@ -1,6 +1,7 @@
 package com.mndk.kvm2m.core.util.file;
 
 import net.buildtheearth.terraplusplus.dep.com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
+import sun.misc.Cleaner;
 
 import java.io.*;
 import java.nio.MappedByteBuffer;
@@ -33,28 +34,30 @@ public class ZipManager {
 			byte[] buffer = new byte[1024];
 			while(zipEntry != null) {
 				File newFile = ZipManager.newFile(destination, zipEntry);
-			     if (zipEntry.isDirectory()) {
-			         if (!newFile.isDirectory() && !newFile.mkdirs()) {
-			             throw new IOException("Failed to create directory " + newFile);
-			         }
-			     } else {
-			         // fix for Windows-created archives
-			         File parent = newFile.getParentFile();
-			         if (!parent.isDirectory() && !parent.mkdirs()) {
-			             throw new IOException("Failed to create directory " + parent);
-			         }
+				if (zipEntry.isDirectory()) {
+					if (!newFile.isDirectory() && !newFile.mkdirs()) {
+						throw new IOException("Failed to create directory " + newFile);
+					}
+				} else {
+					// fix for Windows-created archives
+					File parent = newFile.getParentFile();
+					if (!parent.isDirectory() && !parent.mkdirs()) {
+						throw new IOException("Failed to create directory " + parent);
+					}
 			         
-			         // write file content
-			         FileOutputStream fos = new FileOutputStream(newFile);
-			         int len;
-			         while ((len = zis.read(buffer)) > 0) {
-			             fos.write(buffer, 0, len);
-			         }
-			         fos.close();
-			     }
-			     zipEntry = zis.getNextEntry();
+					// write file content
+					FileOutputStream fos = new FileOutputStream(newFile);
+					int len;
+					while ((len = zis.read(buffer)) > 0) {
+						fos.write(buffer, 0, len);
+					}
+					fos.close();
+				}
+				zipEntry = zis.getNextEntry();
 			}
 		} finally {
+			Cleaner cleaner = ((sun.nio.ch.DirectBuffer) mappedByteBuffer).cleaner();
+			if(cleaner != null) cleaner.clean();
 			stream.close();
 			channel.close();
 		}
