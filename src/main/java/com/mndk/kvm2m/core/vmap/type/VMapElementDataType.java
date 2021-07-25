@@ -11,14 +11,14 @@ import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+// TODO: Migrate these messy columns and functions to classes
 public enum VMapElementDataType {
 	
 	// A타입 - 교통
-	도로경계("road_boundary", "A001", new TableColumns(),
-			(e, j) -> {
-				j.addProperty("highway", "unclassified");
-			}
-	),
+	도로경계("road_boundary", "A001", new TableColumns(), (e, j) -> {
+		j.addProperty("highway", "unclassified");
+	}),
 	도로중심선("road_centerline", "A002", new TableColumns(
 			new TableColumn("RDNU", "도로번호", new TableColumn.VarCharType(30)),
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
@@ -35,16 +35,16 @@ public enum VMapElementDataType {
 	), (e, j) -> {
 		if(e.getData("도로구분") instanceof String) {
 			switch ((String) e.getData("도로구분")) {
-				case "RD001": case "고속국도": j.addProperty("highway", "motorway"); break;
-				case "RD002": case "일반국도": j.addProperty("highway", "trunk"); break;
-				case "RD003": case "지방도": j.addProperty("highway", "primary"); break;
-				case "RD004": case "특별시도":
-				case "RD005": case "광역시도":
-				case "RD006": case "시도": j.addProperty("highway", "secondary"); break;
-				case "RD007": case "군도":
-				case "RD008": case "면리간도로": j.addProperty("highway", "tertiary"); break;
-				case "RD009": case "소로": j.addProperty("highway", "residental"); break;
-				case "RD000": case "미분류":
+				case "고속국도": j.addProperty("highway", "motorway"); break;
+				case "일반국도": j.addProperty("highway", "trunk"); break;
+				case "지방도": j.addProperty("highway", "primary"); break;
+				case "특별시도":
+				case "광역시도":
+				case "시도": j.addProperty("highway", "secondary"); break;
+				case "군도":
+				case "면리간도로": j.addProperty("highway", "tertiary"); break;
+				case "소로": j.addProperty("highway", "residental"); break;
+				case "미분류":
 				default: j.addProperty("highway", "unclassified");
 			}
 		}
@@ -55,19 +55,30 @@ public enum VMapElementDataType {
 		if("일방통행".equals(e.getData("일방통행"))) {
 			j.addProperty("oneway", "yes");
 		}
-
 	}),
 	보도("sidewalk", "A003", new TableColumns(
 			new TableColumn("WIDT", "폭", new TableColumn.NumericType(5,2)),
 			new TableColumn("QUAL", "재질", new TableColumn.VarCharType(6), true),
 			new TableColumn("BYYN", "자전거도로유무", new TableColumn.VarCharType(6), true),
 			new TableColumn("KIND", "종류", new TableColumn.VarCharType(6), true)
-	)),
-	횡단보도("crosswalk", "A004", new TableColumns()),
+	), (e, j) -> {
+		j.addProperty("highway", "pedestrian");
+		if("유".equals(e.getData("자전거도로유무"))) {
+			j.addProperty("bicycle", "yes");
+		}
+	}),
+	횡단보도("crosswalk", "A004", new TableColumns(), (e, j) -> {
+		j.addProperty("highway", "crossing");
+	}),
 	안전지대("safe_zone", "A005", new TableColumns(
 			new TableColumn("STRU", "구조", new TableColumn.VarCharType(6), true),
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100))
-	)),
+	), (e, j) -> {
+		if("교통섬".equals(e.getData("구조"))) {
+			j.addProperty("highway", "crossing");
+			j.addProperty("crossing:island", "yes");
+		}
+	}),
 	육교("pedestrian_overpass", "A006", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("LENG", "연장", new TableColumn.NumericType(7,2)),
@@ -75,7 +86,11 @@ public enum VMapElementDataType {
 			new TableColumn("HEIG", "높이", new TableColumn.NumericType(5,2)),
 			new TableColumn("TYPE", "형태", new TableColumn.VarCharType(6), true),
 			new TableColumn("REST", "기타", new TableColumn.VarCharType(50))
-	)),
+	), (e, j) -> {
+		j.addProperty("highway", "footway");
+		j.addProperty("man_made", "bridge");
+		j.addProperty("layer", 1);
+	}),
 	교량("bridge", "A007", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("KIND", "종류", new TableColumn.VarCharType(6), true),
@@ -85,7 +100,10 @@ public enum VMapElementDataType {
 			new TableColumn("QUAL", "재질", new TableColumn.VarCharType(6), true),
 			new TableColumn("RVNM", "하천명", new TableColumn.VarCharType(30)),
 			new TableColumn("REST", "기타", new TableColumn.VarCharType(50))
-	)),
+	), (e, j) -> {
+		j.addProperty("man_made", "bridge");
+		j.addProperty("layer", 1);
+	}),
 	교차로("crossroad", "A008", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("KIND", "종류", new TableColumn.VarCharType(6), true)
@@ -174,15 +192,15 @@ public enum VMapElementDataType {
 		j.remove("area");
 		if(e.getData("종류") instanceof String) {
 			switch ((String) e.getData("종류")) {
-				case "BDK001": case "일반주택":
-				case "BDK002": case "연립주택": j.addProperty("building", "residential"); break;
-				case "BDK003": case "아파트": j.addProperty("building", "apartments"); break;
-				case "BDK004": case "주택외건물":
-				case "BDK005": case "무벽건물":
-				case "BDK006": case "온실":
-				case "BDK007": case "공사중건물":
-				case "BDK008": case "가건물":
-				case "BDK000": case "미분류":
+				case "일반주택":
+				case "연립주택": j.addProperty("building", "residential"); break;
+				case "아파트": j.addProperty("building", "apartments"); break;
+				case "주택외건물":
+				case "무벽건물":
+				case "온실":
+				case "공사중건물":
+				case "가건물":
+				case "미분류":
 				default: j.addProperty("building", "yes");
 			}
 		}
@@ -464,7 +482,10 @@ public enum VMapElementDataType {
 			new TableColumn("TYPE", "형태", new TableColumn.VarCharType(6), true),
 			new TableColumn("STAT", "상태", new TableColumn.VarCharType(6), true)
 	), -1),
-	실폭하천("river", "E003", new TableColumns(), -1),
+	실폭하천("river", "E003", new TableColumns(), -1, (e, j) -> {
+		j.addProperty("natural", "water");
+		j.addProperty("water", "river");
+	}),
 	유수방향("flow_direction", "E004", new TableColumns(
 			new TableColumn("ANGL", "방향각도", new TableColumn.NumericType(3))
 	), -1),
@@ -473,7 +494,13 @@ public enum VMapElementDataType {
 			new TableColumn("SERV", "용도", new TableColumn.VarCharType(50)),
 			new TableColumn("MARA", "면적", new TableColumn.NumericType(11,2)),
 			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
-	), -1),
+	), -1, (e, j) -> {
+		j.addProperty("natural", "water");
+		j.addProperty("water", "lake");
+		if(e.getData("명칭") instanceof String) {
+			j.addProperty("name", (String) e.getData("명칭"));
+		}
+	}),
 	용수로("aqueduct", "E006", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("TYPE", "형태", new TableColumn.VarCharType(6), true),
@@ -490,7 +517,9 @@ public enum VMapElementDataType {
 	해안선("coastline", "E008", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(6), true)
-	), -1),
+	), -1, (e, j) -> {
+		j.addProperty("natural", "coastline");
+	}),
 	등심선("water_contour_line", "E009", new TableColumns(
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(50)),
 			new TableColumn("CONT", "등심수치", new TableColumn.NumericType(7,2))
