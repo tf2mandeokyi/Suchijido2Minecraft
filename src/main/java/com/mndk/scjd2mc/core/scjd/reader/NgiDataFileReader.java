@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
 
-public class NgiMapReader extends VMapReader {
+public class NgiDataFileReader extends SuchijidoFileReader {
 
 
 	@Override

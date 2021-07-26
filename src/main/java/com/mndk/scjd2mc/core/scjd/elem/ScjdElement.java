@@ -1,15 +1,17 @@
 package com.mndk.scjd2mc.core.scjd.elem;
 
 import com.google.gson.JsonObject;
-import com.mndk.scjd2mc.core.util.shape.BoundingBoxDouble;
-import com.mndk.scjd2mc.core.util.shape.TriangleList;
 import com.mndk.scjd2mc.core.scjd.elem.poly.ScjdPolygon;
 import com.mndk.scjd2mc.core.scjd.type.ElementGeometryType;
+import com.mndk.scjd2mc.core.util.shape.BoundingBoxDouble;
+import com.mndk.scjd2mc.core.util.shape.TriangleList;
+import com.mndk.scjd2mc.mod.Suchijido2MinecraftMod;
 import com.sk89q.worldedit.regions.FlatRegion;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.minecraft.world.World;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -58,28 +60,44 @@ public abstract class ScjdElement {
 	}
 
 
-	protected abstract JsonObject getJsonGeometryData();
-	public JsonObject toJsonObject() {
-		JsonObject result = new JsonObject();
+	protected abstract Map<String, Object> getSerializableMapGeometryData();
 
-		result.addProperty("type", "Feature");
+	private Map<String, Object> toSerializableMap() {
 
-		result.add("geometry", this.getJsonGeometryData());
+		BiConsumer<ScjdElement, Map<String, Object>> jsonPropertyFunction = this.parent.getType().getSerializableMapPropertyFunction();
+		if(jsonPropertyFunction == null) return null;
 
-		JsonObject properties = new JsonObject();
+		Map<String, Object> result = new HashMap<>();
+
+		result.put("type", "Feature");
+
+		result.put("geometry", this.getSerializableMapGeometryData());
+
+		Map<String, Object> properties = new HashMap<>();
 		if(this instanceof ScjdPolygon) {
-			properties.addProperty("area", "yes");
+			properties.put("area", "yes");
 		}
+		jsonPropertyFunction.accept(this, properties);
+		result.put("properties", properties);
 
-		BiConsumer<ScjdElement, JsonObject> jsonPropertyFunction = this.parent.getType().getJsonPropertyFunction();
-		if(jsonPropertyFunction != null) {
-			jsonPropertyFunction.accept(this, properties);
-		}
-		result.add("properties", properties);
+		result.put("id", this.id);
 
-		result.addProperty("id", this.id);
+		result.put("bounds", this.bbox.toSerializableMap());
 
 		return result;
+	}
+
+	public JsonObject toJsonObject() {
+		Map<String, Object> result = this.toSerializableMap();
+		return result == null ? null : Suchijido2MinecraftMod.gson.toJsonTree(this.toSerializableMap()).getAsJsonObject();
+	}
+
+	public org.bson.Document toBsonDocument(String map_index) {
+		Map<String, Object> map = this.toSerializableMap();
+		if(map == null) return null;
+		map.remove("id");
+		map.put("map_index", map_index);
+		return new org.bson.Document(map);
 	}
 
 

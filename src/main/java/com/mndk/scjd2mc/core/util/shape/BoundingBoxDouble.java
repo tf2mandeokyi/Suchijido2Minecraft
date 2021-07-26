@@ -3,6 +3,9 @@ package com.mndk.scjd2mc.core.util.shape;
 import com.sk89q.worldedit.regions.FlatRegion;
 import lombok.RequiredArgsConstructor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RequiredArgsConstructor
 public class BoundingBoxDouble {
 
@@ -27,5 +30,14 @@ public class BoundingBoxDouble {
 
     public boolean isValid() {
         return xmin <= xmax && zmin <= zmax;
+    }
+
+    public Map<String, Object> toSerializableMap() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("xmin", xmin);
+        result.put("xmax", xmax);
+        result.put("zmin", zmin);
+        result.put("zmax", zmax);
+        return result;
     }
 }

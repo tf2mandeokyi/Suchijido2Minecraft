@@ -12,7 +12,7 @@ public class ElementStyleSelector {
 	
 	
 	
-	public static VMapElementStyle[] getStyle(ScjdElement element) {
+	public static ScjdElementStyle[] getStyle(ScjdElement element) {
 		
 		
 		
@@ -105,34 +105,34 @@ public class ElementStyleSelector {
 	
 	
 	
-	private static VMapElementStyle[] singleStyle(Block block, EnumDyeColor color, int height) {
-		return new VMapElementStyle[] {new VMapElementStyle(block, color, height)};
+	private static ScjdElementStyle[] singleStyle(Block block, EnumDyeColor color, int height) {
+		return new ScjdElementStyle[] {new ScjdElementStyle(block, color, height)};
 	}
 	
 	
 	
-	private static VMapElementStyle[] singleStyle(Block block, int height) {
-		return new VMapElementStyle[] {new VMapElementStyle(block, height)};
+	private static ScjdElementStyle[] singleStyle(Block block, int height) {
+		return new ScjdElementStyle[] {new ScjdElementStyle(block, height)};
 	}
 	
 	
 	
-	private static VMapElementStyle[] doubleStyle(Block block1, int height1, Block block2, int height2) {
-		return new VMapElementStyle[] {new VMapElementStyle(block1, height1), new VMapElementStyle(block2, height2)};
+	private static ScjdElementStyle[] doubleStyle(Block block1, int height1, Block block2, int height2) {
+		return new ScjdElementStyle[] {new ScjdElementStyle(block1, height1), new ScjdElementStyle(block2, height2)};
 	}
 	
 	
 	
-	public static class VMapElementStyle {
+	public static class ScjdElementStyle {
 		
 		public final IBlockState state;
 		public final int y;
 		
-		public VMapElementStyle(Block block, int height) {
+		public ScjdElementStyle(Block block, int height) {
 			this.state = block == null ? null : block.getDefaultState(); this.y = height;
 		}
 		
-		public VMapElementStyle(Block block, EnumDyeColor color, int height) {
+		public ScjdElementStyle(Block block, EnumDyeColor color, int height) {
 			this.state = block.getDefaultState().withProperty(BlockColored.COLOR, color); this.y = height;
 		}
 		

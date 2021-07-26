@@ -4,7 +4,7 @@ import com.mndk.scjd2mc.core.util.LineGenerator;
 import com.mndk.scjd2mc.core.util.math.Vector2DH;
 import com.mndk.scjd2mc.core.util.shape.TriangleList;
 import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector;
-import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector.VMapElementStyle;
+import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector.ScjdElementStyle;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
 import com.sk89q.worldedit.regions.FlatRegion;
 import net.minecraft.init.Bootstrap;
@@ -27,9 +27,9 @@ public class ScjdWall extends ScjdLineString {
 	
 	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
 		
-		VMapElementStyle[] styles = ElementStyleSelector.getStyle(this);
+		ScjdElementStyle[] styles = ElementStyleSelector.getStyle(this);
 		if(styles == null) return;
-		for(VMapElementStyle style : styles) {
+		for(ScjdElementStyle style : styles) {
 			if(style == null) continue; if(style.state == null) continue;
 			
 			LineGenerator lineGenerator = new LineGenerator.TerrainWall(
@@ -54,7 +54,7 @@ public class ScjdWall extends ScjdLineString {
 		if(!Bootstrap.isRegistered()) {
 			return "VMapWall{type=" + parent.getType() + ",vertexLen=" + vertices[0].length + "}";
 		}
-		VMapElementStyle[] styles = ElementStyleSelector.getStyle(this);
+		ScjdElementStyle[] styles = ElementStyleSelector.getStyle(this);
 		assert styles != null;
 		return "VMapWall{type=" + parent.getType() + ",vertexLen=" + vertices[0].length + ",height=" + styles[0].y + "}";
 	}

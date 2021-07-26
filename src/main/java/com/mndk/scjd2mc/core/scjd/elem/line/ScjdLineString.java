@@ -1,20 +1,21 @@
 package com.mndk.scjd2mc.core.scjd.elem.line;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
+import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
+import com.mndk.scjd2mc.core.scjd.type.ElementGeometryType;
+import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector;
+import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector.ScjdElementStyle;
 import com.mndk.scjd2mc.core.util.LineGenerator;
 import com.mndk.scjd2mc.core.util.math.Vector2DH;
 import com.mndk.scjd2mc.core.util.shape.BoundingBoxDouble;
 import com.mndk.scjd2mc.core.util.shape.BoundingBoxInteger;
 import com.mndk.scjd2mc.core.util.shape.TriangleList;
-import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
-import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector;
-import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector.VMapElementStyle;
-import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
-import com.mndk.scjd2mc.core.scjd.type.ElementGeometryType;
 import com.sk89q.worldedit.regions.FlatRegion;
 import net.minecraft.world.World;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ScjdLineString extends ScjdElement {
@@ -78,23 +79,23 @@ public class ScjdLineString extends ScjdElement {
 
 
 	@Override
-	protected JsonObject getJsonGeometryData() {
-		JsonObject result = new JsonObject();
-		result.addProperty("type", "LineString");
-		JsonArray line = new JsonArray();
-		for(Vector2DH p : this.vertices[0]) {
-			line.add(p.toJsonArray());
+	protected Map<String, Object> getSerializableMapGeometryData() {
+		Map<String, Object> result = new HashMap<>();
+		result.put("type", "LineString");
+		List<List<Double>> line = new ArrayList<>();
+		for(Vector2DH v : this.vertices[0]) {
+			line.add(v.toRoundDoubleList());
 		}
-		result.add("coordinates", line);
+		result.put("coordinates", line);
 		return result;
 	}
 
 
 	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
 		
-		VMapElementStyle[] styles = ElementStyleSelector.getStyle(this);
+		ScjdElementStyle[] styles = ElementStyleSelector.getStyle(this);
 		if(styles == null) return;
-		for(VMapElementStyle style : styles) {
+		for(ScjdElementStyle style : styles) {
 			if(style == null) continue; if(style.state == null) continue;
 			
 			LineGenerator lineGenerator = new LineGenerator.TerrainLine(

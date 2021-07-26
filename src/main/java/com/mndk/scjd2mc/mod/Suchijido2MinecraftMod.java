@@ -1,7 +1,9 @@
 package com.mndk.scjd2mc.mod;
 
-import com.mndk.scjd2mc.core.scjd.reader.NgiMapReader;
-import com.mndk.scjd2mc.core.scjd.reader.ShpZipMapReader;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.mndk.scjd2mc.core.scjd.reader.NgiDataFileReader;
+import com.mndk.scjd2mc.core.scjd.reader.ShpZipDataFileReader;
 import com.mndk.scjd2mc.core.db.MySQLManager;
 import com.mndk.scjd2mc.mod.commands.GetDataFromDatabaseCmd;
 import com.mndk.scjd2mc.mod.commands.DataGenerationCmd;
@@ -28,12 +30,14 @@ public class Suchijido2MinecraftMod {
 	public static final String VERSION = "b1.0";
 
 	private static final ICommand[] serverCommands = {
-			new DataGenerationCmd("genngimap", "ngi", new NgiMapReader()),
-			new DataGenerationCmd("genshpzipmap", "zip", new ShpZipMapReader()),
+			new DataGenerationCmd("genngimap", "ngi", new NgiDataFileReader()),
+			new DataGenerationCmd("genshpzipmap", "zip", new ShpZipDataFileReader()),
 			new GetDataFromDatabaseCmd("genmapfromdb")
 	};
 
 	public static Logger logger;
+
+	public static final Gson gson = new GsonBuilder().create();
 	
 	public static String kVecFileDirectory;
 
@@ -48,7 +52,7 @@ public class Suchijido2MinecraftMod {
 		
 		this.registerCommands(event);
 		try {
-			MySQLManager.getInstance().connect(Scjd2McConfig.dburl, Scjd2McConfig.id, Scjd2McConfig.pw);
+			MySQLManager.connect(Scjd2McConfig.dburl, Scjd2McConfig.id, Scjd2McConfig.pw);
 		} catch (SQLException throwables) {
 			throwables.printStackTrace();
 		}

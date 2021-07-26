@@ -1,12 +1,12 @@
 package com.mndk.scjd2mc.core.scjd.type;
 
-import com.google.gson.JsonObject;
 import com.mndk.scjd2mc.core.db.common.TableColumn;
 import com.mndk.scjd2mc.core.db.common.TableColumns;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
 import lombok.Getter;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,8 +16,8 @@ import java.util.regex.Pattern;
 public enum ElementDataType {
 	
 	// A타입 - 교통
-	도로경계("road_boundary", "A001", new TableColumns(), (e, j) -> {
-		j.addProperty("highway", "unclassified");
+	도로경계("road_boundary", "A001", new TableColumns(), (e, m) -> {
+		m.put("highway", "unclassified");
 	}),
 	도로중심선("road_centerline", "A002", new TableColumns(
 			new TableColumn("RDNU", "도로번호", new TableColumn.VarCharType(30)),
@@ -32,28 +32,28 @@ public enum ElementDataType {
 			new TableColumn("ONSD", "일방통행", new TableColumn.VarCharType(6), true),
 			new TableColumn("REST", "기타", new TableColumn.VarCharType(50)),
 			new TableColumn("RDNM", "도로명", new TableColumn.VarCharType(30))
-	), (e, j) -> {
+	), (e, m) -> {
 		if(e.getData("도로구분") instanceof String) {
 			switch ((String) e.getData("도로구분")) {
-				case "고속국도": j.addProperty("highway", "motorway"); break;
-				case "일반국도": j.addProperty("highway", "trunk"); break;
-				case "지방도": j.addProperty("highway", "primary"); break;
+				case "고속국도": m.put("highway", "motorway"); break;
+				case "일반국도": m.put("highway", "trunk"); break;
+				case "지방도": m.put("highway", "primary"); break;
 				case "특별시도":
 				case "광역시도":
-				case "시도": j.addProperty("highway", "secondary"); break;
+				case "시도": m.put("highway", "secondary"); break;
 				case "군도":
-				case "면리간도로": j.addProperty("highway", "tertiary"); break;
-				case "소로": j.addProperty("highway", "residental"); break;
+				case "면리간도로": m.put("highway", "tertiary"); break;
+				case "소로": m.put("highway", "residental"); break;
 				case "미분류":
-				default: j.addProperty("highway", "unclassified");
+				default: m.put("highway", "unclassified");
 			}
 		}
-		else { j.addProperty("highway", "unclassified"); }
+		else { m.put("highway", "unclassified"); }
 
-		j.addProperty("lanes", (Number) e.getData("차로수"));
-		j.addProperty("width", (Number) e.getData("도로폭"));
+		m.put("lanes", e.getData("차로수"));
+		m.put("width", e.getData("도로폭"));
 		if("일방통행".equals(e.getData("일방통행"))) {
-			j.addProperty("oneway", "yes");
+			m.put("oneway", "yes");
 		}
 	}),
 	보도("sidewalk", "A003", new TableColumns(
@@ -61,22 +61,22 @@ public enum ElementDataType {
 			new TableColumn("QUAL", "재질", new TableColumn.VarCharType(6), true),
 			new TableColumn("BYYN", "자전거도로유무", new TableColumn.VarCharType(6), true),
 			new TableColumn("KIND", "종류", new TableColumn.VarCharType(6), true)
-	), (e, j) -> {
-		j.addProperty("highway", "pedestrian");
+	), (e, m) -> {
+		m.put("highway", "pedestrian");
 		if("유".equals(e.getData("자전거도로유무"))) {
-			j.addProperty("bicycle", "yes");
+			m.put("bicycle", "yes");
 		}
 	}),
-	횡단보도("crosswalk", "A004", new TableColumns(), (e, j) -> {
-		j.addProperty("highway", "crossing");
+	횡단보도("crosswalk", "A004", new TableColumns(), (e, m) -> {
+		m.put("highway", "crossing");
 	}),
 	안전지대("safe_zone", "A005", new TableColumns(
 			new TableColumn("STRU", "구조", new TableColumn.VarCharType(6), true),
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100))
-	), (e, j) -> {
+	), (e, m) -> {
 		if("교통섬".equals(e.getData("구조"))) {
-			j.addProperty("highway", "crossing");
-			j.addProperty("crossing:island", "yes");
+			m.put("highway", "crossing");
+			m.put("crossing:island", "yes");
 		}
 	}),
 	육교("pedestrian_overpass", "A006", new TableColumns(
@@ -86,10 +86,10 @@ public enum ElementDataType {
 			new TableColumn("HEIG", "높이", new TableColumn.NumericType(5,2)),
 			new TableColumn("TYPE", "형태", new TableColumn.VarCharType(6), true),
 			new TableColumn("REST", "기타", new TableColumn.VarCharType(50))
-	), (e, j) -> {
-		j.addProperty("highway", "footway");
-		j.addProperty("man_made", "bridge");
-		j.addProperty("layer", 1);
+	), (e, m) -> {
+		m.put("highway", "footway");
+		m.put("man_made", "bridge");
+		m.put("layer", 1);
 	}),
 	교량("bridge", "A007", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
@@ -100,9 +100,9 @@ public enum ElementDataType {
 			new TableColumn("QUAL", "재질", new TableColumn.VarCharType(6), true),
 			new TableColumn("RVNM", "하천명", new TableColumn.VarCharType(30)),
 			new TableColumn("REST", "기타", new TableColumn.VarCharType(50))
-	), (e, j) -> {
-		j.addProperty("man_made", "bridge");
-		j.addProperty("layer", 1);
+	), (e, m) -> {
+		m.put("man_made", "bridge");
+		m.put("layer", 1);
 	}),
 	교차로("crossroad", "A008", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
@@ -188,27 +188,36 @@ public enum ElementDataType {
 			// new TableColumn("BONU", "건물번호본번", new TableColumn.NumericType(4)),
 			// new TableColumn("BUNU", "건물번호부번", new TableColumn.NumericType(4)),
 			// new TableColumn("POST", "우편번호", new TableColumn.VarCharType(10))
-	), (e, j) -> {
-		j.remove("area");
+	), (e, m) -> {
+		m.remove("area");
 		if(e.getData("종류") instanceof String) {
 			switch ((String) e.getData("종류")) {
 				case "일반주택":
-				case "연립주택": j.addProperty("building", "residential"); break;
-				case "아파트": j.addProperty("building", "apartments"); break;
+				case "연립주택": m.put("building", "residential"); break;
+				case "아파트": m.put("building", "apartments"); break;
 				case "주택외건물":
 				case "무벽건물":
 				case "온실":
 				case "공사중건물":
 				case "가건물":
 				case "미분류":
-				default: j.addProperty("building", "yes");
+				default: m.put("building", "yes");
 			}
 		}
-		if(e.getData("명칭") instanceof String) {
-			String name = (String) e.getData("명칭");
-			if(name.length() != 0) j.addProperty("name", name);
+		String name1 = e.getData("명칭") instanceof String ? (String) e.getData("명칭") : null,
+				name2 = e.getData("주기") instanceof String ? (String) e.getData("주기") : null;
+		String finalName;
+		if(name1 != null) {
+			if(name2 == null) finalName = name1;
+			else finalName = name1 + "-" + name2;
 		}
-		j.addProperty("building:levels", (Number) e.getData("층수"));
+		else {
+			finalName = name2;
+		}
+		if(finalName != null) {
+			m.put("name", finalName);
+		}
+		m.put("building:levels", e.getData("층수"));
 	}),
 	담장("wall", "B002", new TableColumns(
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(6), true),
@@ -482,9 +491,9 @@ public enum ElementDataType {
 			new TableColumn("TYPE", "형태", new TableColumn.VarCharType(6), true),
 			new TableColumn("STAT", "상태", new TableColumn.VarCharType(6), true)
 	), -1),
-	실폭하천("river", "E003", new TableColumns(), -1, (e, j) -> {
-		j.addProperty("natural", "water");
-		j.addProperty("water", "river");
+	실폭하천("river", "E003", new TableColumns(), -1, (e, m) -> {
+		m.put("natural", "water");
+		m.put("water", "river");
 	}),
 	유수방향("flow_direction", "E004", new TableColumns(
 			new TableColumn("ANGL", "방향각도", new TableColumn.NumericType(3))
@@ -494,11 +503,11 @@ public enum ElementDataType {
 			new TableColumn("SERV", "용도", new TableColumn.VarCharType(50)),
 			new TableColumn("MARA", "면적", new TableColumn.NumericType(11,2)),
 			new TableColumn("MNGT", "관리기관", new TableColumn.VarCharType(30))
-	), -1, (e, j) -> {
-		j.addProperty("natural", "water");
-		j.addProperty("water", "lake");
+	), -1, (e, m) -> {
+		m.put("natural", "water");
+		m.put("water", "lake");
 		if(e.getData("명칭") instanceof String) {
-			j.addProperty("name", (String) e.getData("명칭"));
+			m.put("name", e.getData("명칭"));
 		}
 	}),
 	용수로("aqueduct", "E006", new TableColumns(
@@ -517,8 +526,8 @@ public enum ElementDataType {
 	해안선("coastline", "E008", new TableColumns(
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100)),
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(6), true)
-	), -1, (e, j) -> {
-		j.addProperty("natural", "coastline");
+	), -1, (e, m) -> {
+		m.put("natural", "coastline");
 	}),
 	등심선("water_contour_line", "E009", new TableColumns(
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(50)),
@@ -625,7 +634,7 @@ public enum ElementDataType {
 	private final @Getter String layerNameHeader;
 	private final @Getter int priority;
 	private final @Getter TableColumns columns;
-	private final @Getter @Nullable BiConsumer<ScjdElement, JsonObject> jsonPropertyFunction;
+	private final @Getter @Nullable BiConsumer<ScjdElement, Map<String, Object>> serializableMapPropertyFunction;
 
 
 
@@ -645,8 +654,8 @@ public enum ElementDataType {
 	ElementDataType(String englishName,
 					String layerNameHeader,
 					TableColumns columns,
-					BiConsumer<ScjdElement, JsonObject> jsonPropertyFunction) {
-		this(englishName, layerNameHeader, columns, 0, jsonPropertyFunction);
+					BiConsumer<ScjdElement, Map<String, Object>> serializableMapPropertyFunction) {
+		this(englishName, layerNameHeader, columns, 0, serializableMapPropertyFunction);
 	}
 
 
@@ -655,13 +664,13 @@ public enum ElementDataType {
 					String layerNameHeader,
 					TableColumns columns,
 					int priority,
-					BiConsumer<ScjdElement, JsonObject> jsonPropertyFunction) {
+					BiConsumer<ScjdElement, Map<String, Object>> serializableMapPropertyFunction) {
 		this.englishName = englishName;
 		this.layerNameHeader = layerNameHeader;
 		this.columns = columns;
 		this.columns.setParentType(this);
 		this.priority = priority;
-		this.jsonPropertyFunction = jsonPropertyFunction;
+		this.serializableMapPropertyFunction = serializableMapPropertyFunction;
 	}
 
 

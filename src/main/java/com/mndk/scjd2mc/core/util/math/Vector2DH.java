@@ -1,7 +1,7 @@
 package com.mndk.scjd2mc.core.util.math;
 
-import com.google.gson.JsonArray;
-
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 public class Vector2DH {
@@ -94,11 +94,18 @@ public class Vector2DH {
 		return x == v.x && z == v.z;
 	}
 
-	public JsonArray toJsonArray() {
-		JsonArray array = new JsonArray();
-		array.add(Math.round(x * 100000000) / 100000000.);
-		array.add(Math.round(z * 100000000) / 100000000.);
-		return array;
+	public double[] toRoundDoubleArray() {
+		return new double[] {
+				Math.round(x * 100000000) / 100000000.,
+				Math.round(z * 100000000) / 100000000.
+		};
+	}
+
+	public List<Double> toRoundDoubleList() {
+		return Arrays.asList(
+				Math.round(x * 100000000) / 100000000.,
+				Math.round(z * 100000000) / 100000000.
+		);
 	}
 	
 }

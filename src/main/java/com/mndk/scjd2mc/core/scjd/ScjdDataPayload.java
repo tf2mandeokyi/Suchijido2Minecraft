@@ -23,13 +23,13 @@ import java.util.Map;
 public class ScjdDataPayload {
 
 
-    public static ScjdReaderResult combineVMapPayloads(
+    public static SuchijidoData combineVMapPayloads(
             Geometry geometryPayload,
             Data dataPayload,
             Map<String, String> options
     ) throws Exception {
 
-        ScjdReaderResult result = new ScjdReaderResult();
+        SuchijidoData result = new SuchijidoData();
 
         for(Map.Entry<Long, Geometry.Record<?>> entry : geometryPayload.entrySet()) {
             long id = entry.getKey();

@@ -5,7 +5,7 @@ import com.mndk.scjd2mc.core.util.math.Vector2DH;
 import com.mndk.scjd2mc.core.util.shape.BoundingBoxInteger;
 import com.mndk.scjd2mc.core.util.shape.TriangleList;
 import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector;
-import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector.VMapElementStyle;
+import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector.ScjdElementStyle;
 import com.mndk.scjd2mc.core.scjd.SuchijidoUtils;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
 import com.sk89q.worldedit.Vector;
@@ -35,8 +35,8 @@ public class ScjdBuilding extends ScjdPolygon {
 	@Override
 	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
 		
-		VMapElementStyle[] styles = ElementStyleSelector.getStyle(this);
-		VMapElementStyle style = styles != null ? styles[0] : null;
+		ScjdElementStyle[] styles = ElementStyleSelector.getStyle(this);
+		ScjdElementStyle style = styles != null ? styles[0] : null;
 		if(style == null) return; if(style.state == null) return;
 		
 		int buildingHeight = style.y;
@@ -64,8 +64,8 @@ public class ScjdBuilding extends ScjdPolygon {
 	@Override
 	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList, BoundingBoxInteger limitBox) {
 		
-		VMapElementStyle[] styles = ElementStyleSelector.getStyle(this);
-		VMapElementStyle style = styles != null ? styles[0] : null;
+		ScjdElementStyle[] styles = ElementStyleSelector.getStyle(this);
+		ScjdElementStyle style = styles != null ? styles[0] : null;
 		if(style == null) return; if(style.state == null) return;
 		
 		int buildingHeight = style.y;
@@ -107,7 +107,7 @@ public class ScjdBuilding extends ScjdPolygon {
 		if(!Bootstrap.isRegistered()) {
 			return "VMapBuilding{vertexLen=" + vertices[0].length + ",floor=" + this.getData("층수") + "}";
 		}
-		VMapElementStyle[] styles = ElementStyleSelector.getStyle(this);
+		ScjdElementStyle[] styles = ElementStyleSelector.getStyle(this);
 		assert styles != null;
 		return "VMapBuilding{vertexLen=" + vertices[0].length + ",height=" + styles[0].y + "}";
 	}

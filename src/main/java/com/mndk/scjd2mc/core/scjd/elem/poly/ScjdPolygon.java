@@ -1,22 +1,23 @@
 package com.mndk.scjd2mc.core.scjd.elem.poly;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.mndk.scjd2mc.core.scjd.SuchijidoUtils;
+import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
+import com.mndk.scjd2mc.core.scjd.elem.line.ScjdLineString;
+import com.mndk.scjd2mc.core.scjd.type.ElementGeometryType;
+import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector;
+import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector.ScjdElementStyle;
 import com.mndk.scjd2mc.core.util.math.Vector2DH;
 import com.mndk.scjd2mc.core.util.math.VectorMath;
 import com.mndk.scjd2mc.core.util.shape.BoundingBoxInteger;
 import com.mndk.scjd2mc.core.util.shape.TriangleList;
-import com.mndk.scjd2mc.core.scjd.type.ElementGeometryType;
-import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector;
-import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector.VMapElementStyle;
-import com.mndk.scjd2mc.core.scjd.SuchijidoUtils;
-import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
-import com.mndk.scjd2mc.core.scjd.elem.line.ScjdLineString;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.regions.FlatRegion;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ScjdPolygon extends ScjdLineString {
@@ -82,18 +83,18 @@ public class ScjdPolygon extends ScjdLineString {
 
 
 	@Override
-	protected JsonObject getJsonGeometryData() {
-		JsonObject result = new JsonObject();
-		result.addProperty("type", "Polygon");
-		JsonArray polygon = new JsonArray();
+	protected Map<String, Object> getSerializableMapGeometryData() {
+		Map<String, Object> result = new HashMap<>();
+		result.put("type", "Polygon");
+		List<List<List<Double>>> polygon = new ArrayList<>();
 		for(Vector2DH[] l : this.vertices) {
-			JsonArray line = new JsonArray();
-			for(Vector2DH p : l) {
-				line.add(p.toJsonArray());
+			List<List<Double>> line = new ArrayList<>();
+			for(Vector2DH v : l) {
+				line.add(v.toRoundDoubleList());
 			}
 			polygon.add(line);
 		}
-		result.add("coordinates", polygon);
+		result.put("coordinates", polygon);
 		return result;
 	}
 
@@ -114,9 +115,9 @@ public class ScjdPolygon extends ScjdLineString {
 	
 	protected void fillBlocks(FlatRegion region, World w, TriangleList triangleList, BoundingBoxInteger limitBox) {
 		
-		VMapElementStyle[] styles = ElementStyleSelector.getStyle(this);
+		ScjdElementStyle[] styles = ElementStyleSelector.getStyle(this);
 		if(styles == null) return;
-		for(VMapElementStyle style : styles) {
+		for(ScjdElementStyle style : styles) {
 			if(style == null) continue; if(style.state == null) continue;
 			
 			for(int z = limitBox.zmin; z <= limitBox.zmax; ++z) {

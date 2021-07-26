@@ -2,7 +2,7 @@ package com.mndk.scjd2mc.mod.commands;
 
 import com.mndk.scjd2mc.core.util.KeyRestrictedMap;
 import com.mndk.scjd2mc.core.scjd.ScjdDataGenerationTask;
-import com.mndk.scjd2mc.core.scjd.reader.VMapReader;
+import com.mndk.scjd2mc.core.scjd.reader.SuchijidoFileReader;
 import com.mndk.scjd2mc.mod.Suchijido2MinecraftMod;
 import com.mojang.authlib.GameProfile;
 import com.sk89q.worldedit.IncompleteRegionException;
@@ -75,11 +75,11 @@ public class DataGenerationCmd extends CommandBase {
 	
 	
 	private final String name, extension;
-	private final VMapReader parser;
+	private final SuchijidoFileReader parser;
 	
 	
 	
-	public DataGenerationCmd(String name, String extension, VMapReader parser) {
+	public DataGenerationCmd(String name, String extension, SuchijidoFileReader parser) {
 		this.name = name;
 		this.extension = extension;
 		this.parser = parser;

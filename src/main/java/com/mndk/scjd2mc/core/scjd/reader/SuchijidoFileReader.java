@@ -3,14 +3,16 @@ package com.mndk.scjd2mc.core.scjd.reader;
 import com.mndk.scjd2mc.core.projection.Korea2010BeltProjection;
 import com.mndk.scjd2mc.core.util.math.Vector2DH;
 import com.mndk.scjd2mc.core.scjd.*;
+import net.buildtheearth.terraplusplus.projection.EquirectangularProjection;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
-public abstract class VMapReader {
+public abstract class SuchijidoFileReader {
 	
 	
 	
@@ -21,10 +23,8 @@ public abstract class VMapReader {
 	
 	
 	
-	public final ScjdReaderResult parse(
-			File mapFile,
-			GeographicProjection worldProjection,
-			Map<String, String> options) throws Exception {
+	public final SuchijidoData parse(File mapFile, GeographicProjection worldProjection, Map<String, String> options)
+			throws Exception {
 
 		synchronized (this) {
 			this.mapFile = mapFile;
@@ -34,7 +34,18 @@ public abstract class VMapReader {
 			Map.Entry<ScjdDataPayload.Geometry, ScjdDataPayload.Data> tuple = getResult();
 			return ScjdDataPayload.combineVMapPayloads(tuple.getKey(), tuple.getValue(), options);
 		}
-		
+	}
+
+
+
+	public final SuchijidoData parse(File mapFile, Map<String, String> options) throws Exception {
+		return this.parse(mapFile, new EquirectangularProjection(), options);
+	}
+
+
+
+	public final SuchijidoData parse(File mapFile) throws Exception {
+		return this.parse(mapFile, new EquirectangularProjection(), Collections.emptyMap());
 	}
 	
 	

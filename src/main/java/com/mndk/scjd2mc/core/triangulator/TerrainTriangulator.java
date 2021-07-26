@@ -5,7 +5,7 @@ import com.mndk.scjd2mc.core.triangulator.cdt.IndexEdge;
 import com.mndk.scjd2mc.core.util.math.Vector2DH;
 import com.mndk.scjd2mc.core.util.shape.TriangleList;
 import com.mndk.scjd2mc.core.scjd.type.ElementDataType;
-import com.mndk.scjd2mc.core.scjd.ScjdReaderResult;
+import com.mndk.scjd2mc.core.scjd.SuchijidoData;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
 import com.mndk.scjd2mc.core.scjd.elem.line.ScjdContour;
@@ -21,7 +21,7 @@ public class TerrainTriangulator {
 
 
 
-	public static TriangleList generateTerrain(ScjdReaderResult result) {
+	public static TriangleList generateTerrain(SuchijidoData result) {
 
 		Map.Entry<List<ScjdContour>, List<Vector2DH>> extraction = extractContourAndElevationPointList(result);
 
@@ -36,7 +36,7 @@ public class TerrainTriangulator {
 
 
 	private static TriangleList generateWithLayerPolylines(
-			ScjdReaderResult result,
+			SuchijidoData result,
 			Map.Entry<List<ScjdContour>, List<Vector2DH>> extraction,
 			TriangleList previousResult,
 			ElementDataType layerType) {
@@ -105,7 +105,7 @@ public class TerrainTriangulator {
 
 
 
-	static Map.Entry<List<ScjdContour>, List<Vector2DH>> extractContourAndElevationPointList(ScjdReaderResult result) {
+	static Map.Entry<List<ScjdContour>, List<Vector2DH>> extractContourAndElevationPointList(SuchijidoData result) {
 
 		List<ScjdContour> contourList = new ArrayList<>();
 		List<Vector2DH> elevationPoints = new ArrayList<>();

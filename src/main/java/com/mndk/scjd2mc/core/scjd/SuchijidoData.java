@@ -9,12 +9,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ScjdReaderResult {
+public class SuchijidoData {
 	
 	private ScjdPolygon boundary;
 	private final List<ScjdLayer> layerList;
 	
-	public ScjdReaderResult() {
+	public SuchijidoData() {
 		this.layerList = new ArrayList<>();
 	}
 	
@@ -34,7 +34,7 @@ public class ScjdReaderResult {
 		this.layerList.add(elementLayer);
 	}
 	
-	public void append(ScjdReaderResult other) {
+	public void append(SuchijidoData other) {
 		if(this.boundary == null) {
 			this.boundary = other.boundary;
 		}

@@ -5,7 +5,7 @@ import com.mndk.scjd2mc.core.util.shape.Triangle;
 import com.mndk.scjd2mc.core.util.shape.TriangleList;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
-import com.mndk.scjd2mc.core.scjd.reader.VMapReader;
+import com.mndk.scjd2mc.core.scjd.reader.SuchijidoFileReader;
 import com.mndk.scjd2mc.core.db.MySQLManager;
 import com.mndk.scjd2mc.core.scjd.type.ElementDataType;
 import com.sk89q.worldedit.regions.FlatRegion;
@@ -33,7 +33,7 @@ public class ScjdDataGenerationTask implements Runnable {
     protected final World world;
     protected final FlatRegion worldEditRegion;
     protected final GeographicProjection projection;
-    protected final VMapReader parser;
+    protected final SuchijidoFileReader parser;
     protected final ICommandSender commandSender;
     protected final Map<String, String> options;
 
@@ -44,7 +44,7 @@ public class ScjdDataGenerationTask implements Runnable {
             World world,
             FlatRegion worldEditRegion,
             GeographicProjection projection,
-            VMapReader parser,
+            SuchijidoFileReader parser,
             ICommandSender commandSender,
             Map<String, String> options
     ) {
@@ -59,16 +59,16 @@ public class ScjdDataGenerationTask implements Runnable {
 
 
 
-    protected ScjdReaderResult getResults() throws Exception {
-        ScjdReaderResult finalResult = new ScjdReaderResult();
+    protected SuchijidoData getResults() throws Exception {
+        SuchijidoData finalResult = new SuchijidoData();
 
         commandSender.sendMessage(new TextComponentString("§dParsing files..."));
-        List<Callable<ScjdReaderResult>> fileParsingTasks = new ArrayList<>();
+        List<Callable<SuchijidoData>> fileParsingTasks = new ArrayList<>();
         for (final File file : files) {
             fileParsingTasks.add(() -> this.parser.parse(file, projection, options));
         }
-        List<Future<ScjdReaderResult>> parserResults = executorService.invokeAll(fileParsingTasks);
-        for (Future<ScjdReaderResult> result : parserResults) {
+        List<Future<SuchijidoData>> parserResults = executorService.invokeAll(fileParsingTasks);
+        for (Future<SuchijidoData> result : parserResults) {
             finalResult.append(result.get());
         }
 
@@ -81,7 +81,7 @@ public class ScjdDataGenerationTask implements Runnable {
     public void run() {
         try {
 
-            ScjdReaderResult finalResult = this.getResults();
+            SuchijidoData finalResult = this.getResults();
 
 
             commandSender.sendMessage(new TextComponentString("§dCalculating terrain..."));
@@ -154,7 +154,7 @@ public class ScjdDataGenerationTask implements Runnable {
 
         private final String[] ids;
 
-        private static final VMapReader EMPTY_READER = new VMapReader() {
+        private static final SuchijidoFileReader EMPTY_READER = new SuchijidoFileReader() {
             @Override protected Map.Entry<ScjdDataPayload.Geometry, ScjdDataPayload.Data> getResult() { return null; }
         };
 
@@ -172,17 +172,17 @@ public class ScjdDataGenerationTask implements Runnable {
         }
 
         @Override
-        protected ScjdReaderResult getResults() throws Exception {
+        protected SuchijidoData getResults() throws Exception {
 
-            ScjdReaderResult finalResult = new ScjdReaderResult();
+            SuchijidoData finalResult = new SuchijidoData();
 
             commandSender.sendMessage(new TextComponentString("§dFetching data..."));
-            List<Callable<ScjdReaderResult>> fileParsingTasks = new ArrayList<>();
+            List<Callable<SuchijidoData>> fileParsingTasks = new ArrayList<>();
             for (final String mapId : ids) {
-                fileParsingTasks.add(() -> MySQLManager.getInstance().getVMapData(mapId, projection, options));
+                fileParsingTasks.add(() -> MySQLManager.getVMapData(mapId, projection, options));
             }
-            List<Future<ScjdReaderResult>> parserResults = executorService.invokeAll(fileParsingTasks);
-            for (Future<ScjdReaderResult> result : parserResults) {
+            List<Future<SuchijidoData>> parserResults = executorService.invokeAll(fileParsingTasks);
+            for (Future<SuchijidoData> result : parserResults) {
                 finalResult.append(result.get());
             }
 

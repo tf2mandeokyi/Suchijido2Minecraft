@@ -25,11 +25,6 @@ import java.util.Properties;
 public class MySQLManager {
 
 
-    private static final MySQLManager instance = new MySQLManager();
-    public static MySQLManager getInstance() { return instance; }
-
-
-
     private static final String MAIN_TABLE_NAME = "elementdata";
 
     public static final TableColumn ID_COLUMN = new TableColumn(
@@ -41,7 +36,7 @@ public class MySQLManager {
 
 
 
-    private Connection connection;
+    private static Connection connection;
 
 
 
@@ -49,29 +44,14 @@ public class MySQLManager {
 
 
 
-    private ResultSet executeQuery(String sql) throws SQLException {
-        if(connection == null) throw new SQLException("SQL Connection not established");
-        try(Statement statement = this.connection.createStatement()) {
-            return statement.executeQuery(sql);
-        }
-    }
-    private void executeUpdate(String sql) throws SQLException {
-        if(connection == null) throw new SQLException("SQL Connection not established");
-        try(Statement statement = this.connection.createStatement()) {
-            statement.executeUpdate(sql);
-        }
-    }
-
-
-
-    public void connect(String db_url, String user, String password) throws SQLException {
+    public static void connect(String db_url, String user, String password) throws SQLException {
         Properties properties = new Properties();
         properties.put("user", user);
         properties.put("password", password);
         properties.put("serverTimezone", "Asia/Seoul");
         properties.put("allowMultiQueries", "true");
-        this.connection = DriverManager.getConnection(db_url, properties);
-        if(this.connection == null) throw new SQLException("SQL Connection failed");
+        connection = DriverManager.getConnection(db_url, properties);
+        if(connection == null) throw new SQLException("SQL Connection failed");
         if(Suchijido2MinecraftMod.logger != null) {
             Suchijido2MinecraftMod.logger.info("SQL Connection established");
         }
@@ -79,14 +59,29 @@ public class MySQLManager {
 
 
 
-    public void initializeDataTables() throws SQLException {
-        this.initializeGeometryTable();
+    private static ResultSet executeQuery(String sql) throws SQLException {
+        if(connection == null) throw new SQLException("SQL Connection not established");
+        try(Statement statement = connection.createStatement()) {
+            return statement.executeQuery(sql);
+        }
+    }
+    private static void executeUpdate(String sql) throws SQLException {
+        if(connection == null) throw new SQLException("SQL Connection not established");
+        try(Statement statement = connection.createStatement()) {
+            statement.executeUpdate(sql);
+        }
     }
 
 
 
-    private void initializeGeometryTable() throws SQLException {
-        this.executeUpdate("" +
+    public static void initializeDataTables() throws SQLException {
+        initializeGeometryTable();
+    }
+
+
+
+    private static void initializeGeometryTable() throws SQLException {
+        executeUpdate("" +
                 "CREATE TABLE IF NOT EXISTS `" + MAIN_TABLE_NAME + "` (" +
                 "    `" + ID_COLUMN.getName() + "` BIGINT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,\n" +
                 "    `map_index` VARCHAR(10) NOT NULL,\n" +
@@ -104,8 +99,8 @@ public class MySQLManager {
 
 
 
-    public void refreshVMapData(ScjdReaderResult result, String mapIndex) throws SQLException, IOException {
-        try(PreparedStatement statement = this.connection.prepareStatement(
+    public static void refreshVMapData(SuchijidoData result, String mapIndex) throws SQLException, IOException {
+        try(PreparedStatement statement = connection.prepareStatement(
                 "DELETE FROM `" + MAIN_TABLE_NAME + "` WHERE `map_index`=?")) {
             statement.setString(1, mapIndex);
             statement.executeUpdate();
@@ -118,7 +113,7 @@ public class MySQLManager {
 
 
 
-    private void insertVMapLayerData(ScjdLayer layer, String mapIndex) throws SQLException, IOException {
+    private static void insertVMapLayerData(ScjdLayer layer, String mapIndex) throws SQLException, IOException {
         if(layer == null) return;
         if(layer.size() == 0) return;
 
@@ -128,12 +123,12 @@ public class MySQLManager {
         TableColumns columns = type.getColumns();
 
         final String dataInsertionQuery = generateDataInsertionSql(layer.size());
-        PreparedStatement statement = this.connection.prepareStatement(dataInsertionQuery);
+        PreparedStatement statement = connection.prepareStatement(dataInsertionQuery);
 
         for(int i = 0 ; i < layer.size(); ++i) {
             ScjdElement element = layer.get(i);
 
-            Blob geometryBlob = this.connection.createBlob();
+            Blob geometryBlob = connection.createBlob();
             geometryBlob.setBytes(1, SuchijidoUtils.generateGeometryDataBytes(element));
             BoundingBoxDouble bbox = element.getBoundingBoxDouble();
 
@@ -172,7 +167,7 @@ public class MySQLManager {
 
 
 
-    public ScjdReaderResult getVMapData(
+    public static SuchijidoData getVMapData(
             String map_index, GeographicProjection targetProjection, Map<String, String> options) throws Exception {
 
         if(connection == null) throw new SQLException("SQL Connection not initialized");
@@ -182,7 +177,7 @@ public class MySQLManager {
         String query = "SELECT `" + idColumn + "`, `geom`, `data_type`, `data` FROM `" + MAIN_TABLE_NAME + "` " +
                 "WHERE `map_index` = ?;";
 
-        try(PreparedStatement statement = this.connection.prepareStatement(query)) {
+        try(PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, map_index);
             ResultSet resultSet = statement.executeQuery();
             Map.Entry<ScjdDataPayload.Geometry, ScjdDataPayload.Data> entry = resultSetToVMapData(resultSet, targetProjection);
@@ -192,7 +187,7 @@ public class MySQLManager {
 
 
 
-    public ScjdReaderResult getVMapData(
+    public static SuchijidoData getVMapData(
             BoundingBoxDouble bbox, GeographicProjection targetProjection, Map<String, String> options
     ) throws Exception {
 
@@ -201,7 +196,7 @@ public class MySQLManager {
         String query = "SELECT `" + idColumn + "`, `geom`, `data_type`, `data` FROM `" + MAIN_TABLE_NAME + "` " +
                 "WHERE `max_lon` >= ? AND ? >= `min_lon` AND `max_lat` >= ? AND ? >= `min_lat`;";
 
-        try(PreparedStatement statement = this.connection.prepareStatement(query)) {
+        try(PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setDouble(1, bbox.xmin);
             statement.setDouble(2, bbox.xmax);
             statement.setDouble(3, bbox.zmin);
@@ -214,10 +209,10 @@ public class MySQLManager {
 
 
 
-    public ScjdReaderResult getVMapData(
+    public static SuchijidoData getVMapData(
             int x, int y, double zFactor, GeographicProjection targetProjection, Map<String, String> options
     ) throws Exception {
-        return this.getVMapData(
+        return getVMapData(
                 new BoundingBoxDouble(x / zFactor, y / zFactor, (x + 1) / zFactor, (y + 1) / zFactor),
                 targetProjection, options
         );
@@ -225,10 +220,10 @@ public class MySQLManager {
 
 
 
-    public ScjdReaderResult getVMapData(
+    public static SuchijidoData getVMapData(
             int x, int y, GeographicProjection targetProjection, Map<String, String> options
     ) throws Exception {
-        return this.getVMapData(
+        return getVMapData(
                 new BoundingBoxDouble(x / 64., y / 64., (x + 1) / 64., (y + 1) / 64.),
                 targetProjection, options
         );
@@ -247,7 +242,7 @@ public class MySQLManager {
 
             long id = resultSet.getLong(ID_COLUMN.getName());
             InputStream stream = resultSet.getBlob("geom").getBinaryStream();
-            geometryPayload.put(id, SuchijidoUtils.parseGeometryDataString(stream, targetProjection));
+            geometryPayload.put(id, SuchijidoUtils.parseBinaryGeometryDataString(stream, targetProjection));
 
             ElementDataType type = ElementDataType.fromLayerName(
                     resultSet.getString("data_type"));
@@ -288,8 +283,8 @@ public class MySQLManager {
 
 
 
-    public void close() throws SQLException {
-        this.connection.close();
+    public static void close() throws SQLException {
+        connection.close();
     }
 
 

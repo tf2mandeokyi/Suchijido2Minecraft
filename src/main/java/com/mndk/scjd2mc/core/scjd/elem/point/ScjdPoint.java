@@ -1,19 +1,19 @@
 package com.mndk.scjd2mc.core.scjd.elem.point;
 
-import com.google.gson.JsonObject;
+import com.mndk.scjd2mc.core.scjd.SuchijidoUtils;
+import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
+import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
+import com.mndk.scjd2mc.core.scjd.type.ElementGeometryType;
+import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector;
+import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector.ScjdElementStyle;
 import com.mndk.scjd2mc.core.util.math.Vector2DH;
 import com.mndk.scjd2mc.core.util.shape.BoundingBoxDouble;
 import com.mndk.scjd2mc.core.util.shape.TriangleList;
-import com.mndk.scjd2mc.core.scjd.SuchijidoUtils;
-import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
-import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector;
-import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector.VMapElementStyle;
-import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
-import com.mndk.scjd2mc.core.scjd.type.ElementGeometryType;
 import com.sk89q.worldedit.regions.FlatRegion;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ScjdPoint extends ScjdElement {
@@ -39,9 +39,9 @@ public class ScjdPoint extends ScjdElement {
 	@Override
 	public void generateBlocks(FlatRegion region, World world, TriangleList triangles) {
 
-		VMapElementStyle[] styles = ElementStyleSelector.getStyle(this);
+		ScjdElementStyle[] styles = ElementStyleSelector.getStyle(this);
 		if(styles == null) return;
-		for(VMapElementStyle style : styles) {
+		for(ScjdElementStyle style : styles) {
 			if(style == null) return; if(style.state == null) return;
 			
 			if(region.contains(point.withHeight(region.getMinimumY()).toIntegerWorldEditVector())) {
@@ -53,10 +53,10 @@ public class ScjdPoint extends ScjdElement {
 	}
 
 	@Override
-	protected JsonObject getJsonGeometryData() {
-		JsonObject result = new JsonObject();
-		result.addProperty("type", "Point");
-		result.add("coordinates", this.point.toJsonArray());
+	protected Map<String, Object> getSerializableMapGeometryData() {
+		Map<String, Object> result = new HashMap<>();
+		result.put("type", "Point");
+		result.put("coordinates", this.point.toRoundDoubleList());
 		return result;
 	}
 

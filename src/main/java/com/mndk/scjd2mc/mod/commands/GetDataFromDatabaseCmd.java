@@ -3,7 +3,7 @@ package com.mndk.scjd2mc.mod.commands;
 import com.mndk.scjd2mc.core.util.KeyRestrictedMap;
 import com.mndk.scjd2mc.core.scjd.ScjdDataGenerationTask;
 import com.mndk.scjd2mc.core.scjd.ScjdDataPayload;
-import com.mndk.scjd2mc.core.scjd.reader.VMapReader;
+import com.mndk.scjd2mc.core.scjd.reader.SuchijidoFileReader;
 import com.mndk.scjd2mc.mod.Suchijido2MinecraftMod;
 import com.sk89q.worldedit.regions.FlatRegion;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
@@ -24,7 +24,7 @@ public class GetDataFromDatabaseCmd extends DataGenerationCmd {
 
 
     public GetDataFromDatabaseCmd(String name) {
-        super(name, "", new VMapReader() {
+        super(name, "", new SuchijidoFileReader() {
             @Override protected Map.Entry<ScjdDataPayload.Geometry, ScjdDataPayload.Data> getResult() { return null; }
         });
     }

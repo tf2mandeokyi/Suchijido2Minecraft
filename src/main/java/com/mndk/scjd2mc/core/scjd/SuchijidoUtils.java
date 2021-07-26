@@ -113,7 +113,7 @@ public class SuchijidoUtils {
 	/**
 	 * @return Object part: Either a class of point (Vector2DH) or a list of lines (Vector2DH[][])
 	 */
-	public static ScjdDataPayload.Geometry.Record<?> parseGeometryDataString(
+	public static ScjdDataPayload.Geometry.Record<?> parseBinaryGeometryDataString(
 			InputStream geometryStream, GeographicProjection projection) throws IOException, OutOfProjectionBoundsException {
 
 		DataInputStream dis = new DataInputStream(geometryStream);

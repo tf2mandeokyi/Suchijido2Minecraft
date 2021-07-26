@@ -20,7 +20,7 @@ import java.util.AbstractMap;
 import java.util.Map;
 
 
-public class ShpZipMapReader extends VMapReader {
+public class ShpZipDataFileReader extends SuchijidoFileReader {
 
 
 	@Override
@@ -48,7 +48,7 @@ public class ShpZipMapReader extends VMapReader {
 			assert shapeFiles != null;
 
 			if(shapeFiles.length == 0) {
-				System.err.println("Huh? I can't found any .shp file in this folder! >:(");
+				System.err.println("Huh? I can't find any .shp file in this folder! >:(");
 			}
 
 			long count = 0;
