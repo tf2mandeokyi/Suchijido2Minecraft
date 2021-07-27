@@ -3,6 +3,7 @@ package com.mndk.scjd2mc.core.scjd.type;
 import com.mndk.scjd2mc.core.db.common.TableColumn;
 import com.mndk.scjd2mc.core.db.common.TableColumns;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
+import com.mndk.scjd2mc.core.scjd.elem.poly.ScjdPolygon;
 import lombok.Getter;
 
 import javax.annotation.Nullable;
@@ -17,7 +18,10 @@ public enum ElementDataType {
 	
 	// A타입 - 교통
 	도로경계("road_boundary", "A001", new TableColumns(), (e, m) -> {
-		m.put("highway", "unclassified");
+		if(e instanceof ScjdPolygon) {
+			m.remove("area");
+			m.put("area:highway", "road");
+		}
 	}),
 	도로중심선("road_centerline", "A002", new TableColumns(
 			new TableColumn("RDNU", "도로번호", new TableColumn.VarCharType(30)),
@@ -62,7 +66,12 @@ public enum ElementDataType {
 			new TableColumn("BYYN", "자전거도로유무", new TableColumn.VarCharType(6), true),
 			new TableColumn("KIND", "종류", new TableColumn.VarCharType(6), true)
 	), (e, m) -> {
-		m.put("highway", "pedestrian");
+		if(e instanceof ScjdPolygon) {
+			m.put("area:highway", "footway");
+		}
+		else {
+			m.put("highway", "pedestrian");
+		}
 		if("유".equals(e.getData("자전거도로유무"))) {
 			m.put("bicycle", "yes");
 		}
@@ -75,8 +84,13 @@ public enum ElementDataType {
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100))
 	), (e, m) -> {
 		if("교통섬".equals(e.getData("구조"))) {
-			m.put("highway", "crossing");
-			m.put("crossing:island", "yes");
+			if(e instanceof ScjdPolygon) {
+				m.put("area:highway", "traffic_island");
+			}
+			else {
+				m.put("highway", "crossing");
+				m.put("crossing:island", "yes");
+			}
 		}
 	}),
 	육교("pedestrian_overpass", "A006", new TableColumns(
@@ -207,14 +221,14 @@ public enum ElementDataType {
 		String name1 = e.getData("명칭") instanceof String ? (String) e.getData("명칭") : null,
 				name2 = e.getData("주기") instanceof String ? (String) e.getData("주기") : null;
 		String finalName;
-		if(name1 != null) {
-			if(name2 == null) finalName = name1;
+		if(name1 != null && name1.length() != 0) {
+			if(name2 == null || name2.length() == 0) finalName = name1;
 			else finalName = name1 + "-" + name2;
 		}
 		else {
 			finalName = name2;
 		}
-		if(finalName != null) {
+		if(finalName != null && finalName.length() != 0) {
 			m.put("name", finalName);
 		}
 		m.put("building:levels", e.getData("층수"));
@@ -506,8 +520,9 @@ public enum ElementDataType {
 	), -1, (e, m) -> {
 		m.put("natural", "water");
 		m.put("water", "lake");
-		if(e.getData("명칭") instanceof String) {
-			m.put("name", e.getData("명칭"));
+		Object name = e.getData("명칭");
+		if(name instanceof String && ((String) name).length() != 0) {
+			m.put("name", name);
 		}
 	}),
 	용수로("aqueduct", "E006", new TableColumns(
