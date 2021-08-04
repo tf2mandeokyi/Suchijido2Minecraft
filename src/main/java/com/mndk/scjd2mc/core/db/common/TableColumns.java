@@ -7,15 +7,16 @@ import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
 import lombok.Getter;
 import lombok.ToString;
 
+import javax.annotation.Nonnull;
+
 @ToString
 public class TableColumns {
 
 
     private final TableColumn[] columns;
     private final @Getter int length;
-    private @Getter
-    ElementDataType parentType;
 
+    private @Getter ElementDataType parentType;
     public void setParentType(ElementDataType value) {
         if(parentType != null) throw new RuntimeException(new IllegalAccessException());
         this.parentType = value;
@@ -36,7 +37,16 @@ public class TableColumns {
 
 
 
-    public JsonObject convertElementDataToJson(ScjdElement element) {
+    public int searchByName(@Nonnull String name) {
+        for(int i = 0; i < length; ++i) {
+            if(name.equals(columns[i].getName())) return i;
+        }
+        return -1;
+    }
+
+
+
+    public JsonObject convertElementDataToJson(ScjdElement<?> element) {
         JsonObject object = new JsonObject();
         for(int i = 0; i < length; ++i) {
 

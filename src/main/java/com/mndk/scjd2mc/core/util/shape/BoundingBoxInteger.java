@@ -13,10 +13,17 @@ public class BoundingBoxInteger {
 		this.xmax = (int)  Math.ceil(region.getMaximumPoint().getX()); this.zmax = (int)  Math.ceil(region.getMaximumPoint().getZ());
 	}
 	
-	public BoundingBoxInteger getIntersectionArea(BoundingBoxInteger other) {
+	public BoundingBoxInteger and(BoundingBoxInteger other) {
 		int xmin = Math.max(this.xmin, other.xmin), zmin = Math.max(this.zmin, other.zmin);
 		int xmax = Math.min(this.xmax, other.xmax), zmax = Math.min(this.zmax, other.zmax);
 		
+		return new BoundingBoxInteger(xmin, zmin, xmax, zmax);
+	}
+
+	public BoundingBoxInteger or(BoundingBoxInteger other) {
+		int xmin = Math.min(this.xmin, other.xmin), zmin = Math.min(this.zmin, other.zmin);
+		int xmax = Math.max(this.xmax, other.xmax), zmax = Math.max(this.zmax, other.zmax);
+
 		return new BoundingBoxInteger(xmin, zmin, xmax, zmax);
 	}
 	

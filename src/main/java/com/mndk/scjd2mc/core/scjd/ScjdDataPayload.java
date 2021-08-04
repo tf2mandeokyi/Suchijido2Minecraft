@@ -1,16 +1,11 @@
 package com.mndk.scjd2mc.core.scjd;
 
 import com.mndk.scjd2mc.core.db.common.TableColumns;
-import com.mndk.scjd2mc.core.util.math.Vector2DH;
-import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
-import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
-import com.mndk.scjd2mc.core.scjd.elem.line.ScjdContour;
-import com.mndk.scjd2mc.core.scjd.elem.line.ScjdLineString;
-import com.mndk.scjd2mc.core.scjd.elem.line.ScjdWall;
-import com.mndk.scjd2mc.core.scjd.elem.point.ScjdElevationPoint;
-import com.mndk.scjd2mc.core.scjd.elem.point.ScjdPoint;
-import com.mndk.scjd2mc.core.scjd.elem.poly.ScjdBuilding;
-import com.mndk.scjd2mc.core.scjd.elem.poly.ScjdPolygon;
+import com.mndk.scjd2mc.core.scjd.elem.*;
+import com.mndk.scjd2mc.core.scjd.geometry.GeometryShape;
+import com.mndk.scjd2mc.core.scjd.geometry.LineString;
+import com.mndk.scjd2mc.core.scjd.geometry.Point;
+import com.mndk.scjd2mc.core.scjd.geometry.Polygon;
 import com.mndk.scjd2mc.core.scjd.type.ElementDataType;
 import com.mndk.scjd2mc.core.scjd.type.ElementGeometryType;
 import lombok.Getter;
@@ -31,21 +26,22 @@ public class ScjdDataPayload {
 
         SuchijidoData result = new SuchijidoData();
 
-        for(Map.Entry<Long, Geometry.Record<?>> entry : geometryPayload.entrySet()) {
+        for(Map.Entry<Long, GeometryShape<?>> entry : geometryPayload.entrySet()) {
             long id = entry.getKey();
-            Geometry.Record<?> geometryRecord = entry.getValue();
+            final GeometryShape<?> shape = entry.getValue();
             Data.Record dataRecord = dataPayload.get(id);
 
             if(dataRecord == null) continue;
 
             Object[] dataRow = dataRecord.getDataRow();
 
-            ElementGeometryType geometryType = geometryRecord.getType();
+            ElementGeometryType geometryType = shape.getType();
             ElementDataType dataType = dataRecord.getType();
 
             ScjdLayer layer = result.getLayer(dataType);
+            TableColumns columns = dataType.getColumns();
+
             if(layer == null) {
-                TableColumns columns = dataType.getColumns();
                 String[] stringColumns = new String[columns.getLength()];
                 for(int i = 0; i < stringColumns.length; ++i) {
                     stringColumns[i] = columns.get(i).getName();
@@ -53,48 +49,29 @@ public class ScjdDataPayload {
                 result.addLayer(layer = new ScjdLayer(dataType, stringColumns));
             }
 
-            ScjdElement element;
-            Vector2DH[][] vertexList;
-
             switch(geometryType) {
                 case POINT:
-                    Vector2DH point = (Vector2DH) geometryRecord.getGeometryData();
                     if(dataType == ElementDataType.표고점) {
-                        element = new ScjdElevationPoint(layer, point, dataRow);
-                    }
-                    else {
-                        element = new ScjdPoint(layer, Long.toString(id), point, dataRow);
+                        layer.add(new ScjdElevationPoint(layer, (Point) shape, dataRow));
+                        continue;
                     }
                     break;
                 case LINESTRING:
-                    vertexList = (Vector2DH[][]) geometryRecord.getGeometryData();
-                    if(layer.getType() == ElementDataType.등고선) {
-                        element = new ScjdContour(layer, vertexList[0], dataRow);
-                    }
-                    else if(layer.getType() == ElementDataType.옹벽) {
-                        element = new ScjdWall(layer, Long.toString(id), vertexList, dataRow, false);
-                    }
-                    else {
-                        element = new ScjdLineString(layer, Long.toString(id), vertexList, dataRow, false);
+                    if(dataType == ElementDataType.등고선) {
+                        layer.add(new ScjdContour(layer, (LineString) shape, dataRow));
+                        continue;
                     }
                     break;
                 case POLYGON:
-                    vertexList = (Vector2DH[][]) geometryRecord.getGeometryData();
-
-                    if(layer.getType() == ElementDataType.건물) {
-                        if(options.containsKey("gen-building-shells")) {
-                            element = new ScjdBuilding(layer, Long.toString(id), vertexList, dataRow);
-                        } else {
-                            element = new ScjdPolygon(layer, Long.toString(id), vertexList, dataRow, false);
-                        }
-                    }
-                    else {
-                        element = new ScjdPolygon(layer, Long.toString(id), vertexList, dataRow, true);
+                    if(dataType == ElementDataType.건물) {
+                        layer.add(new ScjdBuilding(layer, Long.toString(id), (Polygon) shape, dataRow,
+                                options.containsKey("gen-building-shells")));
+                        continue;
                     }
                     break;
-                default: continue;
             }
 
+            ScjdElement<?> element = new ScjdElement<>(layer, Long.toString(id), shape, dataRow);
             layer.add(element);
 
         }
@@ -102,6 +79,7 @@ public class ScjdDataPayload {
         return result;
 
     }
+
 
     public static class Data extends HashMap<Long, Data.Record> {
 
@@ -114,14 +92,6 @@ public class ScjdDataPayload {
         }
     }
 
-    public static class Geometry extends HashMap<Long, Geometry.Record<?>> {
 
-        @RequiredArgsConstructor
-        @Getter
-        @ToString
-        public static class Record<T> {
-            private final ElementGeometryType type;
-            private final T geometryData;
-        }
-    }
+    public static class Geometry extends HashMap<Long, GeometryShape<?>> { }
 }

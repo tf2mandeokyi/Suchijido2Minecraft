@@ -3,7 +3,6 @@ package com.mndk.scjd2mc.core.scjd.type;
 import com.mndk.scjd2mc.core.db.common.TableColumn;
 import com.mndk.scjd2mc.core.db.common.TableColumns;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
-import com.mndk.scjd2mc.core.scjd.elem.poly.ScjdPolygon;
 import lombok.Getter;
 
 import javax.annotation.Nullable;
@@ -18,7 +17,7 @@ public enum ElementDataType {
 	
 	// A타입 - 교통
 	도로경계("road_boundary", "A001", new TableColumns(), (e, m) -> {
-		if(e instanceof ScjdPolygon) {
+		if(e.getShape().getType() == ElementGeometryType.POLYGON) {
 			m.remove("area");
 			m.put("area:highway", "road");
 		}
@@ -66,7 +65,7 @@ public enum ElementDataType {
 			new TableColumn("BYYN", "자전거도로유무", new TableColumn.VarCharType(6), true),
 			new TableColumn("KIND", "종류", new TableColumn.VarCharType(6), true)
 	), (e, m) -> {
-		if(e instanceof ScjdPolygon) {
+		if(e.getShape().getType() == ElementGeometryType.POLYGON) {
 			m.put("area:highway", "footway");
 		}
 		else {
@@ -84,7 +83,7 @@ public enum ElementDataType {
 			new TableColumn("NAME", "명칭", new TableColumn.VarCharType(100))
 	), (e, m) -> {
 		if("교통섬".equals(e.getData("구조"))) {
-			if(e instanceof ScjdPolygon) {
+			if(e.getShape().getType() == ElementGeometryType.POLYGON) {
 				m.put("area:highway", "traffic_island");
 			}
 			else {
@@ -236,7 +235,9 @@ public enum ElementDataType {
 	담장("wall", "B002", new TableColumns(
 			new TableColumn("DIVI", "구분", new TableColumn.VarCharType(6), true),
 			new TableColumn("QUAL", "재질", new TableColumn.VarCharType(6), true)
-	)),
+	), (e, m ) -> {
+		m.put("barrier", "wall");
+	}),
 
 
 
@@ -649,7 +650,7 @@ public enum ElementDataType {
 	private final @Getter String layerNameHeader;
 	private final @Getter int priority;
 	private final @Getter TableColumns columns;
-	private final @Getter @Nullable BiConsumer<ScjdElement, Map<String, Object>> serializableMapPropertyFunction;
+	private final @Getter @Nullable BiConsumer<ScjdElement<?>, Map<String, Object>> serializableMapPropertyFunction;
 
 
 
@@ -669,7 +670,7 @@ public enum ElementDataType {
 	ElementDataType(String englishName,
 					String layerNameHeader,
 					TableColumns columns,
-					BiConsumer<ScjdElement, Map<String, Object>> serializableMapPropertyFunction) {
+					BiConsumer<ScjdElement<?>, Map<String, Object>> serializableMapPropertyFunction) {
 		this(englishName, layerNameHeader, columns, 0, serializableMapPropertyFunction);
 	}
 
@@ -679,7 +680,7 @@ public enum ElementDataType {
 					String layerNameHeader,
 					TableColumns columns,
 					int priority,
-					BiConsumer<ScjdElement, Map<String, Object>> serializableMapPropertyFunction) {
+					BiConsumer<ScjdElement<?>, Map<String, Object>> serializableMapPropertyFunction) {
 		this.englishName = englishName;
 		this.layerNameHeader = layerNameHeader;
 		this.columns = columns;

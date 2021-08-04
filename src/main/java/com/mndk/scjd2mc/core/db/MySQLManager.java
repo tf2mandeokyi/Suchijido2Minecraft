@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import com.mndk.scjd2mc.core.scjd.geometry.GeometryShape;
 import com.mndk.scjd2mc.core.util.shape.BoundingBoxDouble;
 import com.mndk.scjd2mc.core.scjd.*;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
@@ -15,8 +16,7 @@ import com.mndk.scjd2mc.mod.Suchijido2MinecraftMod;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.sql.*;
 import java.util.AbstractMap;
 import java.util.Map;
@@ -126,15 +126,20 @@ public class MySQLManager {
         PreparedStatement statement = connection.prepareStatement(dataInsertionQuery);
 
         for(int i = 0 ; i < layer.size(); ++i) {
-            ScjdElement element = layer.get(i);
-
-            Blob geometryBlob = connection.createBlob();
-            geometryBlob.setBytes(1, SuchijidoUtils.generateGeometryDataBytes(element));
-            BoundingBoxDouble bbox = element.getBoundingBoxDouble();
+            ScjdElement<?> element = layer.get(i);
+            GeometryShape<?> geometryShape = element.getShape();
 
             statement.setString(9 * i + 1, mapIndex);
-            statement.setDouble(9 * i + 2, element.getGeometryType().ordinal());
+            statement.setDouble(9 * i + 2, geometryShape.getType().ordinal());
+
+            Blob geometryBlob = connection.createBlob();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(bos);
+            geometryShape.toGeometryBytes(dos);
+            geometryBlob.setBytes(1, bos.toByteArray());
             statement.setBlob(9 * i + 3, geometryBlob);
+
+            BoundingBoxDouble bbox = geometryShape.getBoundingBox();
             statement.setDouble(9 * i + 4, bbox.xmin);
             statement.setDouble(9 * i + 5, bbox.xmax);
             statement.setDouble(9 * i + 6, bbox.zmin);
@@ -161,7 +166,7 @@ public class MySQLManager {
             if(i != elementSize - 1) qmarkString.append(",");
         }
 
-        return queryString + qmarkString.toString();
+        return queryString + qmarkString;
 
     }
 
@@ -241,8 +246,8 @@ public class MySQLManager {
         while(resultSet.next()) {
 
             long id = resultSet.getLong(ID_COLUMN.getName());
-            InputStream stream = resultSet.getBlob("geom").getBinaryStream();
-            geometryPayload.put(id, SuchijidoUtils.parseBinaryGeometryDataString(stream, targetProjection));
+            DataInputStream geometryStream = new DataInputStream(resultSet.getBlob("geom").getBinaryStream());
+            geometryPayload.put(id, GeometryShape.fromGeometryBytes(geometryStream, targetProjection));
 
             ElementDataType type = ElementDataType.fromLayerName(
                     resultSet.getString("data_type"));

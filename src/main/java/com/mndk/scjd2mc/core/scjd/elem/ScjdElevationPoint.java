@@ -1,21 +1,21 @@
-package com.mndk.scjd2mc.core.scjd.elem.point;
+package com.mndk.scjd2mc.core.scjd.elem;
 
+import com.mndk.scjd2mc.core.scjd.SuchijidoUtils;
+import com.mndk.scjd2mc.core.scjd.geometry.Point;
+import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector;
 import com.mndk.scjd2mc.core.util.math.Vector2DH;
 import com.mndk.scjd2mc.core.util.shape.TriangleList;
-import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector;
-import com.mndk.scjd2mc.core.scjd.SuchijidoUtils;
-import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
 import com.sk89q.worldedit.regions.FlatRegion;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.io.IOException;
 
-public class ScjdElevationPoint extends ScjdPoint {
+public class ScjdElevationPoint extends ScjdElement<Point> {
 	
 	public final int y;
 
-	public ScjdElevationPoint(ScjdLayer layer, Vector2DH point, Object[] rowData) throws Exception {
+	public ScjdElevationPoint(ScjdLayer layer, Point point, Object[] rowData) throws Exception {
 		super(layer, "", point, rowData);
 		Object value = this.getData("수치");
 		if(value instanceof String) {
@@ -29,7 +29,7 @@ public class ScjdElevationPoint extends ScjdPoint {
 	}
 
 	public Vector2DH getPosition() {
-		return super.getPosition().withHeight(this.y);
+		return shape.getShape().withHeight(this.y);
 	}
 
 	@Override

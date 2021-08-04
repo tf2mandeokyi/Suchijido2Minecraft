@@ -1,7 +1,6 @@
 package com.mndk.scjd2mc.core.scjd;
 
 import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
-import com.mndk.scjd2mc.core.scjd.elem.poly.ScjdPolygon;
 import com.mndk.scjd2mc.core.scjd.type.ElementDataType;
 
 import javax.annotation.Nullable;
@@ -10,20 +9,11 @@ import java.util.Collections;
 import java.util.List;
 
 public class SuchijidoData {
-	
-	private ScjdPolygon boundary;
+
 	private final List<ScjdLayer> layerList;
 	
 	public SuchijidoData() {
 		this.layerList = new ArrayList<>();
-	}
-	
-	public ScjdPolygon getBoundary() {
-		return boundary;
-	}
-	
-	public void setBoundary(ScjdPolygon boundary) {
-		this.boundary = boundary;
 	}
 	
 	public List<ScjdLayer> getLayers() {
@@ -35,12 +25,6 @@ public class SuchijidoData {
 	}
 	
 	public void append(SuchijidoData other) {
-		if(this.boundary == null) {
-			this.boundary = other.boundary;
-		}
-		else {
-			this.boundary = this.boundary.merge(other.boundary);
-		}
 		for(ScjdLayer layer : other.layerList) {
 			ScjdLayer thisLayer = this.getLayer(layer.getType());
 			if(thisLayer != null) {

@@ -2,11 +2,12 @@ package com.mndk.scjd2mc.core.util.shape;
 
 import com.sk89q.worldedit.regions.FlatRegion;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor @ToString
 public class BoundingBoxDouble {
 
     public final double xmin, zmin, xmax, zmax;
@@ -16,9 +17,16 @@ public class BoundingBoxDouble {
         this.xmax = region.getMaximumPoint().getX(); this.zmax = region.getMaximumPoint().getZ();
     }
 
-    public BoundingBoxDouble getIntersectionArea(BoundingBoxDouble other) {
+    public BoundingBoxDouble and(BoundingBoxDouble other) {
         double xmin = Math.max(this.xmin, other.xmin), zmin = Math.max(this.zmin, other.zmin);
         double xmax = Math.min(this.xmax, other.xmax), zmax = Math.min(this.zmax, other.zmax);
+
+        return new BoundingBoxDouble(xmin, zmin, xmax, zmax);
+    }
+
+    public BoundingBoxDouble or(BoundingBoxDouble other) {
+        double xmin = Math.min(this.xmin, other.xmin), zmin = Math.min(this.zmin, other.zmin);
+        double xmax = Math.max(this.xmax, other.xmax), zmax = Math.max(this.zmax, other.zmax);
 
         return new BoundingBoxDouble(xmin, zmin, xmax, zmax);
     }

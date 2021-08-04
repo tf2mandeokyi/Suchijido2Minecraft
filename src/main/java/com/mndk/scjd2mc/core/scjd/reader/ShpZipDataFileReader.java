@@ -1,13 +1,13 @@
 package com.mndk.scjd2mc.core.scjd.reader;
 
+import com.mndk.scjd2mc.core.db.common.TableColumn;
+import com.mndk.scjd2mc.core.db.common.TableColumns;
+import com.mndk.scjd2mc.core.scjd.ScjdDataPayload;
+import com.mndk.scjd2mc.core.scjd.geometry.*;
+import com.mndk.scjd2mc.core.scjd.type.ElementDataType;
 import com.mndk.scjd2mc.core.util.file.DirectoryManager;
 import com.mndk.scjd2mc.core.util.file.ZipManager;
 import com.mndk.scjd2mc.core.util.math.Vector2DH;
-import com.mndk.scjd2mc.core.scjd.*;
-import com.mndk.scjd2mc.core.db.common.TableColumn;
-import com.mndk.scjd2mc.core.db.common.TableColumns;
-import com.mndk.scjd2mc.core.scjd.type.ElementDataType;
-import com.mndk.scjd2mc.core.scjd.type.ElementGeometryType;
 import com.mndk.shapefile.ShpDbfDataIterator;
 import com.mndk.shapefile.ShpDbfRecord;
 import com.mndk.shapefile.shp.ShapeVector;
@@ -36,12 +36,14 @@ public class ShpZipDataFileReader extends SuchijidoFileReader {
 
 		try {
 
-			if(zipDestination.exists()) {
-				zipDestination.delete();
+			if(zipDestination.exists() && !zipDestination.delete()) {
+				throw new IOException("Failed to delete files");
 			}
 
 			// Extract all files in map file
-			zipDestination.mkdir();
+			if(!zipDestination.mkdir()) {
+				throw new IOException("Failed to create directory");
+			}
 			ZipManager.extractZipFile(mapFile, zipDestination, "cp949");
 
 			File[] shapeFiles = zipDestination.listFiles((dir, name) -> name.endsWith(".shp"));
@@ -66,7 +68,7 @@ public class ShpZipDataFileReader extends SuchijidoFileReader {
 					for (ShpDbfRecord record : iterator) {
 						// System.out.println(record.dBase);
 
-						ScjdDataPayload.Geometry.Record<?> geometryRecord = fromShpRecord(record.shape);
+						GeometryShape<?> geometryRecord = fromShpRecord(record.shape);
 
 						Object[] dataRow = new Object[columns.getLength()];
 						for(int i = 0; i < columns.getLength(); ++i) {
@@ -103,64 +105,86 @@ public class ShpZipDataFileReader extends SuchijidoFileReader {
 
 
 
-	protected ScjdDataPayload.Geometry.Record<?> fromShpRecord(ShapefileRecord record) {
+	protected GeometryShape<?> fromShpRecord(ShapefileRecord record) {
 		if(record instanceof ShapefileRecord.Polygon) {
-			return new ScjdDataPayload.Geometry.Record<>(
-					ElementGeometryType.POLYGON, fromPolygon((ShapefileRecord.Polygon) record));
+			return polygon((ShapefileRecord.Polygon) record);
 		}
 		else if(record instanceof ShapefileRecord.PolyLine) {
-			return new ScjdDataPayload.Geometry.Record<>(
-					ElementGeometryType.LINESTRING, fromLine((ShapefileRecord.PolyLine) record));
+			return line((ShapefileRecord.PolyLine) record);
 		}
 		else if(record instanceof ShapefileRecord.Point) {
-			return new ScjdDataPayload.Geometry.Record<>(
-					ElementGeometryType.POINT, fromPoint((ShapefileRecord.Point) record));
+			return point((ShapefileRecord.Point) record);
 		}
 		return null;
 	}
 	
 	
 	
-	private Vector2DH[][] fromPolygon(ShapefileRecord.Polygon polygon) {
+	private Polygon polygon(ShapefileRecord.Polygon polygon) {
 		ShapeVector[][] points = polygon.points;
-		Vector2DH[][] vertexList = new Vector2DH[polygon.points.length][];
+		int polygonSize = points.length;
+		LineString[] lineStrings = new LineString[polygonSize];
 		
-		for(int j = 0; j < points.length; ++j) {
-			int size = points[j].length;
-			vertexList[j] = new Vector2DH[size];
+		for(int j = 0; j < polygonSize; ++j) {
+			int lineSize = points[j].length;
+			Vector2DH[] linePoints = new Vector2DH[lineSize];
 			
-			for(int i = 0; i < size; ++i) {
+			for(int i = 0; i < lineSize; ++i) {
 				ShapeVector vector = points[j][i];
-				vertexList[j][i] = this.targetProjToWorldProjCoord(vector.x, vector.y);
+				linePoints[i] = this.targetProjToWorldProjCoord(vector.x, vector.y);
 			}
+
+			lineStrings[j] = new LineString(linePoints);
 		}
 
-		return vertexList;
+		return new Polygon(lineStrings);
 	}
 	
 
 	
-	private Vector2DH[][] fromLine(ShapefileRecord.PolyLine polyline) {
+	private GeometryShape<?> line(ShapefileRecord.PolyLine polyline) {
 		ShapeVector[][] points = polyline.points;
-		Vector2DH[][] vertexList = new Vector2DH[polyline.points.length][];
-		
-		for(int j = 0; j < points.length; ++j) {
-			int size = points[j].length;
-			vertexList[j] = new Vector2DH[size];
-			
-			for(int i = 0; i < size; ++i) {
-				ShapeVector vector = points[j][i];
-				vertexList[j][i] = this.targetProjToWorldProjCoord(vector.x, vector.y);
-			}
-		}
+		int lineCount = polyline.points.length;
 
-		return vertexList;
+		if(lineCount == 0) {
+			return null;
+		}
+		else if(lineCount == 1) {
+
+			int lineSize = points[0].length;
+			Vector2DH[] linePoints = new Vector2DH[lineSize];
+
+			for(int i = 0; i < lineSize; ++i) {
+				ShapeVector vector = points[0][i];
+				linePoints[i] = this.targetProjToWorldProjCoord(vector.x, vector.y);
+			}
+
+			return new LineString(linePoints);
+
+		} else {
+
+			LineString[] result = new LineString[lineCount];
+
+			for(int j = 0; j < points.length; ++j) {
+				int lineSize = points[j].length;
+				Vector2DH[] linePoints = new Vector2DH[lineSize];
+
+				for(int i = 0; i < lineSize; ++i) {
+					ShapeVector vector = points[j][i];
+					linePoints[i] = this.targetProjToWorldProjCoord(vector.x, vector.y);
+				}
+
+				result[j] = new LineString(linePoints);
+			}
+
+			return new MultiLineString(result);
+		}
 	}
 	
 	
 	
-	private Vector2DH fromPoint(ShapefileRecord.Point point) {
-		return this.targetProjToWorldProjCoord(point.vector.x, point.vector.y);
+	private Point point(ShapefileRecord.Point point) {
+		return new Point(this.targetProjToWorldProjCoord(point.vector.x, point.vector.y));
 	}
 
 }

@@ -1,7 +1,7 @@
 package com.mndk.scjd2mc.core.scjd.type;
 
 import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
-import com.mndk.scjd2mc.core.scjd.elem.poly.ScjdBuilding;
+import com.mndk.scjd2mc.core.scjd.elem.ScjdBuilding;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockColored;
 import net.minecraft.block.state.IBlockState;
@@ -12,7 +12,7 @@ public class ElementStyleSelector {
 	
 	
 	
-	public static ScjdElementStyle[] getStyle(ScjdElement element) {
+	public static ScjdElementStyle[] getStyle(ScjdElement<?> element) {
 		
 		
 		

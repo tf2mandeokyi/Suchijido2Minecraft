@@ -1,9 +1,10 @@
 package com.mndk.scjd2mc.core.scjd.elem;
 
 import com.google.gson.JsonObject;
-import com.mndk.scjd2mc.core.scjd.elem.poly.ScjdPolygon;
-import com.mndk.scjd2mc.core.scjd.type.ElementGeometryType;
-import com.mndk.scjd2mc.core.util.shape.BoundingBoxDouble;
+import com.mndk.scjd2mc.core.scjd.geometry.GeometryShape;
+import com.mndk.scjd2mc.core.scjd.geometry.MultiPolygon;
+import com.mndk.scjd2mc.core.scjd.geometry.Polygon;
+import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector;
 import com.mndk.scjd2mc.core.util.shape.TriangleList;
 import com.mndk.scjd2mc.mod.Suchijido2MinecraftMod;
 import com.sk89q.worldedit.regions.FlatRegion;
@@ -15,27 +16,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+
+
 @AllArgsConstructor
-public abstract class ScjdElement {
+public class ScjdElement<T extends GeometryShape<?>> {
 	
 	
 	protected final ScjdLayer parent;
-	public final Object[] dataRow;
-	@Getter protected ElementGeometryType geometryType;
-	protected BoundingBoxDouble bbox;
 	protected final String id;
-
-
-	protected ScjdElement(ScjdLayer parent, String id, Object[] dataRow, ElementGeometryType geometryType) {
-		this.parent = parent;
-		this.dataRow = dataRow;
-		this.geometryType = geometryType;
-		this.id = id;
-	}
+	@Getter protected T shape;
+	public final Object[] dataRow;
 	
 	
-	public ScjdElement(ScjdLayer parent, String id, Map<String, Object> dataRow, ElementGeometryType geometryType) {
-		this(parent, id, new Object[dataRow.size()], geometryType);
+	public ScjdElement(ScjdLayer parent, String id, T shape, Map<String, Object> dataRow) {
+		this(parent, id, shape, new Object[dataRow.size()]);
 		for(Map.Entry<String, Object> data : dataRow.entrySet()) {
 			int columnIndex = parent.getDataColumnIndex(data.getKey());
 			if(columnIndex == -1) continue;
@@ -52,29 +46,34 @@ public abstract class ScjdElement {
 	
 	
 	public ScjdLayer getParent() { return parent; }
-	
-	
-	public abstract void generateBlocks(FlatRegion region, World world, TriangleList triangles);
-	public BoundingBoxDouble getBoundingBoxDouble() {
-		return bbox;
+
+
+
+	public void generateBlocks(FlatRegion region, World world, TriangleList triangles) {
+		ElementStyleSelector.ScjdElementStyle[] styles = ElementStyleSelector.getStyle(this);
+		if(styles == null) return;
+		this.shape.generateBlocks(styles, region, world, triangles);
 	}
 
 
-	protected abstract Map<String, Object> getSerializableMapGeometryData();
 
 	private Map<String, Object> toSerializableMap() {
 
-		BiConsumer<ScjdElement, Map<String, Object>> jsonPropertyFunction = this.parent.getType().getSerializableMapPropertyFunction();
+		BiConsumer<ScjdElement<?>, Map<String, Object>> jsonPropertyFunction =
+				this.parent.getType().getSerializableMapPropertyFunction();
 		if(jsonPropertyFunction == null) return null;
 
 		Map<String, Object> result = new HashMap<>();
 
 		result.put("type", "Feature");
 
-		result.put("geometry", this.getSerializableMapGeometryData());
+		Map<String, Object> geometry = new HashMap<>();
+		geometry.put("type", this.shape.getType().getName());
+		geometry.put("coordinates", this.shape.toSerializableCoordinates());
+		result.put("geometry", geometry);
 
 		Map<String, Object> properties = new HashMap<>();
-		if(this instanceof ScjdPolygon) {
+		if(this.shape instanceof Polygon || this.shape instanceof MultiPolygon) {
 			properties.put("area", "yes");
 		}
 		jsonPropertyFunction.accept(this, properties);
@@ -82,15 +81,17 @@ public abstract class ScjdElement {
 
 		result.put("id", this.id);
 
-		result.put("bounds", this.bbox.toSerializableMap());
+		result.put("bounds", this.shape.getBoundingBox().toSerializableMap());
 
 		return result;
 	}
+
 
 	public JsonObject toJsonObject() {
 		Map<String, Object> result = this.toSerializableMap();
 		return result == null ? null : Suchijido2MinecraftMod.gson.toJsonTree(this.toSerializableMap()).getAsJsonObject();
 	}
+
 
 	public org.bson.Document toBsonDocument(String map_index) {
 		Map<String, Object> map = this.toSerializableMap();

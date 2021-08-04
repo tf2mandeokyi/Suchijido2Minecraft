@@ -1,20 +1,22 @@
 package com.mndk.scjd2mc.core.scjd.reader;
 
-import com.mndk.scjd2mc.core.util.math.Vector2DH;
-import com.mndk.scjd2mc.core.scjd.*;
-import com.mndk.scjd2mc.core.db.common.TableColumn;
-import com.mndk.scjd2mc.core.db.common.TableColumns;
-import com.mndk.scjd2mc.core.scjd.type.ElementDataType;
-import com.mndk.scjd2mc.core.scjd.type.ElementGeometryType;
 import com.mndk.ngiparser.NgiParser;
 import com.mndk.ngiparser.ngi.NgiLayer;
 import com.mndk.ngiparser.ngi.NgiParserResult;
 import com.mndk.ngiparser.ngi.element.*;
 import com.mndk.ngiparser.ngi.vertex.NgiVector;
+import com.mndk.scjd2mc.core.db.common.TableColumn;
+import com.mndk.scjd2mc.core.db.common.TableColumns;
+import com.mndk.scjd2mc.core.scjd.ScjdDataPayload;
+import com.mndk.scjd2mc.core.scjd.geometry.*;
+import com.mndk.scjd2mc.core.scjd.type.ElementDataType;
+import com.mndk.scjd2mc.core.util.math.Vector2DH;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Collection;
+import java.util.Map;
 
 public class NgiDataFileReader extends SuchijidoFileReader {
 
@@ -41,7 +43,7 @@ public class NgiDataFileReader extends SuchijidoFileReader {
 
 				for(NgiRecord<?> ngiElement : ngiElements) {
 
-					ScjdDataPayload.Geometry.Record<?> geometryRecord = fromNgiRecord(ngiElement);
+					GeometryShape<?> geometryRecord = fromNgiRecord(ngiElement);
 					if(geometryRecord == null) continue;
 
 					Object[] dataRow = new Object[columns.getLength()];
@@ -68,23 +70,19 @@ public class NgiDataFileReader extends SuchijidoFileReader {
 
 
 	@Nullable
-	private ScjdDataPayload.Geometry.Record<?> fromNgiRecord(NgiRecord<?> ngiElement) throws Exception {
+	private GeometryShape<?> fromNgiRecord(NgiRecord<?> ngiElement) throws Exception {
 
 		if(ngiElement instanceof NgiMultiPolygon) {
-			return new ScjdDataPayload.Geometry.Record<>(
-					ElementGeometryType.POLYGON, fromMultiPolygon((NgiMultiPolygon) ngiElement));
+			return multiPolygon((NgiMultiPolygon) ngiElement);
 		}
 		else if(ngiElement instanceof NgiPolygon) {
-			return new ScjdDataPayload.Geometry.Record<>(
-					ElementGeometryType.POLYGON, fromPolygon((NgiPolygon) ngiElement));
+			return polygon((NgiPolygon) ngiElement);
 		}
 		else if(ngiElement instanceof NgiLine) {
-			return new ScjdDataPayload.Geometry.Record<>(
-					ElementGeometryType.LINESTRING, fromLine((NgiLine) ngiElement));
+			return line((NgiLine) ngiElement);
 		}
 		else if(ngiElement instanceof NgiPoint) {
-			return new ScjdDataPayload.Geometry.Record<>(
-					ElementGeometryType.POINT, fromPoint((NgiPoint) ngiElement));
+			return point((NgiPoint) ngiElement);
 		}
 		else if(ngiElement instanceof NgiText) {
 			return null;
@@ -94,61 +92,74 @@ public class NgiDataFileReader extends SuchijidoFileReader {
 
 
 
-	private Vector2DH[][] fromMultiPolygon(NgiMultiPolygon polygon) {
-		List<Vector2DH[]> vertexList = new ArrayList<>();
-		Vector2DH[] tempArray;
+	private MultiPolygon multiPolygon(NgiMultiPolygon multiPolygon) {
+		Polygon[] polygons = new Polygon[multiPolygon.vertexData.length];
 
-		for(int k = 0; k < polygon.vertexData.length; ++k) {
-			for (int j = 0; j < polygon.vertexData[k].length; ++j) {
-				int size = polygon.vertexData[k][j].getSize();
-				vertexList.add(tempArray = new Vector2DH[size]);
+		for(int k = 0; k < multiPolygon.vertexData.length; ++k) {
 
-				for (int i = 0; i < size; ++i) {
-					NgiVector vertex = polygon.vertexData[k][j].getVertex(i);
-					tempArray[i] = this.targetProjToWorldProjCoord(vertex.getAxis(0), vertex.getAxis(1));
+			int polygonSize = multiPolygon.vertexData[k].length;
+			LineString[] lineStrings = new LineString[polygonSize];
+
+			for (int j = 0; j < polygonSize; ++j) {
+
+				int lineSize = multiPolygon.vertexData[k][j].getSize();
+				Vector2DH[] points = new Vector2DH[lineSize];
+
+				for (int i = 0; i < lineSize; ++i) {
+					NgiVector vertex = multiPolygon.vertexData[k][j].getVertex(i);
+					points[i] = this.targetProjToWorldProjCoord(vertex.getAxis(0), vertex.getAxis(1));
 				}
+
+				lineStrings[j] = new LineString(points);
 			}
+			polygons[k] = new Polygon(lineStrings);
 		}
 
-		return vertexList.toArray(new Vector2DH[0][]);
+		return new MultiPolygon(polygons);
 	}
 	
 	
 	
-	private Vector2DH[][] fromPolygon(NgiPolygon polygon) {
-		Vector2DH[][] vertexList = new Vector2DH[polygon.vertexData.length][];
+	private Polygon polygon(NgiPolygon polygon) {
+
+		int polygonSize = polygon.vertexData.length;
+		LineString[] lineStrings = new LineString[polygonSize];
 		
-		for(int j = 0; j < polygon.vertexData.length; ++j) {
-			int size = polygon.vertexData[j].getSize();
-			vertexList[j] = new Vector2DH[size];
+		for(int j = 0; j < polygonSize; ++j) {
+
+			int lineSize = polygon.vertexData[j].getSize();
+			Vector2DH[] points = new Vector2DH[lineSize];
 			
-			for(int i = 0; i < size; ++i) {
+			for(int i = 0; i < lineSize; ++i) {
 				NgiVector vertex = polygon.vertexData[j].getVertex(i);
-				vertexList[j][i] = this.targetProjToWorldProjCoord(vertex.getAxis(0), vertex.getAxis(1));
+				points[i] = this.targetProjToWorldProjCoord(vertex.getAxis(0), vertex.getAxis(1));
 			}
+
+			lineStrings[j] = new LineString(points);
 		}
 
-		return vertexList;
+		return new Polygon(lineStrings);
 	}
 	
 
 	
-	private Vector2DH[][] fromLine(NgiLine line) {
-		int size = line.lineData.getSize();
-		Vector2DH[] vertexList = new Vector2DH[size];
+	private LineString line(NgiLine line) {
+		int lineSize = line.lineData.getSize();
+		Vector2DH[] points = new Vector2DH[lineSize];
 		
-		for(int i = 0; i < size; ++i) {
+		for(int i = 0; i < lineSize; ++i) {
 			NgiVector vertex = line.lineData.getVertex(i);
-			vertexList[i] = this.targetProjToWorldProjCoord(vertex.getAxis(0), vertex.getAxis(1));
+			points[i] = this.targetProjToWorldProjCoord(vertex.getAxis(0), vertex.getAxis(1));
 		}
 
-		return new Vector2DH[][] { vertexList };
+		return new LineString(points);
 	}
 	
 	
 	
-	private Vector2DH fromPoint(NgiPoint point) {
-		return this.targetProjToWorldProjCoord(point.position.getAxis(0), point.position.getAxis(1));
+	private Point point(NgiPoint point) {
+		return new Point(
+				this.targetProjToWorldProjCoord(point.position.getAxis(0), point.position.getAxis(1)));
 	}
 	
 }

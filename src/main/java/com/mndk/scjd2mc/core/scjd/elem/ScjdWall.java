@@ -1,31 +1,31 @@
-package com.mndk.scjd2mc.core.scjd.elem.line;
+package com.mndk.scjd2mc.core.scjd.elem;
 
+import com.mndk.scjd2mc.core.scjd.geometry.LineString;
+import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector;
+import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector.ScjdElementStyle;
 import com.mndk.scjd2mc.core.util.LineGenerator;
 import com.mndk.scjd2mc.core.util.math.Vector2DH;
 import com.mndk.scjd2mc.core.util.shape.TriangleList;
-import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector;
-import com.mndk.scjd2mc.core.scjd.type.ElementStyleSelector.ScjdElementStyle;
-import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
 import com.sk89q.worldedit.regions.FlatRegion;
-import net.minecraft.init.Bootstrap;
 import net.minecraft.world.World;
 
 import java.util.Map;
 
-public class ScjdWall extends ScjdLineString {
+public class ScjdWall extends ScjdElement<LineString> {
 
 	
-	public ScjdWall(ScjdLayer parent, String id, Vector2DH[][] vertices, Map<String, Object> dataRow, boolean isClosed) {
-		super(parent, id, vertices, dataRow, isClosed);
+	public ScjdWall(ScjdLayer parent, String id, LineString lineString, Map<String, Object> dataRow) {
+		super(parent, id, lineString, dataRow);
 	}
 	
 	
-	public ScjdWall(ScjdLayer parent, String id, Vector2DH[][] vertices, Object[] dataRow, boolean isClosed) {
-		super(parent, id, vertices, dataRow, isClosed);
+	public ScjdWall(ScjdLayer parent, String id, LineString lineString, Object[] dataRow) {
+		super(parent, id, lineString, dataRow);
 	}
 	
-	
-	protected void generateOutline(FlatRegion region, World w, TriangleList triangleList) {
+
+	@Override
+	public void generateBlocks(FlatRegion region, World w, TriangleList triangleList) {
 		
 		ScjdElementStyle[] styles = ElementStyleSelector.getStyle(this);
 		if(styles == null) return;
@@ -37,18 +37,18 @@ public class ScjdWall extends ScjdLineString {
 					w, region, style.state, style.y
 			);
 
-			for (Vector2DH[] temp : vertices) {
-				for (int i = 0; i < temp.length - 1; ++i) {
-					lineGenerator.generate(temp[i], temp[i + 1]);
-				}
-				if (this.isClosed()) {
-					lineGenerator.generate(temp[temp.length - 1], temp[0]);
-				}
+			Vector2DH[] temp = shape.getShape();
+			for (int i = 0; i < temp.length - 1; ++i) {
+				lineGenerator.generate(temp[i], temp[i + 1]);
+			}
+			if (shape.isClosed()) {
+				lineGenerator.generate(temp[temp.length - 1], temp[0]);
 			}
 		}
 	}
 	
-	
+
+	/*
 	@Override
 	public String toString() {
 		if(!Bootstrap.isRegistered()) {
@@ -57,6 +57,6 @@ public class ScjdWall extends ScjdLineString {
 		ScjdElementStyle[] styles = ElementStyleSelector.getStyle(this);
 		assert styles != null;
 		return "VMapWall{type=" + parent.getType() + ",vertexLen=" + vertices[0].length + ",height=" + styles[0].y + "}";
-	}
+	}*/
 
 }
