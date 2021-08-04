@@ -67,7 +67,7 @@ public class MongoDBManager {
     public static void refreshDataByMapIndex(SuchijidoData data, String map_index) {
         List<Document> inserts = new ArrayList<>();
         for(ScjdLayer layer : data.getLayers()) {
-            for(ScjdElement element : layer) {
+            for(ScjdElement<?> element : layer) {
                 Document doc = element.toBsonDocument(map_index);
                 if(doc != null) {
                     inserts.add(element.toBsonDocument(map_index));
@@ -107,33 +107,39 @@ public class MongoDBManager {
 
 
 
-    public static List<JsonObject> convertMongoDocumentsToGeoJsonString(MongoIterable<Document> iterable) {
+    public static List<JsonObject> convertMongoDocumentsToGeoJsonList(MongoIterable<Document> iterable) {
 
         List<JsonObject> result = new ArrayList<>();
 
         for(Document document : iterable) {
-
-            // Could've just directly converted the document into JsonObject
-            // if it wasn't T++'s "GeoJson's first key should be 'type'" validation...
-
-            JsonObject j = new JsonObject();
-
-            j.addProperty("type", document.getString("type"));
-
-            JsonObject geometryJson = new JsonObject();
-            Document geometryDoc = document.get("geometry", Document.class);
-            geometryJson.addProperty("type", geometryDoc.getString("type"));
-            geometryJson.add("coordinates", GSON.toJsonTree(geometryDoc.get("coordinates")));
-            j.add("geometry", geometryJson);
-
-            j.add("properties", GSON.toJsonTree(document.get("properties")));
-
-            j.addProperty("id", document.getObjectId("_id").toString());
-
-            result.add(j);
+            result.add(mongoDocumentToGeoJson(document));
         }
 
         return result;
+    }
+
+
+
+    public static JsonObject mongoDocumentToGeoJson(Document document) {
+
+        // Could've just directly converted the document into JsonObject
+        // if it wasn't T++'s "GeoJson's first key should be 'type'" validation...
+
+        JsonObject j = new JsonObject();
+
+        j.addProperty("type", document.getString("type"));
+
+        JsonObject geometryJson = new JsonObject();
+        Document geometryDoc = document.get("geometry", Document.class);
+        geometryJson.addProperty("type", geometryDoc.getString("type"));
+        geometryJson.add("coordinates", GSON.toJsonTree(geometryDoc.get("coordinates")));
+        j.add("geometry", geometryJson);
+
+        j.add("properties", GSON.toJsonTree(document.get("properties")));
+
+        j.addProperty("id", document.getObjectId("_id").toString());
+
+        return j;
     }
 
 
