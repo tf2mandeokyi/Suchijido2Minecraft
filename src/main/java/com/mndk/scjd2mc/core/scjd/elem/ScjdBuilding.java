@@ -27,13 +27,6 @@ public class ScjdBuilding extends ScjdElement<Polygon> {
 	@Getter private final boolean generateShell;
 	
 	
-	public ScjdBuilding(ScjdLayer layer, String id, Polygon polygon, Map<String, Object> dataRow, boolean generateShell) {
-		super(layer, id, polygon, dataRow);
-		this.floorCount = this.parseFloorCount();
-		this.generateShell = generateShell;
-	}
-	
-	
 	public ScjdBuilding(ScjdLayer layer, String id, Polygon polygon, Object[] dataRow, boolean generateShell) {
 		super(layer, id, polygon, dataRow);
 		this.floorCount = this.parseFloorCount();

@@ -129,7 +129,7 @@ public class ScjdDataGenerationTask implements Runnable {
                     }
                     commandSender.sendMessage(new TextComponentString(
                             "§dGenerating layer \"" + type + "\"..."));
-                    for(ScjdElement element : layer) {
+                    for(ScjdElement<?> element : layer) {
                         layerGenerationTask.add(Executors.callable(() ->
                                 element.generateBlocks(this.worldEditRegion, this.world, triangleList)));
                     }
@@ -155,7 +155,7 @@ public class ScjdDataGenerationTask implements Runnable {
         private final String[] ids;
 
         private static final SuchijidoFileReader EMPTY_READER = new SuchijidoFileReader() {
-            @Override protected Map.Entry<ScjdDataPayload.Geometry, ScjdDataPayload.Data> getResult() { return null; }
+            @Override protected SuchijidoData getResult() { return null; }
         };
 
 

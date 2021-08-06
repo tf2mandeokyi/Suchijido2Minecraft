@@ -31,8 +31,7 @@ public abstract class SuchijidoFileReader {
 			this.worldProjection = worldProjection;
 			this.options = options;
 			this.targetProjection = this.getTargetProjection();
-			Map.Entry<ScjdDataPayload.Geometry, ScjdDataPayload.Data> tuple = getResult();
-			return ScjdDataPayload.combineVMapPayloads(tuple.getKey(), tuple.getValue(), options);
+			return getResult();
 		}
 	}
 
@@ -47,13 +46,13 @@ public abstract class SuchijidoFileReader {
 	public final SuchijidoData parse(File mapFile) throws Exception {
 		return this.parse(mapFile, new EquirectangularProjection(), Collections.emptyMap());
 	}
-	
-	
-	
-	protected abstract Map.Entry<ScjdDataPayload.Geometry, ScjdDataPayload.Data> getResult() throws IOException;
-	
-	
-	
+
+
+
+	protected abstract SuchijidoData getResult() throws IOException;
+
+
+
 	protected Vector2DH targetProjToWorldProjCoord(double x, double y) {
 		double[] geoCoordinate = this.targetProjection.toGeo(x, y), bteCoordinate;
 		try {

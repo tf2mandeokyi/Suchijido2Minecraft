@@ -5,22 +5,18 @@ import com.mndk.scjd2mc.core.scjd.type.ElementDataType;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ScjdLayer extends ArrayList<ScjdElement> implements Comparable<ScjdLayer> {
+public class ScjdLayer extends ArrayList<ScjdElement<?>> implements Comparable<ScjdLayer> {
 
 	private final ElementDataType type;
-	@Deprecated
-	private final String[] dataColumns;
 	
-	public ScjdLayer(List<ScjdElement> elements, ElementDataType type, String[] dataColumns) {
+	public ScjdLayer(List<ScjdElement<?>> elements, ElementDataType type) {
 		super(elements);
 		this.type = type;
-		this.dataColumns = dataColumns;
 	}
 	
-	public ScjdLayer(ElementDataType type, String[] dataColumns) {
+	public ScjdLayer(ElementDataType type) {
 		super();
 		this.type = type;
-		this.dataColumns = dataColumns;
 	}
 	
 	public ElementDataType getType() {
@@ -28,13 +24,7 @@ public class ScjdLayer extends ArrayList<ScjdElement> implements Comparable<Scjd
 	}
 	
 	public int getDataColumnIndex(String columnName) {
-		columnName = columnName.replaceAll("\\([^()]+\\)", "");
-		for(int i = 0; i < this.dataColumns.length; ++i) {
-			if(columnName.equals(this.dataColumns[i].replaceAll("\\([^()]+\\)", ""))) {
-				return i;
-			}
-		}
-		return -1;
+		return this.type.getColumns().getIndexByName(columnName);
 	}
 
 	@Override

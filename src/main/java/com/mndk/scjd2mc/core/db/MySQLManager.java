@@ -4,21 +4,23 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import com.mndk.scjd2mc.core.scjd.geometry.GeometryShape;
-import com.mndk.scjd2mc.core.util.shape.BoundingBoxDouble;
-import com.mndk.scjd2mc.core.scjd.*;
-import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
-import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
 import com.mndk.scjd2mc.core.db.common.TableColumn;
 import com.mndk.scjd2mc.core.db.common.TableColumns;
+import com.mndk.scjd2mc.core.scjd.SuchijidoData;
+import com.mndk.scjd2mc.core.scjd.SuchijidoUtils;
+import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
+import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
+import com.mndk.scjd2mc.core.scjd.geometry.GeometryShape;
 import com.mndk.scjd2mc.core.scjd.type.ElementDataType;
+import com.mndk.scjd2mc.core.util.shape.BoundingBoxDouble;
 import com.mndk.scjd2mc.mod.Suchijido2MinecraftMod;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
-import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.sql.*;
-import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -185,8 +187,7 @@ public class MySQLManager {
         try(PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, map_index);
             ResultSet resultSet = statement.executeQuery();
-            Map.Entry<ScjdDataPayload.Geometry, ScjdDataPayload.Data> entry = resultSetToVMapData(resultSet, targetProjection);
-            return ScjdDataPayload.combineVMapPayloads(entry.getKey(), entry.getValue(), options);
+            return resultSetToScjdData(resultSet, targetProjection, options);
         }
     }
 
@@ -207,8 +208,7 @@ public class MySQLManager {
             statement.setDouble(3, bbox.zmin);
             statement.setDouble(4, bbox.zmax);
             ResultSet resultSet = statement.executeQuery();
-            Map.Entry<ScjdDataPayload.Geometry, ScjdDataPayload.Data> entry = resultSetToVMapData(resultSet, targetProjection);
-            return ScjdDataPayload.combineVMapPayloads(entry.getKey(), entry.getValue(), options);
+            return resultSetToScjdData(resultSet, targetProjection, options);
         }
     }
 
@@ -236,22 +236,22 @@ public class MySQLManager {
 
 
 
-    private static Map.Entry<ScjdDataPayload.Geometry, ScjdDataPayload.Data> resultSetToVMapData(
-            ResultSet resultSet, GeographicProjection targetProjection
-    ) throws SQLException, IOException, OutOfProjectionBoundsException {
+    private static SuchijidoData resultSetToScjdData(
+            ResultSet resultSet, GeographicProjection targetProjection, Map<String, String> options)
+            throws Exception {
 
-        ScjdDataPayload.Geometry geometryPayload = new ScjdDataPayload.Geometry();
-        ScjdDataPayload.Data dataPayload = new ScjdDataPayload.Data();
+        SuchijidoData result = new SuchijidoData();
 
         while(resultSet.next()) {
-
-            long id = resultSet.getLong(ID_COLUMN.getName());
-            DataInputStream geometryStream = new DataInputStream(resultSet.getBlob("geom").getBinaryStream());
-            geometryPayload.put(id, GeometryShape.fromGeometryBytes(geometryStream, targetProjection));
 
             ElementDataType type = ElementDataType.fromLayerName(
                     resultSet.getString("data_type"));
             TableColumns columns = type.getColumns();
+            ScjdLayer layer = result.getLayer(type);
+
+            long id = resultSet.getLong(ID_COLUMN.getName());
+            DataInputStream geometryStream = new DataInputStream(resultSet.getBlob("geom").getBinaryStream());
+            GeometryShape<?> geometry = GeometryShape.fromGeometryBytes(geometryStream, targetProjection);
 
             JsonObject jsonObject = JsonParser.parseString(resultSet.getString("data")).getAsJsonObject();
             Object[] dataRow = new Object[columns.getLength()];
@@ -280,10 +280,11 @@ public class MySQLManager {
                     }
                 }
             }
-            dataPayload.put(id, new ScjdDataPayload.Data.Record(type, dataRow));
+
+            layer.add(SuchijidoUtils.combineGeometryAndData(layer, geometry, type, dataRow, Long.toString(id), options));
         }
 
-        return new AbstractMap.SimpleEntry<>(geometryPayload, dataPayload);
+        return result;
     }
 
 

@@ -2,7 +2,9 @@ package com.mndk.scjd2mc.core.scjd.reader;
 
 import com.mndk.scjd2mc.core.db.common.TableColumn;
 import com.mndk.scjd2mc.core.db.common.TableColumns;
-import com.mndk.scjd2mc.core.scjd.ScjdDataPayload;
+import com.mndk.scjd2mc.core.scjd.SuchijidoData;
+import com.mndk.scjd2mc.core.scjd.SuchijidoUtils;
+import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
 import com.mndk.scjd2mc.core.scjd.geometry.*;
 import com.mndk.scjd2mc.core.scjd.type.ElementDataType;
 import com.mndk.scjd2mc.core.util.file.DirectoryManager;
@@ -16,19 +18,17 @@ import com.mndk.shapefile.shp.ShapefileRecord;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.AbstractMap;
-import java.util.Map;
+import java.util.UUID;
 
 
 public class ShpZipDataFileReader extends SuchijidoFileReader {
 
 
 	@Override
-	protected Map.Entry<ScjdDataPayload.Geometry, ScjdDataPayload.Data> getResult() throws IOException {
+	protected SuchijidoData getResult() throws IOException {
 
-		ScjdDataPayload.Geometry geometryPayload = new ScjdDataPayload.Geometry();
-		ScjdDataPayload.Data dataPayload = new ScjdDataPayload.Data();
-		
+		SuchijidoData result = new SuchijidoData();
+
 		Throwable throwable = null;
 
 		String mapFilePath = mapFile.getAbsolutePath();
@@ -53,22 +53,20 @@ public class ShpZipDataFileReader extends SuchijidoFileReader {
 				System.err.println("Huh? I can't find any .shp file in this folder! >:(");
 			}
 
-			long count = 0;
-
 			for(File shapeFile : shapeFiles) {
 				String filePath = shapeFile.getAbsolutePath();
 				filePath = filePath.substring(0, filePath.length() - 4);
 				String fileName = new File(filePath).getName();
 				ElementDataType type = ElementDataType.fromLayerName(fileName);
 				TableColumns columns = type.getColumns();
+				ScjdLayer layer = result.getLayer(type);
 
 				try(ShpDbfDataIterator iterator =
 							new ShpDbfDataIterator(filePath, Charset.forName("cp949"))) {
 
 					for (ShpDbfRecord record : iterator) {
-						// System.out.println(record.dBase);
 
-						GeometryShape<?> geometryRecord = fromShpRecord(record.shape);
+						GeometryShape<?> geometry = fromShpRecord(record.shape);
 
 						Object[] dataRow = new Object[columns.getLength()];
 						for(int i = 0; i < columns.getLength(); ++i) {
@@ -76,11 +74,8 @@ public class ShpZipDataFileReader extends SuchijidoFileReader {
 							dataRow[i] = record.dBase.getDataByField(column.getName());
 						}
 
-						ScjdDataPayload.Data.Record dataRecord = new ScjdDataPayload.Data.Record(type, dataRow);
-
-						geometryPayload.put(count, geometryRecord);
-						dataPayload.put(count, dataRecord);
-						++count;
+						layer.add(SuchijidoUtils.combineGeometryAndData(
+								layer, geometry, type, dataRow, UUID.randomUUID().toString(), options));
 					}
 				}
 			}
@@ -99,7 +94,7 @@ public class ShpZipDataFileReader extends SuchijidoFileReader {
 			}
 		}
 
-		return new AbstractMap.SimpleEntry<>(geometryPayload, dataPayload);
+		return result;
 		
 	}
 

@@ -37,9 +37,10 @@ public class TableColumns {
 
 
 
-    public int searchByName(@Nonnull String name) {
+    public int getIndexByName(@Nonnull String name) {
+        name = name.replaceAll("\\([^()]+\\)", "");
         for(int i = 0; i < length; ++i) {
-            if(name.equals(columns[i].getName())) return i;
+            if(name.equals(columns[i].getName().replaceAll("\\([^()]+\\)", ""))) return i;
         }
         return -1;
     }

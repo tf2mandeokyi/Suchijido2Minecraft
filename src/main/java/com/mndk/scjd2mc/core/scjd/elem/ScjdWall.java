@@ -9,14 +9,7 @@ import com.mndk.scjd2mc.core.util.shape.TriangleList;
 import com.sk89q.worldedit.regions.FlatRegion;
 import net.minecraft.world.World;
 
-import java.util.Map;
-
 public class ScjdWall extends ScjdElement<LineString> {
-
-	
-	public ScjdWall(ScjdLayer parent, String id, LineString lineString, Map<String, Object> dataRow) {
-		super(parent, id, lineString, dataRow);
-	}
 	
 	
 	public ScjdWall(ScjdLayer parent, String id, LineString lineString, Object[] dataRow) {

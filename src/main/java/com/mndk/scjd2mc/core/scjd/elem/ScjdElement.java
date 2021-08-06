@@ -28,16 +28,6 @@ public class ScjdElement<T extends GeometryShape<?>> {
 	public final Object[] dataRow;
 	
 	
-	public ScjdElement(ScjdLayer parent, String id, T shape, Map<String, Object> dataRow) {
-		this(parent, id, shape, new Object[dataRow.size()]);
-		for(Map.Entry<String, Object> data : dataRow.entrySet()) {
-			int columnIndex = parent.getDataColumnIndex(data.getKey());
-			if(columnIndex == -1) continue;
-			this.dataRow[columnIndex] = data.getValue();
-		}
-	}
-	
-	
 	public Object getData(String key) {
 		int index = parent.getDataColumnIndex(key);
 		if(index == -1) return null;

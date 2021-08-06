@@ -2,11 +2,20 @@ package com.mndk.scjd2mc.core.scjd;
 
 import com.mndk.scjd2mc.core.projection.Korea2010BeltProjection;
 import com.mndk.scjd2mc.core.projection.Projections;
+import com.mndk.scjd2mc.core.scjd.elem.*;
+import com.mndk.scjd2mc.core.scjd.geometry.GeometryShape;
+import com.mndk.scjd2mc.core.scjd.geometry.LineString;
+import com.mndk.scjd2mc.core.scjd.geometry.Point;
+import com.mndk.scjd2mc.core.scjd.geometry.Polygon;
+import com.mndk.scjd2mc.core.scjd.type.ElementDataType;
+import com.mndk.scjd2mc.core.scjd.type.ElementGeometryType;
 import com.mndk.scjd2mc.mod.event.ServerTickRepeater;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import javax.annotation.Nonnull;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,6 +53,35 @@ public class SuchijidoUtils {
 
 	public static void setBlock(World world, BlockPos pos, IBlockState state) {
 		ServerTickRepeater.addTask(new ServerTickRepeater.BlockTask(world, pos, state));
+	}
+
+
+	public static ScjdElement<?> combineGeometryAndData(
+			@Nonnull ScjdLayer layer, GeometryShape<?> geometry, ElementDataType dataType, Object[] dataRow, String id,
+			Map<String, String> options)
+			throws Exception {
+
+		ElementGeometryType geometryType = geometry.getType();
+
+		switch(geometryType) {
+			case POINT:
+				if(dataType == ElementDataType.표고점) {
+					return new ScjdElevationPoint(layer, (Point) geometry, dataRow);
+				}
+				break;
+			case LINESTRING:
+				if(dataType == ElementDataType.등고선) {
+					return new ScjdContour(layer, (LineString) geometry, dataRow);
+				}
+				break;
+			case POLYGON:
+				if(dataType == ElementDataType.건물) {
+					return new ScjdBuilding(layer, id, (Polygon) geometry, dataRow, options.containsKey("gen-building-shells"));
+				}
+				break;
+		}
+
+		return new ScjdElement<>(layer, id, geometry, dataRow);
 	}
 
 }

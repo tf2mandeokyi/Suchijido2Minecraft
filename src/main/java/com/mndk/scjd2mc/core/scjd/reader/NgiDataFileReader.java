@@ -7,37 +7,36 @@ import com.mndk.ngiparser.ngi.element.*;
 import com.mndk.ngiparser.ngi.vertex.NgiVector;
 import com.mndk.scjd2mc.core.db.common.TableColumn;
 import com.mndk.scjd2mc.core.db.common.TableColumns;
-import com.mndk.scjd2mc.core.scjd.ScjdDataPayload;
+import com.mndk.scjd2mc.core.scjd.SuchijidoData;
+import com.mndk.scjd2mc.core.scjd.SuchijidoUtils;
+import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
 import com.mndk.scjd2mc.core.scjd.geometry.*;
 import com.mndk.scjd2mc.core.scjd.type.ElementDataType;
 import com.mndk.scjd2mc.core.util.math.Vector2DH;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.Collection;
-import java.util.Map;
+import java.util.UUID;
 
 public class NgiDataFileReader extends SuchijidoFileReader {
 
 
 	@Override
-	protected Map.Entry<ScjdDataPayload.Geometry, ScjdDataPayload.Data> getResult() throws IOException {
+	protected SuchijidoData getResult() throws IOException {
 
-		ScjdDataPayload.Geometry geometryPayload = new ScjdDataPayload.Geometry();
-		ScjdDataPayload.Data dataPayload = new ScjdDataPayload.Data();
+		SuchijidoData result = new SuchijidoData();
 
 		NgiParserResult parseResult = NgiParser.parse(mapFile.getAbsolutePath(), "MS949", true);
 		
 		Collection<NgiLayer> layers = parseResult.getLayers().values();
-
-		long count = 0;
 
 		for(NgiLayer layer : layers) {
 			if(layer.header.dimensions != 2) continue;
 			try {
 				ElementDataType type = ElementDataType.fromLayerName(layer.name);
 				TableColumns columns = type.getColumns();
+				ScjdLayer scjdLayer = result.getLayer(type);
 
 				Collection<NgiRecord<?>> ngiElements = layer.data.values();
 
@@ -52,19 +51,16 @@ public class NgiDataFileReader extends SuchijidoFileReader {
 						dataRow[i] = ngiElement.getRowData(column.getName());
 					}
 
-					ScjdDataPayload.Data.Record dataRecord = new ScjdDataPayload.Data.Record(type, dataRow);
+					scjdLayer.add(SuchijidoUtils.combineGeometryAndData(
+							scjdLayer, geometryRecord, type, dataRow, UUID.randomUUID().toString(), options));
 
-					geometryPayload.put(count, geometryRecord);
-					dataPayload.put(count, dataRecord);
-					++count;
 				}
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
 		}
-		
-		return new AbstractMap.SimpleEntry<>(geometryPayload, dataPayload);
-		
+
+		return result;
 	}
 
 
