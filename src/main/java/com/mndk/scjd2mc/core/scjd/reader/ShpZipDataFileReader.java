@@ -37,7 +37,7 @@ public class ShpZipDataFileReader extends SuchijidoFileReader {
 		try {
 
 			if(zipDestination.exists() && !zipDestination.delete()) {
-				throw new IOException("Failed to delete files");
+				System.err.println("[Warning] Failed to delete \"" + zipDestination.getName() + "\"");
 			}
 
 			// Extract all files in map file
@@ -58,6 +58,9 @@ public class ShpZipDataFileReader extends SuchijidoFileReader {
 				filePath = filePath.substring(0, filePath.length() - 4);
 				String fileName = new File(filePath).getName();
 				ElementDataType type = ElementDataType.fromLayerName(fileName);
+				if(type == null) {
+					throw new RuntimeException("Invalid file name: " + fileName);
+				}
 				TableColumns columns = type.getColumns();
 				ScjdLayer layer = result.getLayer(type);
 

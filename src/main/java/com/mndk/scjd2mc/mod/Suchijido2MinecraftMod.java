@@ -26,7 +26,7 @@ import java.sql.SQLException;
 )
 public class Suchijido2MinecraftMod {
 
-	public static final String MODID = "kvm2m";
+	public static final String MODID = "scjd2mc";
 	public static final String VERSION = "b1.0";
 
 	private static final ICommand[] serverCommands = {

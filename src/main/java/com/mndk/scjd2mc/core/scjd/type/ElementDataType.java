@@ -697,7 +697,7 @@ public enum ElementDataType {
 
 
 
-	private static final Pattern layerTypePattern = Pattern.compile("^([A-H]\\d{3})");
+	private static final Pattern layerTypePattern = Pattern.compile("([A-H]\\d{3})\\d{4}");
 
 
 

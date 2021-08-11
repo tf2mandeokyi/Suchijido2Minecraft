@@ -27,9 +27,9 @@ public class TerrainTriangulator {
 
 		TriangleList first = generateTerrain(extraction.getKey(), extraction.getValue(), Collections.emptyList());
 
-		TriangleList second = generateWithLayerPolylines(result, extraction, first, ElementDataType.도로중심선);
+		return generateWithLayerPolylines(result, extraction, first, ElementDataType.도로중심선);
 
-		return generateWithLayerPolylines(result, extraction, second, ElementDataType.도로경계);
+		// return generateWithLayerPolylines(result, extraction, second, ElementDataType.도로경계);
 
 	}
 
@@ -42,12 +42,8 @@ public class TerrainTriangulator {
 			TriangleList previousResult,
 			ElementDataType layerType) {
 
-		List<ScjdElement<LineString>> roadCenterLines = new ArrayList<>();
-
-		ScjdLayer tempLayer;
-		if((tempLayer = result.getLayer(layerType)) != null) {
-			roadCenterLines = tempLayer.stream().map(element -> (ScjdElement<LineString>) element).collect(Collectors.toList());
-		}
+		List<ScjdElement<LineString>> roadCenterLines = result.getLayer(layerType).stream()
+				.map(element -> (ScjdElement<LineString>) element).collect(Collectors.toList());
 
 		List<Vector2DH[]> roadCenterLineEdges = new ArrayList<>();
 
@@ -106,28 +102,25 @@ public class TerrainTriangulator {
 
 	static Map.Entry<List<ScjdContour>, List<Vector2DH>> extractContourAndElevationPointList(SuchijidoData result) {
 
-		List<ScjdContour> contourList = new ArrayList<>();
+		List<ScjdContour> contourList =
+				result.getLayer(ElementDataType.등고선).stream()
+						.map(element -> (ScjdContour) element).collect(Collectors.toList());
+
 		List<Vector2DH> elevationPoints = new ArrayList<>();
-		ScjdLayer tempLayer;
+		ScjdLayer tempLayer = result.getLayer(ElementDataType.표고점);
 
-		if((tempLayer = result.getLayer(ElementDataType.등고선)) != null) {
-			contourList = tempLayer.stream().map(element -> (ScjdContour) element).collect(Collectors.toList());
-		}
+		for(ScjdElement<?> pElem : tempLayer) {
+			assert pElem instanceof ScjdElevationPoint;
+			Vector2DH point = ((ScjdElevationPoint) pElem).getShape().getShape();
 
-		if((tempLayer = result.getLayer(ElementDataType.표고점)) != null) {
-			for(ScjdElement<?> pElem : tempLayer) {
-				assert pElem instanceof ScjdElevationPoint;
-				Vector2DH point = ((ScjdElevationPoint) pElem).getShape().getShape();
+			if( checkLayerContainsPoint(point, result.getLayer(ElementDataType.육교)) ||
+					checkLayerContainsPoint(point, result.getLayer(ElementDataType.교량)) ||
+					checkLayerContainsPoint(point, result.getLayer(ElementDataType.입체교차부))) {
 
-				if( checkLayerContainsPoint(point, result.getLayer(ElementDataType.육교)) ||
-						checkLayerContainsPoint(point, result.getLayer(ElementDataType.교량)) ||
-						checkLayerContainsPoint(point, result.getLayer(ElementDataType.입체교차부))) {
-
-					continue;
-				}
-
-				elevationPoints.add(point);
+				continue;
 			}
+
+			elevationPoints.add(point);
 		}
 
 		return new AbstractMap.SimpleEntry<>(contourList, elevationPoints);

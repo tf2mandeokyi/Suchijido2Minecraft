@@ -52,6 +52,12 @@ public class MongoDBManager {
 
 
 
+    public static boolean isConnected() {
+        return collection != null;
+    }
+
+
+
     private static boolean collectionExists() {
         MongoIterable<String> collectionNames = database.listCollectionNames();
         for (final String name : collectionNames) {
@@ -75,7 +81,9 @@ public class MongoDBManager {
             }
         }
         collection.deleteMany(new Document().append("map_index", map_index));
-        collection.insertMany(inserts);
+        if(inserts.size() != 0) {
+            collection.insertMany(inserts);
+        }
     }
 
 
