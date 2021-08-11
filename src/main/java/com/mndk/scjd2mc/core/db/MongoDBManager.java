@@ -3,9 +3,12 @@ package com.mndk.scjd2mc.core.db;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mndk.scjd2mc.core.scjd.SuchijidoData;
+import com.mndk.scjd2mc.core.scjd.SuchijidoUtils;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
+import com.mndk.scjd2mc.core.scjd.reader.SuchijidoFileReader;
 import com.mndk.scjd2mc.core.util.shape.BoundingBoxDouble;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -16,15 +19,19 @@ import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.ValidationOptions;
 import org.bson.Document;
 
+import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class MongoDBManager {
 
 
-    private static final String MAIN_DATABASE_NAME = "suchijido";
-    private static final String MAIN_COLLECTION_NAME = "elements";
+    private static final String DEFAULT_DATABASE_NAME = "suchijido";
+    private static final String DEFAULT_COLLECTION_NAME = "elements";
 
 
 
@@ -41,13 +48,17 @@ public class MongoDBManager {
 
 
 
-    public static void connect(String url) {
+    public static void connect(String url, String databaseName, String collectionName) {
         mongoClient = new MongoClient(new MongoClientURI(url));
-        database = mongoClient.getDatabase(MAIN_DATABASE_NAME);
-        if(!collectionExists()) {
-            database.createCollection(MAIN_COLLECTION_NAME, CREATE_COLLECTION_OPTIONS);
+        database = mongoClient.getDatabase(databaseName);
+        if(!collectionExists(collectionName)) {
+            database.createCollection(collectionName, CREATE_COLLECTION_OPTIONS);
         }
-        collection = database.getCollection(MAIN_COLLECTION_NAME);
+        collection = database.getCollection(collectionName);
+    }
+
+    public static void connect(String url) {
+        connect(url, DEFAULT_DATABASE_NAME, DEFAULT_COLLECTION_NAME);
     }
 
 
@@ -58,10 +69,10 @@ public class MongoDBManager {
 
 
 
-    private static boolean collectionExists() {
+    private static boolean collectionExists(String collectionName) {
         MongoIterable<String> collectionNames = database.listCollectionNames();
         for (final String name : collectionNames) {
-            if (name.equalsIgnoreCase(MAIN_COLLECTION_NAME)) {
+            if (name.equalsIgnoreCase(collectionName)) {
                 return true;
             }
         }
@@ -70,17 +81,17 @@ public class MongoDBManager {
 
 
 
-    public static void refreshDataByMapIndex(SuchijidoData data, String map_index) {
+    public static void refreshDataByMapIndex(SuchijidoData data, String mapIndex) {
         List<Document> inserts = new ArrayList<>();
         for(ScjdLayer layer : data.getLayers()) {
             for(ScjdElement<?> element : layer) {
-                Document doc = element.toBsonDocument(map_index);
+                Document doc = element.toBsonDocument(mapIndex);
                 if(doc != null) {
-                    inserts.add(element.toBsonDocument(map_index));
+                    inserts.add(element.toBsonDocument(mapIndex));
                 }
             }
         }
-        collection.deleteMany(new Document().append("map_index", map_index));
+        collection.deleteMany(new Document().append("map_index", mapIndex));
         if(inserts.size() != 0) {
             collection.insertMany(inserts);
         }
@@ -88,8 +99,8 @@ public class MongoDBManager {
 
 
 
-    public static MongoIterable<Document> getDataByIndex(String map_index) {
-        return collection.find(new Document().append("map_index", map_index));
+    public static MongoIterable<Document> getDataByIndex(String mapIndex) {
+        return collection.find(new Document().append("map_index", mapIndex));
     }
 
 
@@ -111,6 +122,124 @@ public class MongoDBManager {
         return getDataByBoundingBox(
                 new BoundingBoxDouble(x / zFactor, y / zFactor, (x + 1) / zFactor, (y + 1) / zFactor)
         );
+    }
+
+
+
+    public static void insertMultipleFiles(@Nonnull Collection<File> files, SuchijidoFileReader reader) throws Exception {
+
+        for(File file : files) {
+            String mapIndex = SuchijidoUtils.getMapIndexFromFileName(file.getName());
+
+            System.out.println(file.getName() + " -> " + mapIndex);
+
+            long read_t1 = System.currentTimeMillis();
+            SuchijidoData fileResult = reader.parse(file);
+            long read_t2 = System.currentTimeMillis();
+            double read = (read_t2 - read_t1) / 1000.;
+
+            long write_t1 = System.currentTimeMillis();
+            MongoDBManager.refreshDataByMapIndex(fileResult, mapIndex);
+            long write_t2 = System.currentTimeMillis();
+            double write = (write_t2 - write_t1) / 1000.;
+
+            double total = ((read_t2 - read_t1) + (write_t2 - write_t1)) / 1000.;
+
+            System.out.println(" ㄴ Read: " + read + "s | Write: " + write + "s | Total: " + total + "s");
+        }
+    }
+
+
+
+    public static BoundingBoxDouble getTotalDataBoundingBox() {
+        MongoIterable<Document> all = collection.find();
+        BoundingBoxDouble bbox = BoundingBoxDouble.ILLEGAL_INFINITE;
+        for(Document document : all) {
+            Document boundsDocument = document.get("bounds", Document.class);
+            BoundingBoxDouble elementBBox = new BoundingBoxDouble(
+                    boundsDocument.getDouble("xmin"),
+                    boundsDocument.getDouble("zmin"),
+                    boundsDocument.getDouble("xmax"),
+                    boundsDocument.getDouble("zmax")
+            );
+            bbox = bbox.or(elementBBox);
+        }
+        return bbox;
+    }
+
+
+
+    public static void totalDataToTiledGeoJsonFiles(File rootPath, boolean separateLongElements) throws Exception {
+        totalDataToTiledGeoJsonFiles(rootPath, separateLongElements, 64);
+    }
+
+    public static void totalDataToTiledGeoJsonFiles(File rootPath, boolean separateLongElements, int zFactor) throws Exception {
+
+        System.out.println("Fetching bounding box...");
+
+        BoundingBoxDouble bbox = getTotalDataBoundingBox();
+
+        System.out.println("Done (x: [" + bbox.xmin + ", " + bbox.xmax + "], z: [" + bbox.zmin + ", " + bbox.zmax + "])");
+
+        int xMin = (int) Math.floor(bbox.xmin * zFactor),
+            yMin = (int) Math.floor(bbox.zmin * zFactor),
+            xMax = (int) Math.ceil(bbox.xmax * zFactor),
+            yMax = (int) Math.ceil(bbox.zmax * zFactor);
+
+        System.out.println(" ㄴ xTile: [" + xMin + ", " + xMax + "], yTile: [" + yMin + ", " + yMax + "])");
+
+        for(int x = xMin; x <= xMax; ++x) {
+            for (int y = yMin; y <= yMax; ++y) {
+
+                File file = new File(rootPath, "tile/" + x + "/" + y + ".json");
+
+                System.out.println("Fetching data for " + file + "...");
+
+                if (!file.getParentFile().isDirectory() && !file.getParentFile().mkdirs()) {
+                    throw new Exception("Folder creation failed");
+                }
+
+                MongoIterable<Document> iterable = MongoDBManager.getDataByXYTileCoordinate(x, y, zFactor);
+                int size = 0;
+
+                try(FileWriter writer = new FileWriter(file)) {
+
+                    System.out.println("Saving " + file + "...");
+
+                    for (Document document : iterable) {
+                        JsonObject json = MongoDBManager.mongoDocumentToGeoJson(document);
+                        String jsonString = json.toString();
+                        if(separateLongElements && jsonString.length() > 1700) {
+                            String _id = JsonParser.parseString(jsonString).getAsJsonObject().get("id").getAsString();
+                            String referenceDir = "way/" +
+                                    _id.substring(0, 8) + "/" +
+                                    _id.substring(8, 18) + "/" +
+                                    _id.substring(18) + ".json";
+                            File reference = new File(rootPath, referenceDir);
+                            File referenceParent = reference.getParentFile();
+                            if(!referenceParent.isDirectory() && !referenceParent.mkdirs()) {
+                                throw new Exception("Failed to create the directory");
+                            }
+                            try(FileWriter referenceWriter = new FileWriter(reference)) {
+                                referenceWriter.write(jsonString);
+                            }
+                            writer.write("{\"type\":\"Reference\",\"location\":\"" + referenceDir + "\"}\n");
+                        }
+                        else {
+                            writer.write(json + "\n");
+                        }
+                        size++;
+                    }
+                    writer.flush();
+                }
+
+                if(size == 0) {
+                    System.err.println("No data found!");
+                }
+            }
+        }
+
+        System.out.println("Done.");
     }
 
 

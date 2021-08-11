@@ -10,6 +10,9 @@ import java.util.Map;
 @RequiredArgsConstructor @ToString
 public class BoundingBoxDouble {
 
+    public static final BoundingBoxDouble ILLEGAL_INFINITE = new BoundingBoxDouble(
+            Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY);
+
     public final double xmin, zmin, xmax, zmax;
 
     public BoundingBoxDouble(FlatRegion region) {
