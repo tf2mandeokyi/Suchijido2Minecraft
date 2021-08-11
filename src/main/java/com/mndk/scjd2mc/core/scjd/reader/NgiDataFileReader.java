@@ -51,7 +51,7 @@ public class NgiDataFileReader extends SuchijidoFileReader {
 						dataRow[i] = ngiElement.getRowData(column.getName());
 					}
 
-					scjdLayer.add(SuchijidoUtils.combineGeometryAndData(
+					scjdLayer.addAll(SuchijidoUtils.combineGeometryAndData(
 							scjdLayer, geometryRecord, type, dataRow, UUID.randomUUID().toString(), options));
 
 				}

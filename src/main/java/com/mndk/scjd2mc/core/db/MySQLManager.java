@@ -281,7 +281,7 @@ public class MySQLManager {
                 }
             }
 
-            layer.add(SuchijidoUtils.combineGeometryAndData(layer, geometry, type, dataRow, Long.toString(id), options));
+            layer.addAll(SuchijidoUtils.combineGeometryAndData(layer, geometry, type, dataRow, Long.toString(id), options));
         }
 
         return result;

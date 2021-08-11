@@ -74,7 +74,7 @@ public class ShpZipDataFileReader extends SuchijidoFileReader {
 							dataRow[i] = record.dBase.getDataByField(column.getName());
 						}
 
-						layer.add(SuchijidoUtils.combineGeometryAndData(
+						layer.addAll(SuchijidoUtils.combineGeometryAndData(
 								layer, geometry, type, dataRow, UUID.randomUUID().toString(), options));
 					}
 				}
