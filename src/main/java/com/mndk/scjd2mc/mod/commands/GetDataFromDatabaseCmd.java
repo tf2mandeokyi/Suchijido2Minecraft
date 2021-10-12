@@ -1,7 +1,7 @@
 package com.mndk.scjd2mc.mod.commands;
 
 import com.mndk.scjd2mc.core.scjd.ScjdDataGenerationTask;
-import com.mndk.scjd2mc.core.scjd.SuchijidoData;
+import com.mndk.scjd2mc.core.scjd.SuchijidoFile;
 import com.mndk.scjd2mc.core.scjd.reader.SuchijidoFileReader;
 import com.mndk.scjd2mc.core.util.KeyRestrictedMap;
 import com.mndk.scjd2mc.mod.Suchijido2MinecraftMod;
@@ -25,7 +25,7 @@ public class GetDataFromDatabaseCmd extends DataGenerationCmd {
 
     public GetDataFromDatabaseCmd(String name) {
         super(name, "", new SuchijidoFileReader() {
-            @Override protected SuchijidoData getResult() { return null; }
+            @Override protected SuchijidoFile getResult() { return null; }
         });
     }
 

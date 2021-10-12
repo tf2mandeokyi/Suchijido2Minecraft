@@ -4,7 +4,6 @@ import com.mndk.scjd2mc.core.scjd.SuchijidoData;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdContour;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdElevationPoint;
-import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
 import com.mndk.scjd2mc.core.scjd.geometry.GeometryShape;
 import com.mndk.scjd2mc.core.scjd.geometry.LineString;
 import com.mndk.scjd2mc.core.scjd.geometry.Polygon;
@@ -25,10 +24,10 @@ public class TerrainTriangulator {
 
 		Map.Entry<List<ScjdContour>, List<Vector2DH>> extraction = extractContourAndElevationPointList(result);
 
-		TriangleList first = generateTerrain(extraction.getKey(), extraction.getValue(), Collections.emptyList());
+		/* TriangleList first = */ return generateTerrain(extraction.getKey(), extraction.getValue(), Collections.emptyList());
 
-		return generateWithLayerPolylines(result, extraction, first, ElementDataType.도로중심선);
-
+		// return generateWithLayerPolylines(result, extraction, first, ElementDataType.도로중심선);
+		// TODO
 		// return generateWithLayerPolylines(result, extraction, second, ElementDataType.도로경계);
 
 	}
@@ -107,7 +106,7 @@ public class TerrainTriangulator {
 						.map(element -> (ScjdContour) element).collect(Collectors.toList());
 
 		List<Vector2DH> elevationPoints = new ArrayList<>();
-		ScjdLayer tempLayer = result.getLayer(ElementDataType.표고점);
+		ArrayList<ScjdElement<?>> tempLayer = result.getLayer(ElementDataType.표고점);
 
 		for(ScjdElement<?> pElem : tempLayer) {
 			assert pElem instanceof ScjdElevationPoint;
@@ -116,7 +115,6 @@ public class TerrainTriangulator {
 			if( checkLayerContainsPoint(point, result.getLayer(ElementDataType.육교)) ||
 					checkLayerContainsPoint(point, result.getLayer(ElementDataType.교량)) ||
 					checkLayerContainsPoint(point, result.getLayer(ElementDataType.입체교차부))) {
-
 				continue;
 			}
 
@@ -176,7 +174,7 @@ public class TerrainTriangulator {
 	}
 
 
-	private static boolean checkLayerContainsPoint(Vector2DH point, ScjdLayer layer) {
+	private static boolean checkLayerContainsPoint(Vector2DH point, ArrayList<ScjdElement<?>> layer) {
 		if(layer == null) return true;
 
 		for(ScjdElement<?> elem : layer) {

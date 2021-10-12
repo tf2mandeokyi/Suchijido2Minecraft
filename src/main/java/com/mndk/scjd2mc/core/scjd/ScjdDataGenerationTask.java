@@ -155,7 +155,7 @@ public class ScjdDataGenerationTask implements Runnable {
         private final String[] ids;
 
         private static final SuchijidoFileReader EMPTY_READER = new SuchijidoFileReader() {
-            @Override protected SuchijidoData getResult() { return null; }
+            @Override protected SuchijidoFile getResult() { return null; }
         };
 
 

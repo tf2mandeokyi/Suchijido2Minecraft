@@ -7,7 +7,7 @@ import com.mndk.ngiparser.ngi.element.*;
 import com.mndk.ngiparser.ngi.vertex.NgiVector;
 import com.mndk.scjd2mc.core.db.common.TableColumn;
 import com.mndk.scjd2mc.core.db.common.TableColumns;
-import com.mndk.scjd2mc.core.scjd.SuchijidoData;
+import com.mndk.scjd2mc.core.scjd.SuchijidoFile;
 import com.mndk.scjd2mc.core.scjd.SuchijidoUtils;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
 import com.mndk.scjd2mc.core.scjd.geometry.*;
@@ -23,9 +23,9 @@ public class NgiDataFileReader extends SuchijidoFileReader {
 
 
 	@Override
-	protected SuchijidoData getResult() throws IOException {
+	protected SuchijidoFile getResult() throws IOException {
 
-		SuchijidoData result = new SuchijidoData();
+		SuchijidoFile result = new SuchijidoFile(mapFile);
 
 		NgiParserResult parseResult = NgiParser.parse(mapFile.getAbsolutePath(), "MS949", true);
 		
@@ -36,7 +36,7 @@ public class NgiDataFileReader extends SuchijidoFileReader {
 			try {
 				ElementDataType type = ElementDataType.fromLayerName(layer.name);
 				TableColumns columns = type.getColumns();
-				ScjdLayer scjdLayer = result.getLayer(type);
+				ScjdLayer scjdLayer = new ScjdLayer(type);
 
 				Collection<NgiRecord<?>> ngiElements = layer.data.values();
 
@@ -55,6 +55,8 @@ public class NgiDataFileReader extends SuchijidoFileReader {
 							scjdLayer, geometryRecord, type, dataRow, UUID.randomUUID().toString(), options));
 
 				}
+
+				result.addLayer(scjdLayer);
 			} catch(Exception e) {
 				e.printStackTrace();
 			}

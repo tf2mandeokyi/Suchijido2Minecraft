@@ -3,7 +3,7 @@ package com.mndk.scjd2mc.core.projection;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import org.osgeo.proj4j.*;
 
-public class Proj4jProjection implements GeographicProjection {
+public abstract class Proj4jProjection implements GeographicProjection {
 
 	private static final CRSFactory crsFactory = new CRSFactory();
 	private static final CoordinateTransformFactory ctFactory = new CoordinateTransformFactory();
@@ -19,14 +19,17 @@ public class Proj4jProjection implements GeographicProjection {
 	private final CoordinateTransform toWgs;
 	private final CoordinateTransform toTargetCrs;
 
-	public Proj4jProjection(CoordinateReferenceSystem crs) {
+	public final String crsName;
+
+	public Proj4jProjection(String crsName, CoordinateReferenceSystem crs) {
 		this.targetCrs = crs;
 		this.toWgs = ctFactory.createTransform(targetCrs, WGS84);
 		this.toTargetCrs = ctFactory.createTransform(WGS84, targetCrs);
+		this.crsName = crsName;
 	}
 
 	public Proj4jProjection(String crsName, String[] crsParameter) {
-		this(crsFactory.createFromParameters(crsName, crsParameter));
+		this(crsName, crsFactory.createFromParameters(crsName, crsParameter));
 	}
 
 	public CoordinateReferenceSystem getCoordinateReferenceSystem() {
@@ -51,5 +54,7 @@ public class Proj4jProjection implements GeographicProjection {
 		toWgs.transform(new ProjCoordinate(x, z), result);
 		return new double[] {result.x, result.y};
 	}
+
+	public abstract String toWellKnownText();
 
 }

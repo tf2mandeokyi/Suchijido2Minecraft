@@ -25,11 +25,7 @@ public class ScjdElevationPoint extends ScjdElement<Point> {
 				throw new IOException("Invalid 수치 data: \"" + value + "\"");
 			}
 		}
-		this.y = (int) Math.round(((Number) value).doubleValue());
-	}
-
-	public Vector2DH getPosition() {
-		return shape.getShape().withHeight(this.y);
+		this.shape.getShape().height = this.y = (int) Math.round(((Number) value).doubleValue());
 	}
 
 	@Override
@@ -40,7 +36,7 @@ public class ScjdElevationPoint extends ScjdElement<Point> {
 		for(ElementStyleSelector.ScjdElementStyle style : styles) {
 			if(style == null) return; if(style.state == null) return;
 
-			Vector2DH p = this.getPosition();
+			Vector2DH p = shape.getShape();
 
 			if(region.contains(p.withHeight(region.getMinimumY()).toIntegerWorldEditVector())) {
 				SuchijidoUtils.setBlock(world, new BlockPos(p.x, this.y, p.z), style.state);
@@ -50,7 +46,7 @@ public class ScjdElevationPoint extends ScjdElement<Point> {
 
 	@Override
 	public String toString() {
-		return "VMapElevationPoint{pos=" + this.getPosition() + "}";
+		return "VMapElevationPoint{pos=" + shape.getShape() + "}";
 	}
 
 }

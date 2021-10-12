@@ -7,6 +7,7 @@ import net.buildtheearth.terraplusplus.projection.EquirectangularProjection;
 import net.buildtheearth.terraplusplus.projection.GeographicProjection;
 import net.buildtheearth.terraplusplus.projection.OutOfProjectionBoundsException;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -20,10 +21,26 @@ public abstract class SuchijidoFileReader {
 	protected GeographicProjection worldProjection;
 	protected Korea2010BeltProjection targetProjection;
 	protected Map<String, String> options;
+
+
+
+	public final SuchijidoFile parseWithoutWorldProjection(File mapFile, Map<String, String> options)
+			throws Exception {
+
+		return this.parse(mapFile, null, options);
+	}
+
+
+
+	public final SuchijidoFile parseWithoutWorldProjection(File mapFile)
+			throws Exception {
+
+		return this.parseWithoutWorldProjection(mapFile, Collections.emptyMap());
+	}
 	
 	
 	
-	public final SuchijidoData parse(File mapFile, GeographicProjection worldProjection, Map<String, String> options)
+	public final SuchijidoFile parse(File mapFile, @Nullable GeographicProjection worldProjection, Map<String, String> options)
 			throws Exception {
 
 		synchronized (this) {
@@ -37,23 +54,24 @@ public abstract class SuchijidoFileReader {
 
 
 
-	public final SuchijidoData parse(File mapFile, Map<String, String> options) throws Exception {
+	public final SuchijidoFile parse(File mapFile, Map<String, String> options) throws Exception {
 		return this.parse(mapFile, new EquirectangularProjection(), options);
 	}
 
 
 
-	public final SuchijidoData parse(File mapFile) throws Exception {
+	public final SuchijidoFile parse(File mapFile) throws Exception {
 		return this.parse(mapFile, new EquirectangularProjection(), Collections.emptyMap());
 	}
 
 
 
-	protected abstract SuchijidoData getResult() throws IOException;
+	protected abstract SuchijidoFile getResult() throws IOException;
 
 
 
 	protected Vector2DH targetProjToWorldProjCoord(double x, double y) {
+		if(worldProjection == null) return new Vector2DH(x, y);
 		double[] geoCoordinate = this.targetProjection.toGeo(x, y), bteCoordinate;
 		try {
 			bteCoordinate = worldProjection.fromGeo(geoCoordinate[0], geoCoordinate[1]);

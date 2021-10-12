@@ -2,7 +2,7 @@ package com.mndk.scjd2mc.core.scjd.reader;
 
 import com.mndk.scjd2mc.core.db.common.TableColumn;
 import com.mndk.scjd2mc.core.db.common.TableColumns;
-import com.mndk.scjd2mc.core.scjd.SuchijidoData;
+import com.mndk.scjd2mc.core.scjd.SuchijidoFile;
 import com.mndk.scjd2mc.core.scjd.SuchijidoUtils;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
 import com.mndk.scjd2mc.core.scjd.geometry.*;
@@ -25,9 +25,9 @@ public class ShpZipDataFileReader extends SuchijidoFileReader {
 
 
 	@Override
-	protected SuchijidoData getResult() throws IOException {
+	protected SuchijidoFile getResult() throws IOException {
 
-		SuchijidoData result = new SuchijidoData();
+		SuchijidoFile result = new SuchijidoFile(mapFile);
 
 		Throwable throwable = null;
 
@@ -62,7 +62,7 @@ public class ShpZipDataFileReader extends SuchijidoFileReader {
 					throw new RuntimeException("Invalid file name: " + fileName);
 				}
 				TableColumns columns = type.getColumns();
-				ScjdLayer layer = result.getLayer(type);
+				ScjdLayer scjdLayer = new ScjdLayer(type);
 
 				try(ShpDbfDataIterator iterator =
 							new ShpDbfDataIterator(filePath, Charset.forName("cp949"))) {
@@ -77,10 +77,12 @@ public class ShpZipDataFileReader extends SuchijidoFileReader {
 							dataRow[i] = record.dBase.getDataByField(column.getName());
 						}
 
-						layer.addAll(SuchijidoUtils.combineGeometryAndData(
-								layer, geometry, type, dataRow, UUID.randomUUID().toString(), options));
+						scjdLayer.addAll(SuchijidoUtils.combineGeometryAndData(
+								scjdLayer, geometry, type, dataRow, UUID.randomUUID().toString(), options));
 					}
 				}
+
+				result.addLayer(scjdLayer);
 			}
 		} catch(Throwable t) {
 			throwable = t;

@@ -247,7 +247,7 @@ public class MySQLManager {
             ElementDataType type = ElementDataType.fromLayerName(
                     resultSet.getString("data_type"));
             TableColumns columns = type.getColumns();
-            ScjdLayer layer = result.getLayer(type);
+            ScjdLayer layer = new ScjdLayer(type);
 
             long id = resultSet.getLong(ID_COLUMN.getName());
             DataInputStream geometryStream = new DataInputStream(resultSet.getBlob("geom").getBinaryStream());
@@ -282,6 +282,8 @@ public class MySQLManager {
             }
 
             layer.addAll(SuchijidoUtils.combineGeometryAndData(layer, geometry, type, dataRow, Long.toString(id), options));
+
+            result.addLayer(layer);
         }
 
         return result;

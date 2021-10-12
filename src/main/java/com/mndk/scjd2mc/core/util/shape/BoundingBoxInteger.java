@@ -26,6 +26,10 @@ public class BoundingBoxInteger {
 
 		return new BoundingBoxInteger(xmin, zmin, xmax, zmax);
 	}
+
+	public boolean isPointInside(int x, int z) {
+		return x >= xmin && x <= xmax && z >= zmin && z <= zmax;
+	}
 	
 	public boolean isValid() {
 		return xmin <= xmax && zmin <= zmax;
