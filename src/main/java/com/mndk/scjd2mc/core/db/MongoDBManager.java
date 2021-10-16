@@ -1,8 +1,8 @@
 package com.mndk.scjd2mc.core.db;
 
 import com.google.gson.*;
+import com.mndk.scjd2mc.core.scjd.ScjdIndexManager;
 import com.mndk.scjd2mc.core.scjd.SuchijidoData;
-import com.mndk.scjd2mc.core.scjd.SuchijidoUtils;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdElement;
 import com.mndk.scjd2mc.core.scjd.elem.ScjdLayer;
 import com.mndk.scjd2mc.core.scjd.reader.SuchijidoFileReader;
@@ -137,7 +137,7 @@ public class MongoDBManager {
 
         for(File file : files) {
             tasks.add(Executors.callable(() -> {
-                String mapIndex = SuchijidoUtils.getMapIndexFromFileName(file.getName());
+                String mapIndex = ScjdIndexManager.getMapIndexFromFileName(file.getName());
 
                 System.out.println(file.getName() + " -> " + mapIndex);
 

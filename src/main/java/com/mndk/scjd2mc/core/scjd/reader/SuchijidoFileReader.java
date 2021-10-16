@@ -85,7 +85,7 @@ public abstract class SuchijidoFileReader {
 	
 	protected static Korea2010BeltProjection getProjFromFileName(File file) {
 		String fileName = file.getName();
-		return SuchijidoUtils.getProjectionFromMapName(fileName.substring(0, fileName.length() - 4));
+		return ScjdIndexManager.getProjectionFromMapName(fileName.substring(0, fileName.length() - 4));
 	}
 	
 	

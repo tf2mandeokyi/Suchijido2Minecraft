@@ -11,10 +11,7 @@ import org.gdal.gdal.Dataset;
 import org.gdal.gdal.Driver;
 import org.gdal.gdalconst.gdalconst;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 
 public class SuchijidoFile extends SuchijidoData {
 
@@ -23,11 +20,11 @@ public class SuchijidoFile extends SuchijidoData {
 
     public SuchijidoFile(File file) {
         super();
-        this.projection = SuchijidoUtils.getProjectionFromMapName(file.getName());
-        this.mapIndex = SuchijidoUtils.getMapIndexFromFileName(file.getName());
+        this.projection = ScjdIndexManager.getProjectionFromMapName(file.getName());
+        this.mapIndex = ScjdIndexManager.getMapIndexFromFileName(file.getName());
     }
 
-    public void extractGeoTiff(Driver geoTiffDriver, File directory) {
+    public void extractGeoTiff(Driver geoTiffDriver, File directory, SuchijidoFile... additionalFiles) {
         BoundingBoxInteger bbox = this.boundingBox.toMaximumBoundingBoxInteger();
         int xsize = bbox.xmax - bbox.xmin + 1, zsize = bbox.zmax - bbox.zmin + 1;
 
@@ -35,29 +32,38 @@ public class SuchijidoFile extends SuchijidoData {
 
         Dataset dataset = geoTiffDriver.Create(file.getAbsolutePath(), xsize, zsize, 1, gdalconst.GDT_Float32);
         Band band = dataset.GetRasterBand(1);
-        BufferedImage image = new BufferedImage(xsize, zsize, BufferedImage.TYPE_INT_RGB);
 
-        TriangleList interpolatedResult = TerrainTriangulator.generateTerrain(this);
+        SuchijidoData combined = new SuchijidoData();
+        combined.append(this);
+        for(SuchijidoFile dataFile : additionalFiles) combined.append((dataFile));
+        TriangleList interpolatedResult = TerrainTriangulator.generateTerrain(combined);
 
         for(Triangle t : interpolatedResult) {
             for(int z = t.minZ; z <= t.maxZ; ++z)  for(int x = t.minX; x <= t.maxX; ++x) {
                 if(t.contains(x + .5, z + .5) == null || !bbox.isPointInside(x, z)) continue;
-
                 float height = (float) t.interpolateY(x + .5, z + .5);
-
                 band.WriteRaster(x - bbox.xmin, z - bbox.zmin, 1, 1, new float[] { height });
             }
-        }
-
-        try {
-            ImageIO.write(image, "png", new File(directory, this.mapIndex + ".png"));
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         dataset.SetGeoTransform(new double[] { bbox.xmin, 1, 0, bbox.zmin, 0, 1 });
         dataset.SetProjection(this.projection.toWellKnownText());
         dataset.delete();
+    }
+
+
+    private static final int[][] surroundings = {
+            { 1, -1 }, { 1, 0 }, { 1, 1 }, { 0, -1 }, { 0, 1 }, { -1, -1 }, { -1, 0 }, { -1, 1 }
+    };
+    public String[] getSurroundingIndexes() {
+        int[] myPos = ScjdIndexManager.getTilePosition(this.mapIndex);
+        int myScale = ScjdIndexManager.getTileScale(this.mapIndex);
+        String[] result = new String[surroundings.length];
+        for(int i = 0 ; i < surroundings.length; ++i) {
+            result[i] = ScjdIndexManager.getTileIndex(
+                    new int[] { myPos[0] + surroundings[i][0], myPos[1] + surroundings[i][1] }, myScale);
+        }
+        return result;
     }
 
 }
