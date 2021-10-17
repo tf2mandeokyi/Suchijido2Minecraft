@@ -10,6 +10,7 @@ import com.mndk.scjd2mc.core.scjd.geometry.Polygon;
 import com.mndk.scjd2mc.core.scjd.type.ElementDataType;
 import com.mndk.scjd2mc.core.triangulator.cdt.ConstraintDelaunayTriangulator;
 import com.mndk.scjd2mc.core.triangulator.cdt.IndexEdge;
+import com.mndk.scjd2mc.core.triangulator.fdt.FastDelaunayTriangulator;
 import com.mndk.scjd2mc.core.util.math.Vector2DH;
 import com.mndk.scjd2mc.core.util.shape.TriangleList;
 
@@ -20,11 +21,25 @@ public class TerrainTriangulator {
 
 
 
-	public static TriangleList generateTerrain(SuchijidoData result) {
+	public static TriangleList useFDT(SuchijidoData result) {
 
-		Map.Entry<List<ScjdContour>, List<Vector2DH>> extraction = extractContourAndElevationPointList(result);
+		Map.Entry<List<ScjdContour>, List<Vector2DH>> extraction = extractRequiredElements(result);
 
-		/* TriangleList first = */ return generateTerrain(extraction.getKey(), extraction.getValue(), Collections.emptyList());
+		/* TriangleList first = */ return useFDT(extraction.getKey(), extraction.getValue(), Collections.emptyList());
+
+		// return generateWithLayerPolylines(result, extraction, first, ElementDataType.도로중심선);
+		// TODO
+		// return generateWithLayerPolylines(result, extraction, second, ElementDataType.도로경계);
+
+	}
+
+
+
+	public static TriangleList useCDT(SuchijidoData result) {
+
+		Map.Entry<List<ScjdContour>, List<Vector2DH>> extraction = extractRequiredElements(result);
+
+		/* TriangleList first = */ return useCDT(extraction.getKey(), extraction.getValue(), Collections.emptyList());
 
 		// return generateWithLayerPolylines(result, extraction, first, ElementDataType.도로중심선);
 		// TODO
@@ -60,13 +75,38 @@ public class TerrainTriangulator {
 			}
 		}
 
-		return generateTerrain(extraction.getKey(), extraction.getValue(), roadCenterLineEdges);
+		return useCDT(extraction.getKey(), extraction.getValue(), roadCenterLineEdges);
 
+	}
+
+
+
+	private static TriangleList useFDT(
+			List<ScjdContour> contours, List<Vector2DH> elevationPoints, List<Vector2DH[]> additionalEdges) {
+
+		List<Vector2DH[]> vertexes = new ArrayList<>();
+
+		for (ScjdContour contour : contours) {
+			Vector2DH[] vertex = contour.getShape().getShape();
+			Vector2DH[] destination = new Vector2DH[vertex.length];
+
+			for (int j = 0; j < vertex.length; j++) {
+				destination[j] = vertex[j].withHeight(contour.elevation);
+			}
+
+			vertexes.add(destination);
+		}
+
+		vertexes.addAll(additionalEdges);
+
+		List<Vector2DH> parsed = vertexesToPointsAndIntegers(vertexes, elevationPoints.toArray(new Vector2DH[0])).getKey();
+
+		return new FastDelaunayTriangulator(parsed).getTriangleList();
 	}
 	
 	
 	
-	private static TriangleList generateTerrain(
+	private static TriangleList useCDT(
 			List<ScjdContour> contours, List<Vector2DH> elevationPoints, List<Vector2DH[]> additionalEdges) {
 
 		List<Vector2DH[]> vertexes = new ArrayList<>();
@@ -99,11 +139,14 @@ public class TerrainTriangulator {
 
 
 
-	static Map.Entry<List<ScjdContour>, List<Vector2DH>> extractContourAndElevationPointList(SuchijidoData result) {
+	static Map.Entry<List<ScjdContour>, List<Vector2DH>> extractRequiredElements(SuchijidoData result) {
 
 		List<ScjdContour> contourList =
 				result.getLayer(ElementDataType.등고선).stream()
 						.map(element -> (ScjdContour) element).collect(Collectors.toList());
+
+		contourList.addAll(result.getLayer(ElementDataType.해안선).stream()
+						.map(element -> (ScjdContour) element).collect(Collectors.toList()));
 
 		List<Vector2DH> elevationPoints = new ArrayList<>();
 		ArrayList<ScjdElement<?>> tempLayer = result.getLayer(ElementDataType.표고점);

@@ -40,12 +40,21 @@ public class SuchijidoUtils {
 				if(dataType == ElementDataType.등고선) {
 					return Collections.singletonList(new ScjdContour(layer, (LineString) geometry, dataRow));
 				}
+				else if(dataType == ElementDataType.해안선) {
+					return Collections.singletonList(new ScjdCoastline(layer, (LineString) geometry, dataRow));
+				}
 				break;
 			case MULTILINESTRING:
 				if(dataType == ElementDataType.등고선) {
 					MultiLineString mls = (MultiLineString) geometry;
 					List<ScjdElement<?>> result = new ArrayList<>();
 					for(LineString ls : mls.getShape()) { result.add(new ScjdContour(layer, ls, dataRow)); }
+					return result;
+				}
+				else if(dataType == ElementDataType.해안선) {
+					MultiLineString mls = (MultiLineString) geometry;
+					List<ScjdElement<?>> result = new ArrayList<>();
+					for(LineString ls : mls.getShape()) { result.add(new ScjdCoastline(layer, ls, dataRow)); }
 					return result;
 				}
 				break;

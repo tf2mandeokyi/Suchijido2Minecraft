@@ -85,7 +85,7 @@ public class ScjdDataGenerationTask implements Runnable {
 
 
             commandSender.sendMessage(new TextComponentString("§dCalculating terrain..."));
-            TriangleList triangleList = TerrainTriangulator.generateTerrain(finalResult);
+            TriangleList triangleList = TerrainTriangulator.useCDT(finalResult);
 
 
             // CubeProviderServer cubeProviderServer = (CubeProviderServer) world.getChunkProvider();

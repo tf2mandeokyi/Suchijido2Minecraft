@@ -606,17 +606,21 @@ public class ConstraintDelaunayTriangulator {
 		IndexTriangle tOpo = triangles.get(iTopo);
 		int i = CDTUtils.opposedVertexIndex(tOpo, iT);
 		int iVopo = tOpo.vertices.get(i);
-		if(superGeomType == SuperGeometryType.SUPER_TRIANGLE) {
-			if(iVert < 3 && iVopo < 3) { // opposed vertices belong to super-triangle
-				return false;            // no flip is needed
-			}
-		}
 		int iVcw = tOpo.vertices.get(CDTUtils.cw(i));
 		int iVccw = tOpo.vertices.get(CDTUtils.ccw(i));
 		Vector2DH v1 = vertices.get(iVcw).pos;
 		Vector2DH v2 = vertices.get(iVopo).pos;
 		Vector2DH v3 = vertices.get(iVccw).pos;
 		if(superGeomType == SuperGeometryType.SUPER_TRIANGLE) {
+
+			if(iVert < 3 || iVopo < 3) { // flip-candidate edge touches super-triangle
+				if(iVcw < 3 || iVccw < 3) { // but so does original edge
+					//let the normal circumcircle test decide
+					return CDTUtils.inCircumCircle(pos, v1, v2, v3);
+				}
+				return false; // no flip is needed
+			}
+
 			if(iVcw < 3) {
 				return CDTUtils.locatePointLine(v1, v2, v3) == CDTUtils.locatePointLine(pos, v2, v3);
 			}

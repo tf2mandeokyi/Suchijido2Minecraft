@@ -28,7 +28,7 @@ public class SuchijidoFile extends SuchijidoData {
         BoundingBoxInteger bbox = this.boundingBox.toMaximumBoundingBoxInteger();
         int xsize = bbox.xmax - bbox.xmin + 1, zsize = bbox.zmax - bbox.zmin + 1;
 
-        File file = new File(directory, this.mapIndex + ".tiff");
+        File file = new File(directory, this.mapIndex + ".tif");
 
         Dataset dataset = geoTiffDriver.Create(file.getAbsolutePath(), xsize, zsize, 1, gdalconst.GDT_Float32);
         Band band = dataset.GetRasterBand(1);
@@ -36,7 +36,7 @@ public class SuchijidoFile extends SuchijidoData {
         SuchijidoData combined = new SuchijidoData();
         combined.append(this);
         for(SuchijidoFile dataFile : additionalFiles) combined.append((dataFile));
-        TriangleList interpolatedResult = TerrainTriangulator.generateTerrain(combined);
+        TriangleList interpolatedResult = TerrainTriangulator.useCDT(combined);
 
         for(Triangle t : interpolatedResult) {
             for(int z = t.minZ; z <= t.maxZ; ++z)  for(int x = t.minX; x <= t.maxX; ++x) {

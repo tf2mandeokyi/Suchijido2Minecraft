@@ -12,6 +12,14 @@ import net.minecraft.world.World;
 public class ScjdContour extends ScjdElement<LineString> {
 
 	public final int elevation;
+
+	protected ScjdContour(ScjdLayer parent, LineString lineString, Object[] rowData, int elevation) {
+		super(parent, "", lineString, rowData);
+		this.elevation = elevation;
+		for(Vector2DH vs : lineString.getShape()) {
+			vs.height = elevation;
+		}
+	}
 	
 	public ScjdContour(ScjdLayer parent, LineString lineString, Object[] rowData) {
 		super(parent, "", lineString, rowData);
