@@ -1,6 +1,6 @@
 # Suchijido2Minecraft
 
-The mod that imports Korean National Geographic Data Map files (also known as "수치지도" made by [National Geographic Information Institute, 국토지리정보원](https://www.ngii.go.kr/)) to Minecraft for [Build the Earth](https://buildtheearth.net) project.
+The mod that imports Korean National Geographic Data Map files (also known as "수치지도" made by [National Geographic Information Institute, 국토지리정보원](https://www.ngii.go.kr/)) to Minecraft via [Terra++](https://www.curseforge.com/minecraft/mc-mods/terraplusplus)'s terrain generating feature.
 
 ## Info
 ### Required mods
