@@ -1,194 +1,49 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.daporkchop.net' }
-        mavenCentral()
-        jcenter()
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-		classpath "com.github.jengelman.gradle.plugins:shadow:4.0.0"
-    }
+plugins {
+    id 'java'
 }
-
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: "com.github.johnrengelman.shadow"
-apply plugin: 'java'
-
-
-
-version = project.mod_version
-group = project.mod_group
-archivesBaseName = project.mod_id
-
-
-
-sourceCompatibility = targetCompatibility = '1.8'
-compileJava.options.encoding = 'UTF-8'
-
-
 
 tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
 }
-
-
-minecraft {
-	version = project.forge_version
-	mappings = project.mcp_mappings
-    runDir = "run"
-}
-
 
 repositories {
-    mavenCentral()
-    jcenter()
-	maven {
-		name = "OSGeo Release"
-		url = "https://repo.osgeo.org/repository/release/"
-	}
-	maven {
-		name = "OSGeo Snapshot"
-		url = "https://repo.osgeo.org/repository/snapshot/"
-	}
-    maven {
-        name = "GeoToolkit"
-        url = "https://maven.geotoolkit.org"
+    mavenCentral().content {
+        excludeModule("javax.media", "jai_core")
     }
-    maven { // cubicchunks, cubicworldgen, terraplusplus
-        name = "JitPack"
-        url = "https://jitpack.io/"
-    }
-    maven { // leveldb
-        name = "DaPorkchop_"
-        url = "https://maven.daporkchop.net/"
-    }
-    maven { // leveldb
-        name = "OpenCollab Snapshots"
-        url = "https://repo.opencollab.dev/snapshot/"
-    }
-    maven { // jankson
-        name = "elytradev"
-        url = "https://repo.elytradev.com/"
-    }
-	maven {
-		name = "Sonatype"
-		url = "https://oss.sonatype.org/content/repositories/public/"
-	}
-    maven {
-        name = "Sponge"
-        url = "https://repo.spongepowered.org/maven/"
-    }
-    maven { // worldedit
-    	name = "EngineHub"
-    	url = "https://maven.enginehub.org/repo/"
-    }
+    maven { url "https://maven.geotoolkit.org" }
+    maven { url "https://repo.osgeo.org/repository/release/" }
+    maven { url "https://repo.osgeo.org/repository/snapshot/" }
 }
-
-
-configurations {
-    shade
-    compile.extendsFrom shade
-}
-
 
 dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.22'
 
-    deobfProvided ('com.github.OpenCubicChunks.CubicChunks:cubicchunks:6e18a97abe31e1c7892ebcf8ed0f17a4ac379e10') {
-		transitive = false
-	}
-    deobfProvided ('com.github.OpenCubicChunks:CubicWorldGen:27de56d2f792513873584b2f8fd9f3082fb259ec') {
-		transitive = false
-	}
-    deobfProvided ('com.github.BuildTheEarth:terraplusplus:74449c4af349fd9b77b10e1041ed2c09f2d78518') {
-		transitive = true
-	}
-    
-    deobfProvided ('com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT') { 
-		transitive = false 
-	}
-    deobfProvided ('com.sk89q.worldedit:worldedit-forge-mc1.12.1:7.0.0-SNAPSHOT') {
-		transitive = false
-	}
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
 
-    shade 'org.osgeo:proj4j:0.1.0'
-    shade 'mysql:mysql-connector-java:8.0.25'
-    shade 'com.google.code.gson:gson:2.8.8'
-    shade 'org.mongodb:mongo-java-driver:3.12.10'
-    shade 'org.gdal:gdal:3.3.0'
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'org.apache.logging.log4j:log4j-api:2.17.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.17.0'
+    implementation 'org.apache.commons:commons-compress:1.21'
 
-    runtime "org.apache.commons:commons-imaging:1.0-alpha2"
-    runtime("net.daporkchop:leveldb-mcpe-jni:0.0.10-SNAPSHOT")  {
-        exclude group: "io.netty"
-    }
-	
-	testCompile 'junit:junit:4.13.2'
-    testCompile 'com.github.OpenCubicChunks.CubicChunks:cubicchunks:6e18a97abe31e1c7892ebcf8ed0f17a4ac379e10'
-    testCompile 'com.github.OpenCubicChunks:CubicWorldGen:27de56d2f792513873584b2f8fd9f3082fb259ec'
-    testCompile 'com.github.BuildTheEarth:terraplusplus:74449c4af349fd9b77b10e1041ed2c09f2d78518'
-    testCompile 'com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT'
-    provided 'org.projectlombok:lombok:1.18.20'
-	
+    implementation 'com.google.code.gson:gson:2.8.9'
+
+    implementation 'org.gdal:gdal:3.3.0'
+
+    implementation 'org.geotools:gt-shapefile:27-SNAPSHOT'
+    implementation 'org.geotools:gt-geojson:27-SNAPSHOT'
+    implementation 'org.geotools:gt-epsg-hsql:27-SNAPSHOT'
+
+    annotationProcessor 'info.picocli:picocli-codegen:4.6.2'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 }
 
-
-processResources {
-    // this will ensure that this task is redone when the versions change.
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
-
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-
-        // replace version and mcversion
-        expand 'version': project.version, 'mcversion': project.minecraft.version
-    }
-
-    // copy everything else except the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
+compileJava {
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
 }
-
-
-tasks.withType(Test) {
-    systemProperty "java.library.path",
-            "D:\\Others\\GdalMapServer\\3.3.0-7.6.3\\bin" + File.pathSeparator +
-            "D:\\Others\\GdalMapServer\\3.3.0-7.6.3\\bin\\gdal\\java"
-}
-
-
-shadowJar {
-	classifier = null
-	configurations = [project.configurations.shade]
-
-	exclude 'module-info.class'
-}
-
-build.dependsOn shadowJar
-
-
-reobf {
-	shadowJar {}
-}
-
-
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
-
-
-task relocateShadowJar(type: ConfigureShadowRelocation) {
-	target = tasks.shadowJar
-	prefix = "${project.mod_group}.${project.mod_id}.dep"
-}
-
 
 test {
-    testLogging {
-        outputs.upToDateWhen { false }
-        showStandardStreams = true
-    }
-    useJUnit()
+    useJUnitPlatform()
 }
-
-
-shadowJar.dependsOn relocateShadowJar
