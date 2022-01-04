@@ -23,7 +23,7 @@ public enum LayerDataType {
 	교차로("crossroad", "A008"),
 	입체교차부("intersection_3d", "A009"),
 	인터체인지("interchange", "A010"),
-	터널("tunnel", "A011"),
+	터널("tunnel", "A011", A011Tunnel.class),
 	터널입구("tunnel_entrance", "A012"),
 	정거장("bus_station", "A013"),
 	정류장("train_station", "A014"),
@@ -122,14 +122,14 @@ public enum LayerDataType {
 	동굴입구("cave_entrance", "F005"),
 
 	// G타입 - 경계
-	시도_행정경계("province_administrative_boundary", "G001"),
+	시도_행정경계("province_administrative_boundary", "G001", G001AdministrativeBoundary.class),
 	시군구_행정경계("district_administrative_boundary", "G010"),
 	읍면동_행정경계("eup_myeon_dong_administrative_boundary", "G011"),
 	수부지형경계("watery_boundary", "G002"),
 	기타경계("other_boundaries", "G003"),
 
 	// H타입 - 주기
-	도곽선("map_boundary", "H001"),
+	도곽선("map_boundary", "H001", H001MapBoundary.class),
 	기준점("datum_point", "H002"),
 	격자("grid", "H003"),
 	지명("place_name", "H004"),
@@ -141,7 +141,7 @@ public enum LayerDataType {
 	private final @Getter String layerNameHeader;
 	private final @Getter Class<? extends ScjdDefaultElement> elementClass;
 	private final @Getter Constructor<? extends ScjdDefaultElement> elementConstructor;
-	private final @Getter SimpleFeatureType featureType;
+	private final @Getter SimpleFeatureType featureType, osmFeatureType;
 
 	LayerDataType(
 			String englishName, String layerNameHeader, Class<? extends ScjdDefaultElement> elementClass
@@ -153,10 +153,12 @@ public enum LayerDataType {
 			if(elementClass != null) {
 				this.elementConstructor = elementClass.getConstructor(SimpleFeature.class);
 				this.featureType = ScjdDefaultElement.getSimpleFeatureType(elementClass, englishName);
+				this.osmFeatureType = ScjdDefaultElement.getOsmSimpleFeatureType(elementClass, englishName);
 			}
 			else {
 				this.elementConstructor = null;
 				this.featureType = null;
+				this.osmFeatureType = null;
 			}
 		} catch (NoSuchMethodException e) {
 			throw new RuntimeException(e);
@@ -167,9 +169,9 @@ public enum LayerDataType {
 		this(englishName, layerNameHeader, null);
 	}
 
-	public SimpleFeature toJsonFeature(SimpleFeature feature) {
+	public SimpleFeature toOsmStyleFeature(SimpleFeature feature, String id) {
 		try {
-			return this.elementConstructor.newInstance(feature).toJsonFeature(this.featureType);
+			return this.elementConstructor.newInstance(feature).toOsmStyleFeature(this.osmFeatureType, id);
 		} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}

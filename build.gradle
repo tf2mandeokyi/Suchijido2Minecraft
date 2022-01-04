@@ -31,6 +31,7 @@ dependencies {
 
     implementation 'org.geotools:gt-shapefile:27-SNAPSHOT'
     implementation 'org.geotools:gt-geojson:27-SNAPSHOT'
+    implementation 'org.geotools:gt-geojsondatastore:27-SNAPSHOT'
     implementation 'org.geotools:gt-epsg-hsql:27-SNAPSHOT'
 
     annotationProcessor 'info.picocli:picocli-codegen:4.6.2'

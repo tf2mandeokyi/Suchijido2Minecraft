@@ -4,29 +4,26 @@ import com.mndk.scjdmc.util.function.LayerFilterFunction;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
 
-public abstract class SuchijidoToGeoJsonConverter {
+public abstract class ScjdShapefileConverter<ReturnType> {
 
-    public static final Logger LOGGER = LogManager.getLogger();
+    protected static final Logger LOGGER = LogManager.getLogger();
 
     protected static final CoordinateReferenceSystem EPSG4326;
     protected static final CoordinateReferenceSystem CRS84;
 
-    protected final FeatureJSON featureJSON;
     @Setter protected LayerFilterFunction layerFilter;
 
-    public SuchijidoToGeoJsonConverter(FeatureJSON featureJSON) {
-        this.featureJSON = featureJSON;
+    public ScjdShapefileConverter() {
         this.layerFilter = LayerFilterFunction.DEFAULT_FILTER;
     }
 
-    public abstract void toFeatureJSON(File source, File destination, String charset) throws Exception;
+    public abstract ReturnType convert(File source, String charset) throws Exception;
 
     static {
         try {

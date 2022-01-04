@@ -2,19 +2,22 @@ package com.mndk.scjdmc.geojson.converter;
 
 import com.mndk.scjdmc.scjd.LayerDataType;
 import com.mndk.scjdmc.scjd.MapIndexManager;
-import org.geotools.geojson.feature.FeatureJSON;
+import org.geotools.data.simple.SimpleFeatureCollection;
 
 import java.io.File;
 import java.io.IOException;
 
-public class MultipleShpToGeoJsonConverter extends ShpToGeoJsonConverter {
+public class Scjd2OsmStyleFeatureMapConverter extends ScjdShapefileConverter<ShapefileConversionResult> {
 
-    public MultipleShpToGeoJsonConverter(FeatureJSON featureJSON) {
-        super(featureJSON);
+    private final Scjd2OsmStyleFeatureConverter converter;
+
+    public Scjd2OsmStyleFeatureMapConverter() {
+        super();
+        this.converter = new Scjd2OsmStyleFeatureConverter();
     }
 
     @Override
-    public void toFeatureJSON(File directory, File destination, String charset) throws Exception {
+    public ShapefileConversionResult convert(File directory, String charset) throws Exception {
         if(!directory.isDirectory()) {
             throw new IOException("Path should be directory");
         }
@@ -27,15 +30,21 @@ public class MultipleShpToGeoJsonConverter extends ShpToGeoJsonConverter {
         }
 
         String mapIndex = MapIndexManager.getMapIndexFromFileName(directory.getName());
+        ShapefileConversionResult result = new ShapefileConversionResult(mapIndex);
 
         for(File shpFile : shapeFiles) {
             LayerDataType layerDataType = LayerDataType.fromLayerName(shpFile.getName());
             if(!this.layerFilter.apply(layerDataType)) continue;
             try {
-                super.toFeatureJSON(mapIndex, shpFile, destination, charset);
+                SimpleFeatureCollection featureCollection = converter.convert(mapIndex, shpFile, charset);
+                if(featureCollection != null) {
+                    result.put(layerDataType, featureCollection);
+                }
             } catch(Throwable t) {
                 LOGGER.error("Error thrown while parsing " + shpFile, t);
             }
         }
+
+        return result;
     }
 }

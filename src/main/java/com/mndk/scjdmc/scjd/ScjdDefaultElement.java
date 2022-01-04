@@ -27,7 +27,7 @@ public class ScjdDefaultElement {
         }
     }
 
-    public final SimpleFeature toJsonFeature(SimpleFeatureType featureType) {
+    public final SimpleFeature toOsmStyleFeature(SimpleFeatureType featureType, String id) {
         try {
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
             builder.add(this.geometryObject);
@@ -37,13 +37,27 @@ public class ScjdDefaultElement {
                     builder.set(column.jsonName(), f.get(this));
                 }
             }
-            return builder.buildFeature(null);
+            return builder.buildFeature(id);
         } catch(IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
     public static <T extends ScjdDefaultElement> SimpleFeatureType getSimpleFeatureType(Class<T> clazz, String layerName) {
+        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
+        builder.setName(layerName);
+        builder.add("geometry", Geometry.class);
+        for(Field f : ReflectionUtil.getAllFields(clazz, ScjdDefaultElement.class)) {
+            Column column = f.getAnnotation(Column.class);
+            if(column != null && !"".equals(column.name())) {
+                builder.add(column.name(), f.getDeclaringClass());
+            }
+        }
+        builder.setDefaultGeometry("geometry");
+        return builder.buildFeatureType();
+    }
+
+    public static <T extends ScjdDefaultElement> SimpleFeatureType getOsmSimpleFeatureType(Class<T> clazz, String layerName) {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName(layerName);
         builder.add("geometry", Geometry.class);

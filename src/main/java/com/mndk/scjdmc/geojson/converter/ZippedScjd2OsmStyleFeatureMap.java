@@ -2,34 +2,37 @@ package com.mndk.scjdmc.geojson.converter;
 
 import com.mndk.scjdmc.util.file.DirectoryManager;
 import com.mndk.scjdmc.util.file.ZipManager;
-import org.geotools.geojson.feature.FeatureJSON;
 
 import java.io.File;
 import java.io.IOException;
 
-public class ZipToGeoJsonConverter extends MultipleShpToGeoJsonConverter {
+public class ZippedScjd2OsmStyleFeatureMap extends Scjd2OsmStyleFeatureMapConverter {
 
-    public ZipToGeoJsonConverter(FeatureJSON featureJSON) {
-        super(featureJSON);
+    public ZippedScjd2OsmStyleFeatureMap() {
+        super();
     }
 
     @Override
-    public void toFeatureJSON(File source, File destination, String charset) throws Exception {
+    public ShapefileConversionResult convert(File source, String charset) throws Exception {
 
         File zipDestination = new File(
                 source.getParent(),
                 source.getName().substring(0, source.getName().lastIndexOf("."))
         );
 
+        ShapefileConversionResult result;
+
         try {
             if(zipDestination.exists() && !zipDestination.delete()) {
                 LOGGER.warn("Failed to delete directory: " + zipDestination);
             }
             ZipManager.extractZipFile(source, zipDestination, charset);
-            super.toFeatureJSON(zipDestination, destination, charset);
+            result = super.convert(zipDestination, charset);
         } catch(Throwable t) {
             throw (t instanceof IOException) ? (IOException) t : new RuntimeException(t);
         }
         DirectoryManager.deleteDirectory(zipDestination);
+
+        return result;
     }
 }

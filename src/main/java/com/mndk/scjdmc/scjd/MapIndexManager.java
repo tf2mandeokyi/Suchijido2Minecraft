@@ -6,16 +6,12 @@ import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MapIndexManager {
-
-    public static final double INDEX50000_SCALE = 4;
-    public static final double INDEX25000_SCALE = 8;
-    public static final double INDEX10000_SCALE = 20;
-    public static final double INDEX5000_SCALE = 40;
-    public static final double INDEX1000_SCALE = 200;
 
     private static final CoordinateReferenceSystem EPSG5185;
     private static final CoordinateReferenceSystem EPSG5186;
@@ -46,7 +42,7 @@ public class MapIndexManager {
         }
     }
 
-    public static String positionToIndex(int scale, int[] pos) {
+    public static String positionToIndex(int[] pos, int scale) {
         switch(scale) {
             case 50000: return get50000TileIndex(pos);
             case 25000: return get25000TileIndex(pos);
@@ -57,39 +53,43 @@ public class MapIndexManager {
         }
     }
 
-    public static double[] positionToLongLat(int scale, int[] tilePosition, boolean center) {
-        double mapScale;
+    public static double[] positionToLongLat(int[] tilePosition, int scale, boolean center) {
         switch(scale) {
-            case 50000: mapScale = INDEX50000_SCALE; break;
-            case 25000: mapScale = INDEX25000_SCALE; break;
-            case 10000: mapScale = INDEX10000_SCALE; break;
-            case 5000: mapScale = INDEX5000_SCALE; break;
-            case 1000: mapScale = INDEX1000_SCALE; break;
+            case 50000: case 25000: case 10000: case 5000: case 1000: break;
             default: throw new IllegalArgumentException("Unsupported tile scale: " + scale);
         }
+        double mapScale = 200000 / (double) scale;
         double offset = center ? 0.5 : 0;
         return new double[] { (tilePosition[0] + offset) / mapScale, (tilePosition[1] + offset) / mapScale };
     }
 
-    public static int[] longLatToPosition(int scale, double[] longLat) {
-        double mapScale;
+    public static int[] longLatToPosition(double[] longLat, int scale) {
         switch(scale) {
-            case 50000: mapScale = INDEX50000_SCALE; break;
-            case 25000: mapScale = INDEX25000_SCALE; break;
-            case 10000: mapScale = INDEX10000_SCALE; break;
-            case 5000: mapScale = INDEX5000_SCALE; break;
-            case 1000: mapScale = INDEX1000_SCALE; break;
+            case 50000: case 25000: case 10000: case 5000: case 1000: break;
             default: throw new IllegalArgumentException("Unsupported tile scale: " + scale);
         }
+        double mapScale = 200000 / (double) scale;
         return new int[] { (int) Math.floor(longLat[0] * mapScale), (int) Math.floor(longLat[1] * mapScale) };
     }
 
     public static BoundingBox getBoudingBox(String index) {
         int scale = getTileScale(index);
         int[] pos = indexToPosition(index);
-        double[] longLatMin = MapIndexManager.positionToLongLat(scale, pos, false);
-        double[] longLatMax = MapIndexManager.positionToLongLat(scale, new int[] { pos[0] + 1, pos[1] + 1 }, false);
+        double[] longLatMin = MapIndexManager.positionToLongLat(pos, scale, false);
+        double[] longLatMax = MapIndexManager.positionToLongLat(new int[] { pos[0] + 1, pos[1] + 1 }, scale, false);
         return new ReferencedEnvelope(longLatMin[0], longLatMax[0], longLatMin[1], longLatMax[1], null);
+    }
+
+    public static List<String> getContainingIndexes(BoundingBox bbox, int scale) {
+        final int[] minPos = longLatToPosition(new double[] { bbox.getMinX(), bbox.getMinY() }, scale);
+        final int[] maxPos = longLatToPosition(new double[] { bbox.getMaxX(), bbox.getMaxY() }, scale);
+        List<String> indexes = new ArrayList<>();
+        for(int x = minPos[0]; x <= maxPos[0]; x++) {
+            for(int y = minPos[1]; y <= maxPos[1]; y++) {
+                indexes.add(positionToIndex(new int[] { x, y }, scale));
+            }
+        }
+        return indexes;
     }
 
     public static int getTileScale(String index) {

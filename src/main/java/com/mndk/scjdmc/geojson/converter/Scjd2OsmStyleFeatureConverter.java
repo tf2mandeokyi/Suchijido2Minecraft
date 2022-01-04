@@ -13,14 +13,12 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.store.ReprojectingFeatureCollection;
-import org.geotools.geojson.feature.FeatureJSON;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
@@ -32,27 +30,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ShpToGeoJsonConverter extends SuchijidoToGeoJsonConverter implements FileReader {
+public class Scjd2OsmStyleFeatureConverter extends ScjdShapefileConverter<SimpleFeatureCollection> implements FileReader {
 
-    public ShpToGeoJsonConverter(FeatureJSON featureJSON) {
-        super(featureJSON);
+    public Scjd2OsmStyleFeatureConverter() {
+        super();
     }
 
     @Override
-    public void toFeatureJSON(File source, File destination, String charset) throws Exception {
+    public SimpleFeatureCollection convert(File source, String charset) throws Exception {
         String parentFileName = source.getParentFile().getName();
         String mapIndex = MapIndexManager.getMapIndexFromFileName(parentFileName);
-        this.toFeatureJSON(mapIndex, source, destination, charset);
+        return this.convert(mapIndex, source, charset);
     }
 
-    public void toFeatureJSON(String mapIndex, File source, File destination, String charset) throws Exception {
+    public SimpleFeatureCollection convert(String mapIndex, File source, String charset) throws Exception {
 
         String layerName = LayerDataType.findLayerTypeString(source.getName());
         LayerDataType layerDataType = LayerDataType.fromLayerName(source.getName());
-        SimpleFeatureType featureType = layerDataType.getFeatureType();
+        SimpleFeatureType featureType = layerDataType.getOsmFeatureType();
 
-        if(!this.layerFilter.apply(layerDataType)) return;
-        if(featureType == null) return;
+        if(featureType == null) return null;
+        if(!this.layerFilter.apply(layerDataType)) return null;
 
         boolean isDbfFileReadable = this.checkIfDbfReadable(source, charset);
         Path dbfFilePath = null, newDbfFilePath = null;
@@ -79,22 +77,28 @@ public class ShpToGeoJsonConverter extends SuchijidoToGeoJsonConverter implement
 
         List<SimpleFeature> features = new ArrayList<>();
 
+        int i = 0;
         try (SimpleFeatureIterator featureIterator = featureCollection.features()) {
             while(featureIterator.hasNext()) {
-                features.add(layerDataType.toJsonFeature(featureIterator.next()));
+                features.add(layerDataType.toOsmStyleFeature(
+                        featureIterator.next(),
+                        mapIndex + "-" + layerName + "-" + (++i)
+                ));
             }
         }
         SimpleFeatureCollection newFeatureCollection = new ListFeatureCollection(featureType, features);
-
-        File resultFile = new File(destination, layerName + "_" + layerDataType.getEnglishName() + "/" + mapIndex + ".json");
-        resultFile.getParentFile().mkdirs();
-
-        FileWriter writer = new FileWriter(resultFile);
-        this.featureJSON.writeFeatureCollection(newFeatureCollection, writer);
-
-        writer.flush();
-        writer.close();
+//
+//        File resultFile = new File(destination, layerName + "_" + layerDataType.getEnglishName() + "/" + mapIndex + ".json");
+//        resultFile.getParentFile().mkdirs();
+//
+//        FileWriter writer = new FileWriter(resultFile);
+//        this.featureJSON.writeFeatureCollection(newFeatureCollection, writer);
+//
+//        writer.flush();
+//        writer.close();
         dataStore.dispose();
+
+        return newFeatureCollection;
     }
 
 
