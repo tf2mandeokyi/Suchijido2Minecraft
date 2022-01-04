@@ -11,6 +11,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.Map;
 
 public class OpenStreetMapStyleJsonPacker extends JsonPacker {
@@ -34,6 +35,12 @@ public class OpenStreetMapStyleJsonPacker extends JsonPacker {
 
             if(type == LayerDataType.도곽선) {
 
+                SimpleFeatureCollection boundaryCollection = result.get(LayerDataType.시도_행정경계);
+                if(boundaryCollection == null) {
+                    LOGGER.warn("No administrative boundary found! (" + result.getIndex() + ")");
+                    continue;
+                }
+
                 if(first) first = false;
                 else writer.write(",");
 
@@ -41,18 +48,22 @@ public class OpenStreetMapStyleJsonPacker extends JsonPacker {
                 SimpleFeature mapBoundaryFeature = entry.getValue().features().next();
                 Geometry geometry = (Geometry) mapBoundaryFeature.getDefaultGeometry();
                 if(geometry instanceof LineString || geometry instanceof MultiLineString) {
+                    Coordinate[] coordinates = geometry.getCoordinates();
+                    if(!coordinates[0].equals2D(coordinates[coordinates.length - 1])) {
+                        coordinates = Arrays.copyOf(coordinates, coordinates.length + 1);
+                        coordinates[coordinates.length - 1] = coordinates[0];
+                    }
                     LinearRing linearRing = new LinearRing(
-                            geometryFactory.getCoordinateSequenceFactory().create(geometry.getCoordinates()),
+                            geometryFactory.getCoordinateSequenceFactory().create(coordinates),
                             geometryFactory
                     );
-                    LOGGER.warn("LineString found as a map boundary! (" + result.getIndex() + ")");
                     geometry = new Polygon(linearRing, new LinearRing[0], geometryFactory);
                 }
 
-                SimpleFeatureCollection boundaryCollection = result.get(LayerDataType.시도_행정경계);
                 SimpleFeatureIterator boundaryIterator = boundaryCollection.features();
                 while(boundaryIterator.hasNext()) {
-                    geometry = geometry.difference((Geometry) boundaryIterator.next().getDefaultGeometry());
+                    Geometry boundaryGeometry = (Geometry) boundaryIterator.next().getDefaultGeometry();
+                    geometry = geometry.difference(boundaryGeometry.buffer(0.000005));
                 }
 
                 SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(LayerDataType.해안선.getFeatureType());

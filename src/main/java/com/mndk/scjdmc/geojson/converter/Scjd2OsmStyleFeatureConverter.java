@@ -87,15 +87,7 @@ public class Scjd2OsmStyleFeatureConverter extends ScjdShapefileConverter<Simple
             }
         }
         SimpleFeatureCollection newFeatureCollection = new ListFeatureCollection(featureType, features);
-//
-//        File resultFile = new File(destination, layerName + "_" + layerDataType.getEnglishName() + "/" + mapIndex + ".json");
-//        resultFile.getParentFile().mkdirs();
-//
-//        FileWriter writer = new FileWriter(resultFile);
-//        this.featureJSON.writeFeatureCollection(newFeatureCollection, writer);
-//
-//        writer.flush();
-//        writer.close();
+
         dataStore.dispose();
 
         return newFeatureCollection;
@@ -124,7 +116,7 @@ public class Scjd2OsmStyleFeatureConverter extends ScjdShapefileConverter<Simple
                 .getCoordinateReferenceSystem();
 
         // Expected bounding box
-        BoundingBox bbox = MapIndexManager.getBoudingBox(mapIndex);
+        BoundingBox bbox = MapIndexManager.getBoudingBox(mapIndex, true);
 
         // Try #1: Apply with .prj file
         if(sourceCrs != null) {

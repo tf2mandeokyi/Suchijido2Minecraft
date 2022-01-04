@@ -72,11 +72,18 @@ public class MapIndexManager {
         return new int[] { (int) Math.floor(longLat[0] * mapScale), (int) Math.floor(longLat[1] * mapScale) };
     }
 
-    public static BoundingBox getBoudingBox(String index) {
+    public static BoundingBox getBoudingBox(String index, boolean aBitLarger) {
         int scale = getTileScale(index);
         int[] pos = indexToPosition(index);
-        double[] longLatMin = MapIndexManager.positionToLongLat(pos, scale, false);
-        double[] longLatMax = MapIndexManager.positionToLongLat(new int[] { pos[0] + 1, pos[1] + 1 }, scale, false);
+        double[] longLatMin, longLatMax;
+        if(aBitLarger) {
+            longLatMin = MapIndexManager.positionToLongLat(new int[] { pos[0] - 1, pos[1] - 1 }, scale, true);
+            longLatMax = MapIndexManager.positionToLongLat(new int[] { pos[0] + 1, pos[1] + 1 }, scale, true);
+        }
+        else {
+            longLatMin = MapIndexManager.positionToLongLat(pos, scale, false);
+            longLatMax = MapIndexManager.positionToLongLat(new int[] { pos[0] + 1, pos[1] + 1 }, scale, false);
+        }
         return new ReferencedEnvelope(longLatMin[0], longLatMax[0], longLatMin[1], longLatMax[1], null);
     }
 
