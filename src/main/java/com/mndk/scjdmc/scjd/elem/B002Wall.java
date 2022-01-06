@@ -6,7 +6,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class B002Wall extends ScjdDefaultElement {
 
-    @Column(jsonName = "barrier")
+    @Column(osmKeyName = "barrier")
     public final String barrier = "wall";
 
     public B002Wall(SimpleFeature feature) {

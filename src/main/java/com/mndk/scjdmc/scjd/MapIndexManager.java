@@ -30,6 +30,15 @@ public class MapIndexManager {
         return fileName;
     }
 
+    public static boolean validateIndexName(String index) {
+        try {
+            indexToPosition(index);
+        } catch(Exception e) {
+            return false;
+        }
+        return true;
+    }
+
     public static int[] indexToPosition(String index) {
         int scale = getTileScale(index);
         switch(scale) {

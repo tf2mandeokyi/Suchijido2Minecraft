@@ -6,10 +6,10 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class A007Bridge extends ScjdDefaultElement {
 
-    @Column(jsonName = "man_made")
+    @Column(osmKeyName = "man_made")
     public final String manMade = "bridge";
 
-    @Column(jsonName = "layer")
+    @Column(osmKeyName = "layer")
     public final int layer = 1;
 
     public A007Bridge(SimpleFeature feature) {

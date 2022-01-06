@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Column {
-    String name() default "";
-    String jsonName() default "";
+    String shpColumnName() default "";
+    String osmKeyName() default "";
 }

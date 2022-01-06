@@ -2,19 +2,23 @@ package com.mndk.scjdmc.geojson.jsonpacker;
 
 import com.mndk.scjdmc.geojson.converter.ShapefileConversionResult;
 import com.mndk.scjdmc.scjd.LayerDataType;
+import com.mndk.scjdmc.util.Constants;
+import com.mndk.scjdmc.util.FeatureGeometryUtils;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geojson.feature.FeatureJSON;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Arrays;
 import java.util.Map;
 
-public class OpenStreetMapStyleJsonPacker extends JsonPacker {
+public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
 
     private final GeometryFactory geometryFactory;
 
@@ -24,63 +28,71 @@ public class OpenStreetMapStyleJsonPacker extends JsonPacker {
     }
 
     @Override
-    public void pack(ShapefileConversionResult result, Writer writer) throws IOException {
+    public void pack(ShapefileConversionResult conversion, Writer writer) throws IOException {
 
         boolean first = true;
         writer.write("{\"type\":\"FeatureCollection\",\"features\":[");
 
-        for(Map.Entry<LayerDataType, SimpleFeatureCollection> entry : result.entrySet()) {
+        for(Map.Entry<LayerDataType, SimpleFeatureCollection> entry : conversion.entrySet()) {
 
             LayerDataType type = entry.getKey();
+            if(!this.layerFilter.apply(type)) continue;
 
-            if(type == LayerDataType.도곽선) {
-
-                SimpleFeatureCollection boundaryCollection = result.get(LayerDataType.시도_행정경계);
-                if(boundaryCollection == null) {
-                    LOGGER.warn("No administrative boundary found! (" + result.getIndex() + ")");
-                    continue;
-                }
-
-                if(first) first = false;
-                else writer.write(",");
+            switch(type) {
 
                 // Build natural:coastline
-                SimpleFeature mapBoundaryFeature = entry.getValue().features().next();
-                Geometry geometry = (Geometry) mapBoundaryFeature.getDefaultGeometry();
-                if(geometry instanceof LineString || geometry instanceof MultiLineString) {
-                    Coordinate[] coordinates = geometry.getCoordinates();
-                    if(!coordinates[0].equals2D(coordinates[coordinates.length - 1])) {
-                        coordinates = Arrays.copyOf(coordinates, coordinates.length + 1);
-                        coordinates[coordinates.length - 1] = coordinates[0];
+                case 도곽선:
+                    if(!this.indexCoastlineFilter.apply(conversion.getIndex())) continue;
+
+                    SimpleFeatureCollection boundaryCollection = conversion.get(LayerDataType.시도_행정경계);
+                    if(boundaryCollection == null) {
+                        LOGGER.warn("No administrative boundary found! (" + conversion.getIndex() + ")");
                     }
-                    LinearRing linearRing = new LinearRing(
-                            geometryFactory.getCoordinateSequenceFactory().create(coordinates),
-                            geometryFactory
-                    );
-                    geometry = new Polygon(linearRing, new LinearRing[0], geometryFactory);
-                }
 
-                SimpleFeatureIterator boundaryIterator = boundaryCollection.features();
-                while(boundaryIterator.hasNext()) {
-                    Geometry boundaryGeometry = (Geometry) boundaryIterator.next().getDefaultGeometry();
-                    geometry = geometry.difference(boundaryGeometry.buffer(0.000005));
-                }
+                    SimpleFeature mapBoundaryFeature = entry.getValue().features().next();
+                    Geometry geometry = (Geometry) mapBoundaryFeature.getDefaultGeometry();
+                    if(geometry instanceof LineString || geometry instanceof MultiLineString) {
+                        geometry = FeatureGeometryUtils.lineStringToOuterEdgeOnlyPolygon(geometry);
+                    }
 
-                SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(LayerDataType.해안선.getFeatureType());
-                featureBuilder.set("geometry", geometry);
-                SimpleFeature coastline = featureBuilder.buildFeature(result.getIndex() + "-coastline");
-                coastline = LayerDataType.해안선.toOsmStyleFeature(coastline, result.getIndex() + "-coastline");
+                    if(boundaryCollection != null) {
+                        geometry = FeatureGeometryUtils.geometry_featureCollectionGeometryDifference(
+                                geometry, boundaryCollection
+                        );
+                    }
 
-                writer.write(featureJSON.toString(coastline));
-            }
-            else if (type != LayerDataType.시도_행정경계) {
-                SimpleFeatureIterator iterator = entry.getValue().features();
-                while(iterator.hasNext()) {
+                    if(geometry == null) continue;
+
                     if(first) first = false;
                     else writer.write(",");
 
-                    writer.write(featureJSON.toString(iterator.next()));
-                }
+                    SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(LayerDataType.해안선.getFeatureType());
+                    featureBuilder.set(Constants.GEOMETRY_PROPERTY_NAME, geometry);
+                    SimpleFeature coastline = featureBuilder.buildFeature(conversion.getIndex() + "-coastline");
+                    coastline = LayerDataType.해안선.toOsmStyleFeature(coastline, conversion.getIndex() + "-coastline");
+
+                    writer.write(featureJSON.toString(coastline));
+                    break;
+
+                case 시도_행정경계:
+                    break;
+
+                case 도로경계:
+                case 도로중심선:
+                    if(conversion.containsKey(LayerDataType.터널)) {
+                        entry.setValue(FeatureGeometryUtils.featureCollectionGeometryDifference(
+                                type.getOsmFeatureType(), entry.getValue(), conversion.get(LayerDataType.터널)
+                        ));
+                    }
+                default:
+                    SimpleFeatureIterator iterator = entry.getValue().features();
+                    while(iterator.hasNext()) {
+                        if(first) first = false;
+                        else writer.write(",");
+
+                        writer.write(featureJSON.toString(iterator.next()));
+                    }
+                    break;
             }
         }
 

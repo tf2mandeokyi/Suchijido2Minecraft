@@ -72,8 +72,8 @@ public class ProgressGui extends JFrame {
                         );
                     }
                 }
-                this.repaint();
             }
+            this.repaint();
 
         }
 

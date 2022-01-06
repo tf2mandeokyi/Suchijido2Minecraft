@@ -6,19 +6,19 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class B001Building extends ScjdDefaultElement {
 
-    @Column(name = "종류", jsonName = "building")
+    @Column(shpColumnName = "종류", osmKeyName = "building")
     public String buildingType;
 
-    @Column(name = "명칭")
+    @Column(shpColumnName = "명칭")
     public String name1;
 
-    @Column(name = "주기")
+    @Column(shpColumnName = "주기")
     public String name2;
 
-    @Column(jsonName = "name")
+    @Column(osmKeyName = "name")
     public String name;
 
-    @Column(name = "층수", jsonName = "building:levels")
+    @Column(shpColumnName = "층수", osmKeyName = "building:levels")
     public long buildingLevels;
 
     public B001Building(SimpleFeature feature) {

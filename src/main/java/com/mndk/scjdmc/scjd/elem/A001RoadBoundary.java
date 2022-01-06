@@ -6,7 +6,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class A001RoadBoundary extends ScjdDefaultElement {
 
-    @Column(jsonName = "area:highway")
+    @Column(osmKeyName = "area:highway")
     public final String areaHighway = "road";
 
     public A001RoadBoundary(SimpleFeature feature) {

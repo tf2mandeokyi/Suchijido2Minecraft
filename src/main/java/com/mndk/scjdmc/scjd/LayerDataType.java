@@ -181,7 +181,6 @@ public enum LayerDataType {
 		return Category.valueOf(layerNameHeader.charAt(0));
 	}
 
-
 	private static final Pattern layerTypePattern = Pattern.compile("([A-H]\\d{3})\\d{4}");
 
 	public static String findLayerTypeString(String name) {

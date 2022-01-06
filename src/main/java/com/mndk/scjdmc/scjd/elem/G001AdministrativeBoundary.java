@@ -6,13 +6,13 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class G001AdministrativeBoundary extends ScjdDefaultElement {
 
-    @Column(name = "명칭", jsonName = "name")
+    @Column(shpColumnName = "명칭", osmKeyName = "name")
     public String name;
 
-    @Column(name = "구분")
+    @Column(shpColumnName = "구분")
     public String type;
 
-    @Column(jsonName = "admin_level")
+    @Column(osmKeyName = "admin_level")
     public final int adminLevel;
 
     public G001AdministrativeBoundary(SimpleFeature feature) {

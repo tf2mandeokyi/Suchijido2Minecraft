@@ -6,16 +6,16 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class A002RoadCenterline extends ScjdDefaultElement {
 
-    @Column(name = "도로구분", jsonName = "highway")
+    @Column(shpColumnName = "도로구분", osmKeyName = "highway")
     public String highwayType;
 
-    @Column(name = "차로수", jsonName = "lanes")
+    @Column(shpColumnName = "차로수", osmKeyName = "lanes")
     public long lanes;
 
-    @Column(name = "도로폭", jsonName = "width")
+    @Column(shpColumnName = "도로폭", osmKeyName = "width")
     public double width;
 
-    @Column(name = "일방통행", jsonName = "oneway")
+    @Column(shpColumnName = "일방통행", osmKeyName = "oneway")
     public String oneWay;
 
     public A002RoadCenterline(SimpleFeature feature) {

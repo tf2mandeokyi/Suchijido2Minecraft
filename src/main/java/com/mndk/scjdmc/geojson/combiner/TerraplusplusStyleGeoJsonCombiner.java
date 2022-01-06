@@ -3,15 +3,18 @@ package com.mndk.scjdmc.geojson.combiner;
 import com.google.gson.*;
 import com.mndk.scjdmc.scjd.LayerDataType;
 import com.mndk.scjdmc.scjd.MapIndexManager;
+import com.mndk.scjdmc.util.Constants;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.geometry.BoundingBox;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 public class TerraplusplusStyleGeoJsonCombiner extends GeoJsonCombiner {
 
@@ -28,19 +31,19 @@ public class TerraplusplusStyleGeoJsonCombiner extends GeoJsonCombiner {
 
     @Override
     public void combine(File source, File destination) {
-        File[] layerFolders = source.listFiles(file -> file.isDirectory() && FOLDER_PATTERN.matcher(file.getName()).find());
-        assert layerFolders != null;
+        File[] indexJsonFiles = source.listFiles(file -> {
+            String fileName = file.getName();
+            if(!file.isFile() || !fileName.endsWith(".json")) return false;
+            return MapIndexManager.validateIndexName(fileName.substring(0, fileName.lastIndexOf(".")));
+        });
+        assert indexJsonFiles != null;
 
         Set<String> availableIndexes = new HashSet<>();
 
         // Read all the layer folders
-        for(File folder : layerFolders) {
-            LayerDataType type = LayerDataType.fromLayerName(folder.getName());
-            if(!this.layerFilter.apply(type)) continue;
-            File[] indexFiles = folder.listFiles(file -> file.getName().endsWith(".json"));
-            if(indexFiles == null) continue;
-            Stream.of(indexFiles).map(file -> file.getName().substring(0, file.getName().lastIndexOf(".")))
-                    .forEach(availableIndexes::add);
+        for(File file : indexJsonFiles) {
+            String fileName = file.getName();
+            availableIndexes.add(fileName.substring(0, fileName.lastIndexOf(".")));
         }
 
         // Calculate total bounding box
@@ -68,27 +71,38 @@ public class TerraplusplusStyleGeoJsonCombiner extends GeoJsonCombiner {
             bbox = new ReferencedEnvelope(x / SCALE, (x+1) / SCALE, y / SCALE, (y+1) / SCALE, null);
 
             List<String> indexes = MapIndexManager.getContainingIndexes(bbox, 5000); // Scale specification; Fix this issue
-            for(File layerFolder : layerFolders) {
-                for(String index : indexes) {
-                    File indexFile = new File(layerFolder, index + ".json");
-                    if(!indexFile.isFile()) continue;
+            for(String index : indexes) {
+                if(!availableIndexes.contains(index)) continue;
 
-                    try(FileReader reader = new FileReader(indexFile)) {
-                        JsonObject fileFeatureCollection = JsonParser.parseReader(reader).getAsJsonObject();
-                        JsonArray fileFeatures = fileFeatureCollection.getAsJsonArray("features");
-                        for(JsonElement feature : fileFeatures) {
-                            try {
-                                JsonObject geometry = feature.getAsJsonObject().getAsJsonObject("geometry");
-                                BoundingBox featureBoundingBox = getBoundingBoxFromGeometry(
-                                        geometry.get("type").getAsString(), geometry.getAsJsonArray("coordinates"));
-                                if (bbox.intersects(featureBoundingBox)) {
-                                    featureList.add(feature.getAsJsonObject());
-                                }
-                            } catch(ClassCastException ignored) {}
-                        }
-                    } catch (Exception e) {
-                        LOGGER.error("Error reading " + indexFile, e);
+                File indexFile = new File(source, index + ".json");
+                if(!indexFile.isFile()) continue;
+
+                try(FileReader reader = new FileReader(indexFile)) {
+                    JsonObject readFeatureCollection = JsonParser.parseReader(reader).getAsJsonObject();
+                    JsonArray featureArray = readFeatureCollection.getAsJsonArray("features");
+                    for(JsonElement featureElement : featureArray) {
+                        try {
+                            JsonObject feature = featureElement.getAsJsonObject();
+
+                            String id = feature.get("id").getAsString();
+                            int firstDashIndex = id.indexOf("-"), lastDashIndex = id.lastIndexOf("-");
+                            if(firstDashIndex != lastDashIndex) {
+                                // feature is not a coastline
+                                String layerName = id.substring(id.indexOf("-") + 1, lastDashIndex);
+                                LayerDataType type = LayerDataType.fromLayerName(layerName);
+                                if (!this.layerFilter.apply(type)) continue;
+                            }
+
+                            JsonObject geometry = feature.getAsJsonObject(Constants.GEOMETRY_PROPERTY_NAME);
+                            BoundingBox featureBoundingBox = getBoundingBoxFromGeometry(
+                                    geometry.get("type").getAsString(), geometry.getAsJsonArray("coordinates"));
+                            if (bbox.intersects(featureBoundingBox)) {
+                                featureList.add(feature);
+                            }
+                        } catch(ClassCastException ignored) {}
                     }
+                } catch (Exception e) {
+                    LOGGER.error("Error reading " + indexFile, e);
                 }
             }
             if(featureList.size() == 0) continue;
@@ -97,7 +111,7 @@ public class TerraplusplusStyleGeoJsonCombiner extends GeoJsonCombiner {
             featureCollection.addProperty("type", "FeatureCollection");
             featureCollection.add("features", featureList);
 
-            File file = new File(destination, "0/tile/" + x + "/" + y + ".json");
+            File file = new File(destination, "tile/" + x + "/" + y + ".json");
             if(!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
                 new IOException("Failed to create folder").printStackTrace();
                 continue;

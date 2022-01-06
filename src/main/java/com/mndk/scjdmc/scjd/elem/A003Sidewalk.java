@@ -6,13 +6,13 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class A003Sidewalk extends ScjdDefaultElement {
 
-    @Column(jsonName = "area:highway")
+    @Column(osmKeyName = "area:highway")
     public final String areaHighway = "footway";
 
-    @Column(jsonName = "highway")
+    @Column(osmKeyName = "highway")
     public final String highway = "pedestrian";
 
-    @Column(name = "자전거도로유무", jsonName = "bicycle")
+    @Column(shpColumnName = "자전거도로유무", osmKeyName = "bicycle")
     public String bicycle;
 
     public A003Sidewalk(SimpleFeature feature) {

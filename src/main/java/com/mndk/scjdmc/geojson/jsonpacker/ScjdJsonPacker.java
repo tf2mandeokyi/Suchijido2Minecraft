@@ -9,18 +9,21 @@ import org.geotools.geojson.feature.FeatureJSON;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.function.Function;
 
-public abstract class JsonPacker {
+public abstract class ScjdJsonPacker {
 
     protected static final Logger LOGGER = LogManager.getLogger();
 
     protected final FeatureJSON featureJSON;
     @Setter protected LayerFilterFunction layerFilter;
+    @Setter protected Function<String, Boolean> indexCoastlineFilter;
 
-    public JsonPacker(FeatureJSON featureJSON) {
+    public ScjdJsonPacker(FeatureJSON featureJSON) {
         this.featureJSON = featureJSON;
         this.layerFilter = LayerFilterFunction.DEFAULT_FILTER;
+        this.indexCoastlineFilter = index -> true;
     }
 
-    public abstract void pack(ShapefileConversionResult result, Writer writer) throws IOException;
+    public abstract void pack(ShapefileConversionResult conversion, Writer writer) throws IOException;
 }

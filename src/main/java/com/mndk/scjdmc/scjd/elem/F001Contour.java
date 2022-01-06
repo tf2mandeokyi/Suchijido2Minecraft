@@ -6,7 +6,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class F001Contour extends ScjdDefaultElement {
 
-    @Column(name = "등고수치", jsonName = "elevation")
+    @Column(shpColumnName = "등고수치", osmKeyName = "elevation")
     public double elevation;
 
     public F001Contour(SimpleFeature feature) {

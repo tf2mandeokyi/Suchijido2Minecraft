@@ -7,19 +7,19 @@ import org.opengis.geometry.coordinate.Polygon;
 
 public class A005Safezone extends ScjdDefaultElement {
 
-    @Column(name = "구조")
+    @Column(shpColumnName = "구조")
     public String type;
 
-    @Column(jsonName = "area:highway")
+    @Column(osmKeyName = "area:highway")
     public String areaHighway;
 
-    @Column(jsonName = "highway")
+    @Column(osmKeyName = "highway")
     public String highway;
 
-    @Column(jsonName = "crossing:island")
+    @Column(osmKeyName = "crossing:island")
     public String crossingIsland;
 
-    @Column(jsonName = "hazard")
+    @Column(osmKeyName = "hazard")
     public String hazard;
 
     public A005Safezone(SimpleFeature feature) {
