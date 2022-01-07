@@ -3,7 +3,6 @@ package com.mndk.scjdmc.geojson.combiner;
 import com.google.gson.*;
 import com.mndk.scjdmc.scjd.LayerDataType;
 import com.mndk.scjdmc.scjd.MapIndexManager;
-import com.mndk.scjdmc.util.Constants;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.geometry.BoundingBox;
 
@@ -93,9 +92,10 @@ public class TerraplusplusStyleGeoJsonCombiner extends GeoJsonCombiner {
                                 if (!this.layerFilter.apply(type)) continue;
                             }
 
-                            JsonObject geometry = feature.getAsJsonObject(Constants.GEOMETRY_PROPERTY_NAME);
-                            BoundingBox featureBoundingBox = getBoundingBoxFromGeometry(
-                                    geometry.get("type").getAsString(), geometry.getAsJsonArray("coordinates"));
+                            JsonObject geometry = feature.getAsJsonObject("geometry");
+                            geometry = validateGeometryObject(geometry);
+                            feature.add("geometry", geometry);
+                            BoundingBox featureBoundingBox = getBoundingBoxFromGeometryObject(geometry);
                             if (bbox.intersects(featureBoundingBox)) {
                                 featureList.add(feature);
                             }
@@ -127,33 +127,83 @@ public class TerraplusplusStyleGeoJsonCombiner extends GeoJsonCombiner {
     }
 
 
-    private static BoundingBox getBoundingBoxFromGeometry(String type, JsonArray geometry) {
-        int depth;
-        switch(type) {
-            case "Point": depth = 0; break;
-            case "LineString": case "MultiPoint": depth = 1; break;
-            case "Polygon": case "MultiLineString": depth = 2; break;
-            case "MultiPolygon": depth = 3; break;
-            default: throw new RuntimeException("Illegal type: " + type);
+    private static JsonObject validateGeometryObject(JsonObject geometryObject) {
+        String geometryType = geometryObject.get("type").getAsString();
+        JsonArray newGeometryArray = validateGeometry(
+                geometryObject.getAsJsonArray("coordinates"),
+                getArrayDepthFromGeometryType(geometryType)
+        );
+        JsonObject newGeometryObject = new JsonObject();
+        newGeometryObject.addProperty("type", geometryType);
+        newGeometryObject.add("coordinates", newGeometryArray);
+        return newGeometryObject;
+    }
+
+    private static JsonArray validateGeometry(JsonArray geometry, int depth) {
+        if(depth == 0) return geometry;
+
+        JsonArray newGeometry = new JsonArray();
+        if(depth == 1) {
+            if (geometry.size() == 0) return geometry;
+
+            JsonArray point = geometry.get(0).getAsJsonArray();
+            newGeometry.add(point);
+
+            double prevLat = point.get(0).getAsDouble(), prevLon = point.get(1).getAsDouble(), lat, lon;
+            for (int i = 1; i < geometry.size(); i++) {
+                // Duplicate point detection
+                point = geometry.get(i).getAsJsonArray();
+                lat = point.get(0).getAsDouble();
+                lon = point.get(1).getAsDouble();
+                if (prevLat == lat && prevLon == lon) continue;
+                newGeometry.add(point);
+                prevLat = lat;
+                prevLon = lon;
+            }
         }
-        return getBoundingBoxFromGeometryArray(geometry, depth);
+        else {
+            for (JsonElement element : geometry) {
+                JsonArray validation = validateGeometry(element.getAsJsonArray(), depth - 1);
+                newGeometry.add(validation);
+            }
+        }
+
+        return newGeometry;
     }
 
 
-    private static BoundingBox getBoundingBoxFromGeometryArray(JsonArray geometry, int depth) {
+    private static BoundingBox getBoundingBoxFromGeometryObject(JsonObject geometryObject) {
+        return getBoundingBoxFromGeometry(
+                geometryObject.getAsJsonArray("coordinates"),
+                getArrayDepthFromGeometryType(geometryObject.get("type").getAsString())
+        );
+    }
+
+    private static BoundingBox getBoundingBoxFromGeometry(JsonArray geometryArray, int depth) {
         if(depth == 0) {
-            double lon = geometry.get(0).getAsDouble(), lat = geometry.get(1).getAsDouble();
+            double lon = geometryArray.get(0).getAsDouble(), lat = geometryArray.get(1).getAsDouble();
             return new ReferencedEnvelope(lon, lon, lat, lat, null);
         }
         else {
             BoundingBox result = null;
-            for(JsonElement element : geometry) {
+            for(JsonElement element : geometryArray) {
                 JsonArray array = element.getAsJsonArray();
-                BoundingBox bbox = getBoundingBoxFromGeometryArray(array, depth - 1);
+                BoundingBox bbox = getBoundingBoxFromGeometry(array, depth - 1);
                 if(result == null) result = bbox;
                 else result.include(bbox);
             }
             return result;
+        }
+    }
+
+
+    private static int getArrayDepthFromGeometryType(String geometryType) {
+        switch(geometryType) {
+            case "Point": return 0;
+            case "LineString": case "MultiPoint": return 1;
+            case "Polygon": case "MultiLineString": return 2;
+            case "MultiPolygon": return 3;
+            default: throw new IllegalArgumentException("Illegal type: " + geometryType);
         }
     }
 

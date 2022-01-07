@@ -9,7 +9,6 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
 import org.opengis.feature.simple.SimpleFeature;
@@ -20,11 +19,8 @@ import java.util.Map;
 
 public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
 
-    private final GeometryFactory geometryFactory;
-
     public OpenStreetMapStyleJsonPacker(FeatureJSON featureJSON) {
         super(featureJSON);
-        this.geometryFactory = new GeometryFactory();
     }
 
     @Override
