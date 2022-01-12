@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
 
 public abstract class GeoJsonCombiner {
 
@@ -17,8 +18,8 @@ public abstract class GeoJsonCombiner {
 
     public GeoJsonCombiner() {
         this.layerFilter = LayerFilterFunction.DEFAULT_FILTER;
-        this.onConversionCompleteFunction = (s, b) -> {};
+        this.onConversionCompleteFunction = (f, b) -> {};
     }
 
-    public abstract void combine(File source, File destination);
+    public abstract void combine(File source, File destination) throws IOException;
 }

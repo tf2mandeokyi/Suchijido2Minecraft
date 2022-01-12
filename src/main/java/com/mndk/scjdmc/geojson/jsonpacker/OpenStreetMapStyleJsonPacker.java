@@ -52,7 +52,7 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
                     }
 
                     if(boundaryCollection != null) {
-                        geometry = FeatureGeometryUtils.geometry_featureCollectionGeometryDifference(
+                        geometry = FeatureGeometryUtils.getFeatureCollectionGeometryDifference(
                                 geometry, boundaryCollection
                         );
                     }
@@ -76,7 +76,7 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
                 case 도로경계:
                 case 도로중심선:
                     if(conversion.containsKey(LayerDataType.터널)) {
-                        entry.setValue(FeatureGeometryUtils.featureCollectionGeometryDifference(
+                        entry.setValue(FeatureGeometryUtils.getFeatureCollectionGeometryDifference(
                                 type.getOsmFeatureType(), entry.getValue(), conversion.get(LayerDataType.터널)
                         ));
                     }
