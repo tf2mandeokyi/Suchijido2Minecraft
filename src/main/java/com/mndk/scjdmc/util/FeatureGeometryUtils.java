@@ -3,6 +3,7 @@ package com.mndk.scjdmc.util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import lombok.AllArgsConstructor;
 import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -14,7 +15,11 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.geometry.BoundingBox;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
 
 public class FeatureGeometryUtils {
 
@@ -61,12 +66,134 @@ public class FeatureGeometryUtils {
     }
 
 
+    public static SimpleFeatureCollection subtractGeometryToPolygonCollection(
+            SimpleFeatureType victimType, SimpleFeatureCollection victim, Geometry subtract, Function<Integer, String> idFunction
+    ) {
+        List<Polygon> polygons = extractPolygonsFromGeometry(subtract);
+        for(Polygon polygon : polygons) {
+            victim = subtractSinglePolygonToPolygonCollection(victimType, victim, polygon, idFunction);
+        }
+        return victim;
+    }
+
+
+    public static SimpleFeatureCollection subtractSinglePolygonToPolygonCollection(
+            SimpleFeatureType victimType, SimpleFeatureCollection victim, Polygon subtract, Function<Integer, String> idFunction
+    ) {
+        @AllArgsConstructor class Entry {
+            final SimpleFeature origin;
+            final Polygon polygon;
+            final SimpleFeatureType featureType;
+            final boolean computeIntersection;
+            int stack;
+        }
+
+        List<Entry> list = new ArrayList<>();
+        SimpleFeatureIterator victimFeatureIterator = victim.features();
+        int size;
+
+        while (victimFeatureIterator.hasNext()) {
+            SimpleFeature feature = victimFeatureIterator.next();
+            Geometry geometry = (Geometry) feature.getDefaultGeometry();
+            SimpleFeatureType featureType = feature.getType();
+            boolean intersects = geometry.intersects(subtract);
+            if(intersects) {
+                size = list.size();
+                for (int i = 0; i < size; i++) {
+                    Entry entry = list.get(i);
+                    List<Polygon> polygons = getPolygonIntersection(entry.polygon, geometry);
+                    for(Polygon polygon1 : polygons) {
+                        list.add(new Entry(entry.origin, polygon1, entry.featureType, true, entry.stack + 1));
+                    }
+                }
+            }
+            List<Polygon> polygons = extractPolygonsFromGeometry(geometry);
+            for(Polygon polygon : polygons) {
+                list.add(new Entry(feature, polygon, featureType, intersects, 1));
+            }
+        }
+        size = list.size();
+        for(int i = 0; i < size; i++) {
+            Entry entry = list.get(i);
+            if(entry.computeIntersection && entry.polygon.intersects(subtract)) {
+                List<Polygon> diff = getPolygonDifference(entry.polygon, subtract);
+                for(Polygon polygon1 : diff) {
+                    list.add(new Entry(entry.origin, polygon1, entry.featureType, true, entry.stack));
+                }
+                entry.stack--;
+            }
+        }
+        int i = 1;
+        ListFeatureCollection result = new ListFeatureCollection(victimType);
+        for(Entry entry : list) {
+            if(entry.stack > 0 && !entry.polygon.isEmpty()) {
+                result.add(replaceFeatureGeometry(
+                        entry.origin, entry.polygon, idFunction == null ? null : idFunction.apply(i++)
+                ));
+            }
+        }
+        return result;
+    }
+
+
+    public static List<Polygon> extractPolygonsFromGeometry(Geometry g) {
+        if(g instanceof Polygon) {
+            if(!g.isEmpty()) return Collections.singletonList((Polygon) g);
+        }
+        else if(g instanceof MultiPolygon) {
+            return multiPolygonToList((MultiPolygon) g);
+        }
+        else if(g instanceof GeometryCollection) {
+            List<Polygon> polygons = new ArrayList<>();
+            GeometryCollection geometryCollection = (GeometryCollection) g;
+            for(int i = 0; i < geometryCollection.getNumGeometries(); i++) {
+                Geometry tempGeometry = geometryCollection.getGeometryN(i);
+                if(tempGeometry instanceof Polygon) {
+                    if(!tempGeometry.isEmpty()) polygons.add((Polygon) tempGeometry);
+                }
+                else if(tempGeometry instanceof MultiPolygon) {
+                    polygons.addAll(multiPolygonToList((MultiPolygon) tempGeometry));
+                }
+            }
+            return polygons;
+        }
+        return Collections.emptyList();
+    }
+
+
+    public static List<Polygon> multiPolygonToList(MultiPolygon mp) {
+        List<Polygon> result = new ArrayList<>(mp.getNumGeometries());
+        for(int i = 0; i < mp.getNumGeometries(); i++) {
+            Polygon temp = (Polygon) mp.getGeometryN(i);
+            if(!temp.isEmpty()) result.add(temp);
+        }
+        return result;
+    }
+
+
+    private static List<Polygon> getPolygonIntersection(Geometry g1, Geometry g2) {
+        Geometry intersection = g1.intersection(g2);
+        return extractPolygonsFromGeometry(intersection);
+    }
+
+
+    private static List<Polygon> getPolygonDifference(Geometry origin, final Geometry diff) {
+        List<Polygon> result = new ArrayList<>();
+        origin.apply((GeometryFilter) g -> diff.apply((GeometryFilter) g1 -> origin.difference(diff).apply((GeometryFilter) difference -> {
+            if(difference instanceof Polygon) {
+                result.add((Polygon) difference);
+            }
+        })));
+        return result;
+    }
+
+
     public static SimpleFeature getFeatureCollectionGeometryDifference(
             SimpleFeature victim, SimpleFeatureCollection other
     ) {
         Geometry geometry = ((Geometry) victim.getDefaultGeometry());
         geometry = getFeatureCollectionGeometryDifference(geometry, other);
-        return geometry == null ? null : replaceFeatureGeometry(victim, geometry);
+        return geometry == null ? null : replaceFeatureGeometry(victim, geometry, null);
     }
 
 
@@ -82,14 +209,14 @@ public class FeatureGeometryUtils {
     }
 
 
-    public static SimpleFeature replaceFeatureGeometry(SimpleFeature feature, Geometry newGeometry) {
+    public static SimpleFeature replaceFeatureGeometry(SimpleFeature feature, Geometry newGeometry, String newId) {
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(feature.getFeatureType());
         featureBuilder.set(Constants.GEOMETRY_PROPERTY_NAME, newGeometry);
         for(Property property : feature.getProperties()) {
             if(property.getName().toString().equals(Constants.GEOMETRY_PROPERTY_NAME)) continue;
             featureBuilder.set(property.getName(), property.getValue());
         }
-        return featureBuilder.buildFeature(feature.getID());
+        return featureBuilder.buildFeature(newId == null ? feature.getID() : newId);
     }
 
 

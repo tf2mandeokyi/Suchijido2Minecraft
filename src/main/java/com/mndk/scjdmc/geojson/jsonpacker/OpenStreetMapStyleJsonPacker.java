@@ -68,27 +68,41 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
                     coastline = LayerDataType.해안선.toOsmStyleFeature(coastline, conversion.getIndex() + "-coastline");
 
                     writer.write(featureJSON.toString(coastline));
-                    break;
+                    continue;
 
                 case 시도_행정경계:
-                    break;
+                    continue;
 
                 case 도로경계:
+                    if(conversion.containsKey(LayerDataType.터널)) {
+                        SimpleFeatureIterator tunnelFeatureIterator = conversion.get(LayerDataType.터널).features();
+                        SimpleFeatureCollection roadFeatureCollection = entry.getValue();
+                        while(tunnelFeatureIterator.hasNext()) {
+                            Geometry tunnelGeometry = (Geometry) tunnelFeatureIterator.next().getDefaultGeometry();
+                            roadFeatureCollection = FeatureGeometryUtils.subtractGeometryToPolygonCollection(
+                                    type.getOsmFeatureType(), roadFeatureCollection, tunnelGeometry.buffer(Constants.POLYGON_BUFFER_EPSILON),
+                                    i -> conversion.getIndex() + "-A0010000-" + i
+                            );
+                        }
+                        entry.setValue(roadFeatureCollection);
+                    }
+                    break;
+
                 case 도로중심선:
                     if(conversion.containsKey(LayerDataType.터널)) {
                         entry.setValue(FeatureGeometryUtils.getFeatureCollectionGeometryDifference(
                                 type.getOsmFeatureType(), entry.getValue(), conversion.get(LayerDataType.터널)
                         ));
                     }
-                default:
-                    SimpleFeatureIterator iterator = entry.getValue().features();
-                    while(iterator.hasNext()) {
-                        if(first) first = false;
-                        else writer.write(",");
-
-                        writer.write(featureJSON.toString(iterator.next()));
-                    }
                     break;
+            }
+
+            SimpleFeatureIterator iterator = entry.getValue().features();
+            while(iterator.hasNext()) {
+                if(first) first = false;
+                else writer.write(",");
+
+                writer.write(featureJSON.toString(iterator.next()));
             }
         }
 
