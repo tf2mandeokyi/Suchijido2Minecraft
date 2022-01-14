@@ -1,10 +1,10 @@
 package com.mndk.scjdmc.scjd.elem;
 
 import com.mndk.scjdmc.scjd.Column;
-import com.mndk.scjdmc.scjd.ScjdDefaultElement;
+import com.mndk.scjdmc.scjd.ScjdElement;
 import org.opengis.feature.simple.SimpleFeature;
 
-public class A002RoadCenterline extends ScjdDefaultElement {
+public class A002RoadCenterline extends ScjdElement {
 
     @Column(shpColumnName = "도로구분", osmKeyName = "highway")
     public String highwayType;

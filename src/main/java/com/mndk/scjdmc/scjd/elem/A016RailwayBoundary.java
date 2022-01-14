@@ -4,12 +4,12 @@ import com.mndk.scjdmc.scjd.Column;
 import com.mndk.scjdmc.scjd.ScjdElement;
 import org.opengis.feature.simple.SimpleFeature;
 
-public class E008Coastline extends ScjdElement {
+public class A016RailwayBoundary extends ScjdElement {
 
-    @Column(osmKeyName = "natural")
-    public final String natural = "coastline";
+    @Column(osmKeyName = "landuse")
+    public final String landuse = "railway";
 
-    public E008Coastline(SimpleFeature feature) {
+    public A016RailwayBoundary(SimpleFeature feature) {
         super(feature);
     }
 }

@@ -12,6 +12,7 @@ import org.geotools.data.shapefile.files.ShpFiles;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.data.store.EmptyFeatureCollection;
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -69,7 +70,11 @@ public class Scjd2OsmStyleFeatureConverter extends ScjdShapefileConverter<Simple
 
         String[] typeNames = dataStore.getTypeNames();
         SimpleFeatureSource featureSource = dataStore.getFeatureSource(typeNames[0]);
-        SimpleFeatureCollection featureCollection = applyProjection(mapIndex, featureSource.getFeatures());
+        SimpleFeatureCollection featureCollection = featureSource.getFeatures();
+        if(featureCollection.isEmpty()) {
+            return new EmptyFeatureCollection(featureType);
+        }
+        featureCollection = applyProjection(mapIndex, featureSource.getFeatures());
 
         if(!isDbfFileReadable) {
             Files.move(newDbfFilePath, dbfFilePath);

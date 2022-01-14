@@ -1,10 +1,10 @@
 package com.mndk.scjdmc.scjd.elem;
 
 import com.mndk.scjdmc.scjd.Column;
-import com.mndk.scjdmc.scjd.ScjdDefaultElement;
+import com.mndk.scjdmc.scjd.ScjdElement;
 import org.opengis.feature.simple.SimpleFeature;
 
-public class E003River extends ScjdDefaultElement {
+public class E003River extends ScjdElement {
 
     @Column(osmKeyName = "natural")
     public final String natural = "water";

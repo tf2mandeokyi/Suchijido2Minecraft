@@ -1,11 +1,11 @@
 package com.mndk.scjdmc.scjd.elem;
 
 import com.mndk.scjdmc.scjd.Column;
-import com.mndk.scjdmc.scjd.ScjdDefaultElement;
+import com.mndk.scjdmc.scjd.ScjdElement;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.geometry.coordinate.Polygon;
 
-public class A005Safezone extends ScjdDefaultElement {
+public class A005Safezone extends ScjdElement {
 
     @Column(shpColumnName = "구조")
     public String type;

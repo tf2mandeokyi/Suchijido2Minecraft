@@ -75,15 +75,22 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
 
                 case 도로경계:
                     if(conversion.containsKey(LayerDataType.터널)) {
-                        SimpleFeatureIterator tunnelFeatureIterator = conversion.get(LayerDataType.터널).features();
                         SimpleFeatureCollection roadFeatureCollection = entry.getValue();
-                        while(tunnelFeatureIterator.hasNext()) {
-                            Geometry tunnelGeometry = (Geometry) tunnelFeatureIterator.next().getDefaultGeometry();
-                            roadFeatureCollection = FeatureGeometryUtils.subtractGeometryToPolygonCollection(
-                                    type.getOsmFeatureType(), roadFeatureCollection, tunnelGeometry.buffer(Constants.POLYGON_BUFFER_EPSILON),
-                                    i -> conversion.getIndex() + "-A0010000-" + i
-                            );
-                        }
+                        roadFeatureCollection = FeatureGeometryUtils.subtractFeatureCollectionToPolygonCollection(
+                                type.getOsmFeatureType(),
+                                roadFeatureCollection, conversion.get(LayerDataType.터널),
+                                null, i -> conversion.getIndex() + "-A0010000-" + i
+                        );
+                        entry.setValue(roadFeatureCollection);
+                    }
+                    if(conversion.containsKey(LayerDataType.입체교차부)) {
+                        SimpleFeatureCollection roadFeatureCollection = entry.getValue();
+                        roadFeatureCollection = FeatureGeometryUtils.subtractFeatureCollectionToPolygonCollection(
+                                type.getOsmFeatureType(),
+                                roadFeatureCollection, conversion.get(LayerDataType.입체교차부),
+                                feature -> "yes".equals(feature.getAttribute("tunnel")),
+                                i -> conversion.getIndex() + "-A0010000-" + i
+                        );
                         entry.setValue(roadFeatureCollection);
                     }
                     break;

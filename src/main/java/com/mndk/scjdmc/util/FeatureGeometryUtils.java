@@ -66,6 +66,26 @@ public class FeatureGeometryUtils {
     }
 
 
+    public static SimpleFeatureCollection subtractFeatureCollectionToPolygonCollection(
+            SimpleFeatureType victimType, SimpleFeatureCollection victim, SimpleFeatureCollection subtractCollection,
+            Function<SimpleFeature, Boolean> subtractFilter, Function<Integer, String> idFunction
+    ) {
+        SimpleFeatureIterator subtractIterator = subtractCollection.features();
+        while(subtractIterator.hasNext()) {
+            SimpleFeature subtract = subtractIterator.next();
+            if(subtractFilter != null && !subtractFilter.apply(subtract)) continue;
+
+            Geometry subtractGeometry = (Geometry) subtract.getDefaultGeometry();
+            victim = subtractGeometryToPolygonCollection(
+                    victimType,
+                    victim, subtractGeometry.buffer(Constants.POLYGON_BUFFER_EPSILON),
+                    idFunction
+            );
+        }
+        return victim;
+    }
+
+
     public static SimpleFeatureCollection subtractGeometryToPolygonCollection(
             SimpleFeatureType victimType, SimpleFeatureCollection victim, Geometry subtract, Function<Integer, String> idFunction
     ) {
@@ -192,6 +212,7 @@ public class FeatureGeometryUtils {
             SimpleFeature victim, SimpleFeatureCollection other
     ) {
         Geometry geometry = ((Geometry) victim.getDefaultGeometry());
+        if(geometry == null) return null;
         geometry = getFeatureCollectionGeometryDifference(geometry, other);
         return geometry == null ? null : replaceFeatureGeometry(victim, geometry, null);
     }
@@ -200,10 +221,11 @@ public class FeatureGeometryUtils {
     public static Geometry getFeatureCollectionGeometryDifference(
             Geometry victim, SimpleFeatureCollection other
     ) {
-        SimpleFeatureIterator tunnelFeatureIterator = other.features();
-        while (tunnelFeatureIterator.hasNext()) {
-            Geometry tunnelGeometry = (Geometry) tunnelFeatureIterator.next().getDefaultGeometry();
-            victim = victim.difference(tunnelGeometry.buffer(Constants.POLYGON_BUFFER_EPSILON));
+        SimpleFeatureIterator featureIterator = other.features();
+        while (featureIterator.hasNext()) {
+            Geometry geometry = (Geometry) featureIterator.next().getDefaultGeometry();
+            if(geometry == null) continue;
+            victim = victim.difference(geometry.buffer(Constants.POLYGON_BUFFER_EPSILON));
         }
         return victim.isEmpty() ? null : victim;
     }

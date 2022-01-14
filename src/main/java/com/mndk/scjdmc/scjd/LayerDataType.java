@@ -21,18 +21,18 @@ public enum LayerDataType {
 	육교("pedestrian_overpass", "A006", A006PedestrianOverpass.class),
 	교량("bridge", "A007", A007Bridge.class),
 	교차로("crossroad", "A008"),
-	입체교차부("intersection_3d", "A009"),
+	입체교차부("intersection_3d", "A009", A009Intersection3d.class),
 	인터체인지("interchange", "A010"),
 	터널("tunnel", "A011", A011Tunnel.class),
 	터널입구("tunnel_entrance", "A012"),
 	정거장("bus_station", "A013"),
 	정류장("train_station", "A014"),
 	철도("railway", "A015"),
-	철도경계("railway_boundary", "A016"),
+	철도경계("railway_boundary", "A016", A016RailwayBoundary.class),
 	철도중심선("railway_centerline", "A017"),
 	철도전차대("railway_turntable", "A018"),
-	승강장("platform", "A019"),
-	승강장_지붕("platform_roof", "A020"),
+	승강장("railway_platform", "A019", A019RailwayPlatform.class),
+	승강장_지붕("railway_platform_roof", "A020"),
 	나루("river_port", "A021"),
 	나루노선("ferry_route", "A022"),
 
@@ -41,7 +41,7 @@ public enum LayerDataType {
 	담장("wall", "B002", B002Wall.class),
 
 	// C타입 - 시설
-	댐("dam", "C001"),
+	댐("dam", "C001", C001Dam.class),
 	부두("wharf", "C002"),
 	선착장("dock", "C003"),
 	선거("boat_stop", "C004"),
@@ -139,12 +139,12 @@ public enum LayerDataType {
 
 	private final @Getter String englishName;
 	private final @Getter String layerNameHeader;
-	private final @Getter Class<? extends ScjdDefaultElement> elementClass;
-	private final @Getter Constructor<? extends ScjdDefaultElement> elementConstructor;
+	private final @Getter Class<? extends ScjdElement> elementClass;
+	private final @Getter Constructor<? extends ScjdElement> elementConstructor;
 	private final @Getter SimpleFeatureType featureType, osmFeatureType;
 
 	LayerDataType(
-			String englishName, String layerNameHeader, Class<? extends ScjdDefaultElement> elementClass
+			String englishName, String layerNameHeader, Class<? extends ScjdElement> elementClass
 	) {
 		try {
 			this.englishName = englishName;
@@ -152,8 +152,8 @@ public enum LayerDataType {
 			this.elementClass = elementClass;
 			if(elementClass != null) {
 				this.elementConstructor = elementClass.getConstructor(SimpleFeature.class);
-				this.featureType = ScjdDefaultElement.getSimpleFeatureType(elementClass, englishName);
-				this.osmFeatureType = ScjdDefaultElement.getOsmSimpleFeatureType(elementClass, englishName);
+				this.featureType = ScjdElement.getSimpleFeatureType(elementClass, englishName);
+				this.osmFeatureType = ScjdElement.getOsmSimpleFeatureType(elementClass, englishName);
 			}
 			else {
 				this.elementConstructor = null;

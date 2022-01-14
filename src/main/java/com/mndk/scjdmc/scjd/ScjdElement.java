@@ -10,14 +10,14 @@ import org.opengis.geometry.Geometry;
 
 import java.lang.reflect.Field;
 
-public class ScjdDefaultElement {
+public class ScjdElement {
 
     public final Object geometryObject;
 
-    public ScjdDefaultElement(SimpleFeature feature) {
+    public ScjdElement(SimpleFeature feature) {
         try {
             this.geometryObject = feature.getDefaultGeometry();
-            for (Field f : ReflectionUtil.getAllFields(this.getClass(), ScjdDefaultElement.class)) {
+            for (Field f : ReflectionUtil.getAllFields(this.getClass(), ScjdElement.class)) {
                 Column column = f.getAnnotation(Column.class);
                 if (column != null && !"".equals(column.shpColumnName())) {
                     f.set(this, feature.getAttribute(column.shpColumnName()));
@@ -32,7 +32,7 @@ public class ScjdDefaultElement {
         try {
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
             builder.add(this.geometryObject);
-            for (Field f : ReflectionUtil.getAllFields(this.getClass(), ScjdDefaultElement.class)) {
+            for (Field f : ReflectionUtil.getAllFields(this.getClass(), ScjdElement.class)) {
                 Column column = f.getAnnotation(Column.class);
                 if (column != null && !"".equals(column.osmKeyName())) {
                     builder.set(column.osmKeyName(), f.get(this));
@@ -44,11 +44,11 @@ public class ScjdDefaultElement {
         }
     }
 
-    public static <T extends ScjdDefaultElement> SimpleFeatureType getSimpleFeatureType(Class<T> clazz, String layerName) {
+    public static <T extends ScjdElement> SimpleFeatureType getSimpleFeatureType(Class<T> clazz, String layerName) {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName(layerName);
         builder.add(Constants.GEOMETRY_PROPERTY_NAME, Geometry.class);
-        for(Field f : ReflectionUtil.getAllFields(clazz, ScjdDefaultElement.class)) {
+        for(Field f : ReflectionUtil.getAllFields(clazz, ScjdElement.class)) {
             Column column = f.getAnnotation(Column.class);
             if(column != null && !"".equals(column.shpColumnName())) {
                 builder.add(column.shpColumnName(), f.getDeclaringClass());
@@ -58,11 +58,11 @@ public class ScjdDefaultElement {
         return builder.buildFeatureType();
     }
 
-    public static <T extends ScjdDefaultElement> SimpleFeatureType getOsmSimpleFeatureType(Class<T> clazz, String layerName) {
+    public static <T extends ScjdElement> SimpleFeatureType getOsmSimpleFeatureType(Class<T> clazz, String layerName) {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName(layerName);
         builder.add(Constants.GEOMETRY_PROPERTY_NAME, Geometry.class);
-        for(Field f : ReflectionUtil.getAllFields(clazz, ScjdDefaultElement.class)) {
+        for(Field f : ReflectionUtil.getAllFields(clazz, ScjdElement.class)) {
             Column column = f.getAnnotation(Column.class);
             if(column != null && !"".equals(column.osmKeyName())) {
                 builder.add(column.osmKeyName(), f.getDeclaringClass());

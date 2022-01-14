@@ -1,10 +1,10 @@
 package com.mndk.scjdmc.scjd.elem;
 
 import com.mndk.scjdmc.scjd.Column;
-import com.mndk.scjdmc.scjd.ScjdDefaultElement;
+import com.mndk.scjdmc.scjd.ScjdElement;
 import org.opengis.feature.simple.SimpleFeature;
 
-public class B001Building extends ScjdDefaultElement {
+public class B001Building extends ScjdElement {
 
     @Column(shpColumnName = "종류", osmKeyName = "building")
     public String buildingType;
