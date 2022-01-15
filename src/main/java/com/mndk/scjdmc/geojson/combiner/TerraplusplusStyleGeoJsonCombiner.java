@@ -3,7 +3,7 @@ package com.mndk.scjdmc.geojson.combiner;
 import com.google.gson.*;
 import com.mndk.scjdmc.scjd.LayerDataType;
 import com.mndk.scjdmc.scjd.MapIndexManager;
-import com.mndk.scjdmc.util.FeatureGeometryUtils;
+import com.mndk.scjdmc.util.GeometryJsonUtils;
 import lombok.Setter;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.geometry.BoundingBox;
@@ -116,10 +116,10 @@ public class TerraplusplusStyleGeoJsonCombiner extends GeoJsonCombiner {
                         if (geometryElement == null || geometryElement.isJsonNull()) continue;
 
                         JsonObject geometry = geometryElement.getAsJsonObject();
-                        BoundingBox featureBoundingBox = FeatureGeometryUtils.getJsonGeometryBoundingBox(geometry);
+                        BoundingBox featureBoundingBox = GeometryJsonUtils.getJsonGeometryBoundingBox(geometry);
                         if (bbox.intersects(featureBoundingBox)) {
                             // The geometry might have overlapping points, so it's fixing it here.
-                            geometry = FeatureGeometryUtils.validateJsonGeometry(geometry);
+                            geometry = GeometryJsonUtils.validateJsonGeometry(geometry);
                             if(geometry == null) continue;
                             feature.add("geometry", geometry);
                             featureList.add(feature);

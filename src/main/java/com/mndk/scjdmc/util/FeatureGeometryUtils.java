@@ -1,8 +1,5 @@
 package com.mndk.scjdmc.util;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.mndk.scjdmc.util.function.FeatureFilter;
 import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -11,12 +8,10 @@ import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.jts.geom.*;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.geometry.BoundingBox;
 
 import java.util.*;
 import java.util.function.Function;
@@ -54,8 +49,25 @@ public class FeatureGeometryUtils {
     }
 
 
+    public static List<Geometry> extractGeometries(SimpleFeatureCollection featureCollection) {
+        return extractGeometries(featureCollection, f -> true);
+    }
+
+
+    public static List<Geometry> extractGeometries(SimpleFeatureCollection featureCollection, FeatureFilter featureFilter) {
+        SimpleFeatureIterator featureIterator = featureCollection.features();
+        List<Geometry> result = new ArrayList<>();
+        while(featureIterator.hasNext()) {
+            SimpleFeature f = featureIterator.next();
+            if(!featureFilter.apply(f)) continue;
+            result.add((Geometry) f.getDefaultGeometry());
+        }
+        return result;
+    }
+
+
     public static SimpleFeatureCollection getFeatureCollectionGeometryDifference(
-            SimpleFeatureType victimType, SimpleFeatureCollection victim, SimpleFeatureCollection other
+            SimpleFeatureType victimType, SimpleFeatureCollection victim, List<Geometry> other
     ) {
         SimpleFeatureIterator victimFeatureIterator = victim.features();
         ListFeatureCollection listFeatureCollection = new ListFeatureCollection(victimType);
@@ -69,20 +81,24 @@ public class FeatureGeometryUtils {
     }
 
 
-    public static List<Geometry> extractGeometryList(SimpleFeatureCollection featureCollection) {
-        return extractGeometryList(featureCollection, f -> true);
+    public static SimpleFeature getFeatureCollectionGeometryDifference(
+            SimpleFeature victim, List<Geometry> other
+    ) {
+        Geometry geometry = ((Geometry) victim.getDefaultGeometry());
+        if(geometry == null) return null;
+        geometry = getFeatureCollectionGeometryDifference(geometry, other);
+        return geometry == null ? null : replaceFeatureGeometry(victim, geometry, null);
     }
 
 
-    public static List<Geometry> extractGeometryList(SimpleFeatureCollection featureCollection, FeatureFilter featureFilter) {
-        SimpleFeatureIterator featureIterator = featureCollection.features();
-        List<Geometry> result = new ArrayList<>();
-        while(featureIterator.hasNext()) {
-            SimpleFeature f = featureIterator.next();
-            if(!featureFilter.apply(f)) continue;
-            result.add((Geometry) f.getDefaultGeometry());
+    public static Geometry getFeatureCollectionGeometryDifference(
+            Geometry victim, List<Geometry> other
+    ) {
+        for (Geometry geometry : other) {
+            if(geometry == null) continue;
+            victim = getGeometryDifference(victim, geometry.buffer(Constants.POLYGON_BUFFER_EPSILON), false);
         }
-        return result;
+        return victim.isEmpty() ? null : victim;
     }
 
 
@@ -147,12 +163,11 @@ public class FeatureGeometryUtils {
                     continue;
                 }
 
-                Geometry newEntryGeometry = getPolygonDifference(entry.geometry, subtractGeometry);
-                Geometry newSubtractGeometry = getPolygonDifference(subtractGeometry, entry.geometry);
+                Geometry newEntryGeometry = getGeometryDifference(entry.geometry, subtractGeometry, true);
+                Geometry newSubtractGeometry = getGeometryDifference(subtractGeometry, entry.geometry, true);
 
                 entry.geometry = newEntryGeometry.isEmpty() ? null : newEntryGeometry;
                 newSubtractList.set(subtractIndex, newSubtractGeometry.isEmpty() ? null : newSubtractGeometry);
-
             }
         }
 
@@ -160,9 +175,19 @@ public class FeatureGeometryUtils {
         ListFeatureCollection result = new ListFeatureCollection(victimType);
         for(Entry entry : entryList) {
             if(entry.geometry != null) {
-                result.add(replaceFeatureGeometry(
-                        entry.origin, entry.geometry, idFunction == null ? null : idFunction.apply(i++)
-                ));
+                if(entry.geometry instanceof MultiPolygon) {
+                    // Splitting multipolygon because terra++ doesn't seem to like it
+                    for(int j = 0; j < entry.geometry.getNumGeometries(); j++) {
+                        result.add(replaceFeatureGeometry(
+                                entry.origin, entry.geometry.getGeometryN(j), idFunction == null ? null : idFunction.apply(i++)
+                        ));
+                    }
+                }
+                else {
+                    result.add(replaceFeatureGeometry(
+                            entry.origin, entry.geometry, idFunction == null ? null : idFunction.apply(i++)
+                    ));
+                }
             }
         }
         return result;
@@ -204,23 +229,17 @@ public class FeatureGeometryUtils {
     }
 
 
-    public static Geometry polygonListToGeometry(List<Polygon> polygonList) {
-        if(polygonList.size() == 1) return polygonList.get(0);
-        return new MultiPolygon(polygonList.toArray(new Polygon[0]), GEOMETRY_FACTORY);
-    }
-
-
-    private static Geometry getPolygonDifference(Geometry origin, final Geometry diff) {
+    private static Geometry getGeometryDifference(Geometry origin, final Geometry diff, boolean polygonOnly) {
         List<Polygon> result = new ArrayList<>();
         if (origin instanceof GeometryCollection || diff instanceof GeometryCollection) {
             for (int j = 0; j < diff.getNumGeometries(); j++) {
                 Geometry subtractGeometry = diff.getGeometryN(j);
-                if (!(subtractGeometry instanceof Polygon)) continue;
+                if (polygonOnly && !(subtractGeometry instanceof Polygon)) continue;
 
                 result.clear();
                 for (int i = 0; i < origin.getNumGeometries(); i++) {
                     Geometry originGeometry = origin.getGeometryN(i);
-                    if (!(originGeometry instanceof Polygon)) continue;
+                    if (polygonOnly && !(originGeometry instanceof Polygon)) continue;
 
                     try {
                         originGeometry.difference(subtractGeometry).apply((GeometryFilter) difference -> {
@@ -253,26 +272,9 @@ public class FeatureGeometryUtils {
     }
 
 
-    public static SimpleFeature getFeatureCollectionGeometryDifference(
-            SimpleFeature victim, SimpleFeatureCollection other
-    ) {
-        Geometry geometry = ((Geometry) victim.getDefaultGeometry());
-        if(geometry == null) return null;
-        geometry = getFeatureCollectionGeometryDifference(geometry, other);
-        return geometry == null ? null : replaceFeatureGeometry(victim, geometry, null);
-    }
-
-
-    public static Geometry getFeatureCollectionGeometryDifference(
-            Geometry victim, SimpleFeatureCollection other
-    ) {
-        SimpleFeatureIterator featureIterator = other.features();
-        while (featureIterator.hasNext()) {
-            Geometry geometry = (Geometry) featureIterator.next().getDefaultGeometry();
-            if(geometry == null) continue;
-            victim = victim.difference(geometry.buffer(Constants.POLYGON_BUFFER_EPSILON));
-        }
-        return victim.isEmpty() ? null : victim;
+    public static Geometry polygonListToGeometry(List<Polygon> polygonList) {
+        if(polygonList.size() == 1) return polygonList.get(0);
+        return new MultiPolygon(polygonList.toArray(new Polygon[0]), GEOMETRY_FACTORY);
     }
 
 
@@ -286,109 +288,4 @@ public class FeatureGeometryUtils {
         return featureBuilder.buildFeature(newId == null ? feature.getID() : newId);
     }
 
-
-    public static JsonObject validateJsonGeometry(JsonObject geometry) {
-        String geometryType = geometry.get("type").getAsString();
-        JsonArray newGeometryArray = validateJsonCoordinates(
-                geometry.getAsJsonArray("coordinates"),
-                getJsonCoordinatesDepth(geometryType),
-                getMinimumJsonCoordinatesArrayLength(geometryType)
-        );
-        if(geometryType.startsWith("Multi") && newGeometryArray.size() == 1) {
-            // Exclude "multi"
-            geometryType = geometryType.substring(5);
-            newGeometryArray = newGeometryArray.get(0).getAsJsonArray();
-        }
-        if(newGeometryArray.size() == 0) {
-            return null;
-        }
-        JsonObject newGeometryObject = new JsonObject();
-        newGeometryObject.addProperty("type", geometryType);
-        newGeometryObject.add("coordinates", newGeometryArray);
-        return newGeometryObject;
-    }
-
-
-    public static JsonArray validateJsonCoordinates(JsonArray coordinates, int depth, int minimumLength) {
-        if(depth == 0) return coordinates;
-
-        JsonArray newGeometry = new JsonArray();
-        if(depth == 1) {
-            if (coordinates.size() == 0) return coordinates;
-
-            JsonArray point = coordinates.get(0).getAsJsonArray();
-            while(point.size() > 2) point.remove(2);
-            newGeometry.add(point);
-
-            double prevLat = point.get(0).getAsDouble(), prevLon = point.get(1).getAsDouble(), lat, lon;
-            for (int i = 1; i < coordinates.size(); i++) {
-                // Duplicate point detection
-                point = coordinates.get(i).getAsJsonArray();
-                while(point.size() > 2) point.remove(2);
-                lat = point.get(0).getAsDouble();
-                lon = point.get(1).getAsDouble();
-                if (prevLat == lat && prevLon == lon) continue;
-                newGeometry.add(point);
-                prevLat = lat;
-                prevLon = lon;
-            }
-
-            if(newGeometry.size() < minimumLength) return new JsonArray();
-        }
-        else {
-            for (JsonElement element : coordinates) {
-                JsonArray validation = validateJsonCoordinates(element.getAsJsonArray(), depth - 1, minimumLength);
-                if(validation.size() != 0) newGeometry.add(validation);
-            }
-        }
-
-        return newGeometry;
-    }
-
-
-    public static BoundingBox getJsonGeometryBoundingBox(JsonObject geometry) {
-        return getJsonCoordinatesBoundingBox(
-                geometry.getAsJsonArray("coordinates"),
-                getJsonCoordinatesDepth(geometry.get("type").getAsString())
-        );
-    }
-
-
-    public static BoundingBox getJsonCoordinatesBoundingBox(JsonArray coordinates, int depth) {
-        if(depth == 0) {
-            double lon = coordinates.get(0).getAsDouble(), lat = coordinates.get(1).getAsDouble();
-            return new ReferencedEnvelope(lon, lon, lat, lat, null);
-        }
-        else {
-            BoundingBox result = null;
-            for(JsonElement element : coordinates) {
-                JsonArray array = element.getAsJsonArray();
-                BoundingBox bbox = getJsonCoordinatesBoundingBox(array, depth - 1);
-                if(result == null) result = bbox;
-                else result.include(bbox);
-            }
-            return result;
-        }
-    }
-
-
-    private static int getJsonCoordinatesDepth(String geometryType) {
-        switch(geometryType) {
-            case "Point": return 0;
-            case "LineString": case "MultiPoint": return 1;
-            case "Polygon": case "MultiLineString": return 2;
-            case "MultiPolygon": return 3;
-            default: throw new IllegalArgumentException("Illegal type: " + geometryType);
-        }
-    }
-
-
-    private static int getMinimumJsonCoordinatesArrayLength(String geometryType) {
-        switch(geometryType) {
-            case "Point": case "MultiPoint": return 0;
-            case "LineString": case "MultiLineString": return 2;
-            case "Polygon": case "MultiPolygon": return 4;
-            default: throw new IllegalArgumentException("Illegal type: " + geometryType);
-        }
-    }
 }

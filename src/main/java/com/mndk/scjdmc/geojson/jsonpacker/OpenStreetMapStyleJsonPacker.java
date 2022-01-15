@@ -16,15 +16,10 @@ import org.opengis.feature.simple.SimpleFeature;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
-
-    private static final List<LayerDataType> ROAD_BOUNDARY_SUBTRACTS = Arrays.asList(
-            LayerDataType.터널, LayerDataType.입체교차부, LayerDataType.교량
-    );
 
     public OpenStreetMapStyleJsonPacker(FeatureJSON featureJSON) {
         super(featureJSON);
@@ -34,6 +29,7 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
     public void pack(ShapefileConversionResult conversion, Writer writer) throws IOException {
 
         boolean first = true;
+        List<Geometry> subtractGeometries;
         writer.write("{\"type\":\"FeatureCollection\",\"features\":[");
 
         for(Map.Entry<LayerDataType, SimpleFeatureCollection> entry : conversion.entrySet()) {
@@ -60,7 +56,7 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
 
                     if(boundaryCollection != null) {
                         coastlineGeometry = FeatureGeometryUtils.getFeatureCollectionGeometryDifference(
-                                coastlineGeometry, boundaryCollection
+                                coastlineGeometry, FeatureGeometryUtils.extractGeometries(boundaryCollection)
                         );
                     }
 
@@ -82,25 +78,19 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
 
                 case 도로경계:
                     SimpleFeatureCollection featureCollection = entry.getValue();
-                    List<Geometry> subtractGeometries = new ArrayList<>();
+                    subtractGeometries = new ArrayList<>();
 
                     if (conversion.containsKey(LayerDataType.터널)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryList(conversion.get(LayerDataType.터널)));
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometries(conversion.get(LayerDataType.터널)));
                     }
                     if (conversion.containsKey(LayerDataType.입체교차부)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryList(conversion.get(LayerDataType.입체교차부)));
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometries(conversion.get(LayerDataType.입체교차부)));
                     }
                     if (conversion.containsKey(LayerDataType.교량)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryList(
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometries(
                                 conversion.get(LayerDataType.교량),
-                                f -> "road".equals(f.getAttribute("highway")
-                        )));
-                    }
-                    if (conversion.containsKey(LayerDataType.안전지대)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryList(
-                                conversion.get(LayerDataType.안전지대),
-                                f -> "yes".equals(f.getAttribute("crossing:island")
-                                )));
+                                f -> "road".equals(f.getAttribute("highway"))
+                        ));
                     }
 
                     if(subtractGeometries.size() != 0) {
@@ -111,14 +101,43 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
                         );
                         entry.setValue(featureCollection);
                     }
+
+                    if (conversion.containsKey(LayerDataType.안전지대)) {
+                        entry.setValue(FeatureGeometryUtils.getFeatureCollectionGeometryDifference(
+                                type.getOsmFeatureType(), entry.getValue(),
+                                FeatureGeometryUtils.extractGeometries(
+                                        conversion.get(LayerDataType.안전지대),
+                                        f -> "yes".equals(f.getAttribute("crossing:island"))
+                                )
+                        ));
+                    }
                     break;
 
                 case 도로중심선:
-                    for(LayerDataType subtractType : ROAD_BOUNDARY_SUBTRACTS) {
-                        if (!conversion.containsKey(subtractType)) continue;
+                    subtractGeometries = new ArrayList<>();
 
+                    if (conversion.containsKey(LayerDataType.터널)) {
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometries(conversion.get(LayerDataType.터널)));
+                    }
+                    if (conversion.containsKey(LayerDataType.입체교차부)) {
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometries(conversion.get(LayerDataType.입체교차부)));
+                    }
+                    if (conversion.containsKey(LayerDataType.교량)) {
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometries(
+                                conversion.get(LayerDataType.교량),
+                                f -> "road".equals(f.getAttribute("highway"))
+                        ));
+                    }
+                    if (conversion.containsKey(LayerDataType.안전지대)) {
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometries(
+                                conversion.get(LayerDataType.안전지대),
+                                f -> "yes".equals(f.getAttribute("crossing:island"))
+                        ));
+                    }
+
+                    if (subtractGeometries.size() != 0) {
                         entry.setValue(FeatureGeometryUtils.getFeatureCollectionGeometryDifference(
-                                type.getOsmFeatureType(), entry.getValue(), conversion.get(subtractType)
+                                type.getOsmFeatureType(), entry.getValue(), subtractGeometries
                         ));
                     }
                     break;
