@@ -2,7 +2,9 @@ package com.mndk.scjdmc.geojson.converter;
 
 import com.mndk.scjdmc.scjd.LayerDataType;
 import com.mndk.scjdmc.scjd.MapIndexManager;
+import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +40,20 @@ public class Scjd2OsmStyleFeatureMapConverter extends ScjdShapefileConverter<Sha
             try {
                 SimpleFeatureCollection featureCollection = converter.convert(mapIndex, shpFile, charset);
                 if(featureCollection != null) {
-                    result.put(layerDataType, featureCollection);
+                    if (result.containsKey(layerDataType)) {
+                        ListFeatureCollection newFeatureCollection = new ListFeatureCollection(layerDataType.getFeatureType());
+                        SimpleFeatureIterator featureIterator = result.get(layerDataType).features();
+                        while(featureIterator.hasNext()) {
+                            newFeatureCollection.add(featureIterator.next());
+                        }
+                        featureIterator = featureCollection.features();
+                        while(featureIterator.hasNext()) {
+                            newFeatureCollection.add(featureIterator.next());
+                        }
+                        result.put(layerDataType, newFeatureCollection);
+                    } else {
+                        result.put(layerDataType, featureCollection);
+                    }
                 }
             } catch(Throwable t) {
                 LOGGER.error("Error thrown while parsing " + shpFile, t);

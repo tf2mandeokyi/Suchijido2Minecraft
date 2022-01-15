@@ -15,9 +15,16 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
+
+    private static final List<LayerDataType> ROAD_BOUNDARY_SUBTRACTS = Arrays.asList(
+            LayerDataType.터널, LayerDataType.입체교차부, LayerDataType.교량
+    );
 
     public OpenStreetMapStyleJsonPacker(FeatureJSON featureJSON) {
         super(featureJSON);
@@ -46,24 +53,24 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
                     }
 
                     SimpleFeature mapBoundaryFeature = entry.getValue().features().next();
-                    Geometry geometry = (Geometry) mapBoundaryFeature.getDefaultGeometry();
-                    if(geometry instanceof LineString || geometry instanceof MultiLineString) {
-                        geometry = FeatureGeometryUtils.lineStringToOuterEdgeOnlyPolygon(geometry);
+                    Geometry coastlineGeometry = (Geometry) mapBoundaryFeature.getDefaultGeometry();
+                    if(coastlineGeometry instanceof LineString || coastlineGeometry instanceof MultiLineString) {
+                        coastlineGeometry = FeatureGeometryUtils.lineStringToOuterEdgeOnlyPolygon(coastlineGeometry);
                     }
 
                     if(boundaryCollection != null) {
-                        geometry = FeatureGeometryUtils.getFeatureCollectionGeometryDifference(
-                                geometry, boundaryCollection
+                        coastlineGeometry = FeatureGeometryUtils.getFeatureCollectionGeometryDifference(
+                                coastlineGeometry, boundaryCollection
                         );
                     }
 
-                    if(geometry == null) continue;
+                    if(coastlineGeometry == null || coastlineGeometry.isEmpty()) continue;
 
                     if(first) first = false;
                     else writer.write(",");
 
                     SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(LayerDataType.해안선.getFeatureType());
-                    featureBuilder.set(Constants.GEOMETRY_PROPERTY_NAME, geometry);
+                    featureBuilder.set(Constants.GEOMETRY_PROPERTY_NAME, coastlineGeometry);
                     SimpleFeature coastline = featureBuilder.buildFeature(conversion.getIndex() + "-coastline");
                     coastline = LayerDataType.해안선.toOsmStyleFeature(coastline, conversion.getIndex() + "-coastline");
 
@@ -74,31 +81,44 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
                     continue;
 
                 case 도로경계:
-                    if(conversion.containsKey(LayerDataType.터널)) {
-                        SimpleFeatureCollection roadFeatureCollection = entry.getValue();
-                        roadFeatureCollection = FeatureGeometryUtils.subtractFeatureCollectionToPolygonCollection(
-                                type.getOsmFeatureType(),
-                                roadFeatureCollection, conversion.get(LayerDataType.터널),
-                                null, i -> conversion.getIndex() + "-A0010000-" + i
-                        );
-                        entry.setValue(roadFeatureCollection);
+                    SimpleFeatureCollection featureCollection = entry.getValue();
+                    List<Geometry> subtractGeometries = new ArrayList<>();
+
+                    if (conversion.containsKey(LayerDataType.터널)) {
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryList(conversion.get(LayerDataType.터널)));
                     }
-                    if(conversion.containsKey(LayerDataType.입체교차부)) {
-                        SimpleFeatureCollection roadFeatureCollection = entry.getValue();
-                        roadFeatureCollection = FeatureGeometryUtils.subtractFeatureCollectionToPolygonCollection(
+                    if (conversion.containsKey(LayerDataType.입체교차부)) {
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryList(conversion.get(LayerDataType.입체교차부)));
+                    }
+                    if (conversion.containsKey(LayerDataType.교량)) {
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryList(
+                                conversion.get(LayerDataType.교량),
+                                f -> "road".equals(f.getAttribute("highway")
+                        )));
+                    }
+                    if (conversion.containsKey(LayerDataType.안전지대)) {
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryList(
+                                conversion.get(LayerDataType.안전지대),
+                                f -> "yes".equals(f.getAttribute("crossing:island")
+                                )));
+                    }
+
+                    if(subtractGeometries.size() != 0) {
+                        featureCollection = FeatureGeometryUtils.subtractPolygonsToPolygonCollection(
                                 type.getOsmFeatureType(),
-                                roadFeatureCollection, conversion.get(LayerDataType.입체교차부),
-                                feature -> "yes".equals(feature.getAttribute("tunnel")),
+                                featureCollection, subtractGeometries,
                                 i -> conversion.getIndex() + "-A0010000-" + i
                         );
-                        entry.setValue(roadFeatureCollection);
+                        entry.setValue(featureCollection);
                     }
                     break;
 
                 case 도로중심선:
-                    if(conversion.containsKey(LayerDataType.터널)) {
+                    for(LayerDataType subtractType : ROAD_BOUNDARY_SUBTRACTS) {
+                        if (!conversion.containsKey(subtractType)) continue;
+
                         entry.setValue(FeatureGeometryUtils.getFeatureCollectionGeometryDifference(
-                                type.getOsmFeatureType(), entry.getValue(), conversion.get(LayerDataType.터널)
+                                type.getOsmFeatureType(), entry.getValue(), conversion.get(subtractType)
                         ));
                     }
                     break;

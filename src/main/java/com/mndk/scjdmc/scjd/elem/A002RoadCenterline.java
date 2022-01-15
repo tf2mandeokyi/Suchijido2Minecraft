@@ -31,7 +31,7 @@ public class A002RoadCenterline extends ScjdElement {
             case "면리간도로": highwayType = "tertiary"; break;
             case "소로": highwayType = "residental"; break;
             case "미분류":
-            default: highwayType = "unclassified";
+            default: highwayType = "road";
         }
         oneWay = "일방통행".equals(oneWay) ? "yes" : null;
     }

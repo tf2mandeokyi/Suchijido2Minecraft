@@ -21,7 +21,7 @@ public class A009Intersection3d extends ScjdElement {
             case "지하차도":
                 this.tunnel = "yes";
                 break;
-            case "고가도로":
+            case "고가차도":
                 this.manMade = "bridge";
                 break;
         }
