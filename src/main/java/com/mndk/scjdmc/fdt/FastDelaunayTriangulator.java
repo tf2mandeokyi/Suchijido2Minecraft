@@ -1,4 +1,4 @@
-package com.mndk.scjdmc.triangulator.fdt;
+package com.mndk.scjdmc.fdt;
 
 import com.mndk.scjdmc.util.math.Vector2DH;
 import com.mndk.scjdmc.util.shape.Triangle;

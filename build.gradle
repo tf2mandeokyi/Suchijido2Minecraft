@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 tasks.withType(JavaCompile) {
@@ -16,35 +17,88 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
 
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
 
-    implementation 'commons-io:commons-io:2.6'
-    implementation 'org.apache.logging.log4j:log4j-api:2.17.0'
-    implementation 'org.apache.logging.log4j:log4j-core:2.17.0'
+    implementation 'commons-io:commons-io:2.11.0'
+    implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
     implementation 'org.apache.commons:commons-compress:1.21'
 
-    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.google.code.gson:gson:2.9.0'
 
-    implementation 'org.gdal:gdal:3.3.0'
+    implementation 'org.gdal:gdal:3.5.0'
 
     implementation 'org.geotools:gt-shapefile:27-SNAPSHOT'
     implementation 'org.geotools:gt-geojson:27-SNAPSHOT'
     implementation 'org.geotools:gt-geojsondatastore:27-SNAPSHOT'
     implementation 'org.geotools:gt-epsg-hsql:27-SNAPSHOT'
 
-    annotationProcessor 'info.picocli:picocli-codegen:4.6.2'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'info.picocli:picocli-codegen:4.6.3'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
 }
 
+def cdtRepoPath = file('CDT/')
+def nativeLibrariesPath = file("$buildDir/libs/native/")
+
 compileJava {
-    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+    mainClassName = 'com.mndk.scjdmc.Suchijido2Minecraft'
+    options.compilerArgs += [ "-Aproject=${project.group}/${project.name}" ]
+    applicationDefaultJvmArgs = [ "-Djava.library.path=\"$nativeLibrariesPath.absolutePath\"" ]
 }
 
 test {
     useJUnitPlatform()
+    failFast = true
+    systemProperty 'java.library.path', nativeLibrariesPath.absolutePath
+}
+
+task buildCDTHandler(type: Exec) {
+    commandLine "cmake"
+    args "--build", file("$buildDir/cmake/cdt_handler")
+    standardOutput System.out
+
+    doLast {
+        copy {
+            from file("$buildDir/cmake/cdt_handler/cdt_handler.dll")
+            into "$buildDir/libs/native/"
+        }
+    }
+}; compileJava.dependsOn buildCDTHandler
+configure(buildCDTHandler) {
+    group = 'native'
+    description = 'Build cdt handler with cmake'
+}
+
+task makeCDTHandler(type: Exec) {
+    commandLine "cmake"
+    args = [
+            "-S", file('src/main/natives/cdt_handler').toString(),
+            "-B", file("$buildDir/cmake/cdt_handler").toString(),
+            "-DCDT_HOME:STRING=" + cdtRepoPath.toString(),
+            "-G", 'MinGW Makefiles'
+    ]
+    standardOutput System.out
+}; buildCDTHandler.dependsOn makeCDTHandler
+configure(makeCDTHandler) {
+    group = 'native'
+    description = 'Make cdt handler with cmake'
+}
+
+task generateNativeHeaders {
+    def nativesTempDir = file('src/main/natives/temp')
+    if(!nativesTempDir.isDirectory()) nativesTempDir.mkdir()
+
+    compileJava {
+        options.compilerArgs += [ '-h', nativesTempDir ]
+    }
+}
+generateNativeHeaders.dependsOn compileJava
+configure(generateNativeHeaders) {
+    group = 'native'
+    description = 'Generate native method libraries'
 }
