@@ -89,28 +89,3 @@ JNIEXPORT void JNICALL Java_com_mndk_scjdmc_cdtlib_Triangulation_eraseSuperTrian
     CDT::Triangulation<double> *cdt = CDTHandler::getTriangulationObject(env, thisObject);
     cdt->eraseSuperTriangle();
 }
-
-
-///** SuchijidoTerraplusplus::test() */
-//JNIEXPORT void JNICALL Java_com_mndk_scjdtpp_SuchijidoTerraplusplus_test
-//  (JNIEnv *env, jclass thisObject, jobject intList)
-//{
-//    jclass intClass = env->FindClass("java/lang/Integer");
-//    jmethodID integerToInt = env->GetMethodID(intClass, "intValue", "()I");
-//
-//    auto itWrapper = JavaListHandler::JavaListIteratorWrapper<int>(
-//        env, intList, [env, integerToInt](jobject obj) -> int {
-//            return env->CallIntMethod(obj, integerToInt);
-//        }
-//    );
-//
-//    for(auto it = itWrapper.begin(); it != itWrapper.end(); it++)
-//    {
-//        printf("%d, ", *it);
-//    }
-//    CDT::V2d<double> a{3, 4};
-//
-//    jobject result = CDTHandler::toVector2DH(env, a);
-//
-//    return result;
-//}

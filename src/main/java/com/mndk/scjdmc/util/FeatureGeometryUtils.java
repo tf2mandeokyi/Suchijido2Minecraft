@@ -1,5 +1,6 @@
 package com.mndk.scjdmc.util;
 
+import com.mndk.scjdmc.Constants;
 import com.mndk.scjdmc.util.function.FeatureFilter;
 import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +26,12 @@ public class FeatureGeometryUtils {
     private static final Logger LOGGER = LogManager.getLogger();
 
 
+    /**
+     * Converts LineString into Polygon, using LineString's coordinates as its outer edge.
+     *
+     * @param lineStringGeometry LineString that is to be converted
+     * @return Polygon
+     */
     public static Polygon lineStringToOuterEdgeOnlyPolygon(Geometry lineStringGeometry) {
 
         // Validation
@@ -49,12 +56,29 @@ public class FeatureGeometryUtils {
     }
 
 
-    public static List<Geometry> extractGeometries(SimpleFeatureCollection featureCollection) {
-        return extractGeometries(featureCollection, f -> true);
+    /**
+     * Extracts feature's geometry list from FeatureCollection, without any filters
+     *
+     * @param featureCollection FeatureCollection
+     * @return List of geometries
+     */
+    public static List<Geometry> extractGeometryAsList(SimpleFeatureCollection featureCollection) {
+        return extractGeometryAsList(featureCollection, f -> true);
     }
 
 
-    public static List<Geometry> extractGeometries(SimpleFeatureCollection featureCollection, FeatureFilter featureFilter) {
+    /**
+     * Extracts feature's geometries from FeatureCollection
+     *
+     * @param featureCollection FeatureCollection, that can be null
+     * @param featureFilter filter to be applied into features
+     * @return List of geometries
+     */
+    public static List<Geometry> extractGeometryAsList(
+            SimpleFeatureCollection featureCollection, FeatureFilter featureFilter
+    ) {
+        if(featureCollection == null) return Collections.emptyList();
+
         SimpleFeatureIterator featureIterator = featureCollection.features();
         List<Geometry> result = new ArrayList<>();
         while(featureIterator.hasNext()) {
@@ -66,6 +90,18 @@ public class FeatureGeometryUtils {
     }
 
 
+    /**
+     * Applies Geometry#difference() to every feature in a featureCollection, while featureCollection
+     * being a victim and list of geometries being subtractions.
+     * <br>
+     * This method also buffers every geometry in a list before the subtraction, so that no garbage
+     * is left while cutting the victim.
+     *
+     * @param victimType Type of victim
+     * @param victim FeatureCollection
+     * @param other list of geometries
+     * @return Geometry#difference() applied feature collection
+     */
     public static SimpleFeatureCollection getFeatureCollectionGeometryDifference(
             SimpleFeatureType victimType, SimpleFeatureCollection victim, List<Geometry> other
     ) {
@@ -81,6 +117,16 @@ public class FeatureGeometryUtils {
     }
 
 
+    /**
+     * Applies Geometry#difference() to a feature, while list of geometries being subtractions
+     * <br>
+     * This method also buffers every geometry in a list before the subtraction, so that no garbage
+     * is left while cutting the victim.
+     *
+     * @param victim Feature
+     * @param other list of geometries
+     * @return Geometry#difference() applied feature
+     */
     public static SimpleFeature getFeatureCollectionGeometryDifference(
             SimpleFeature victim, List<Geometry> other
     ) {
@@ -91,6 +137,16 @@ public class FeatureGeometryUtils {
     }
 
 
+    /**
+     * Applies Geometry#difference() to a geometry, while list of other geometries being subtractions
+     * <br>
+     * This method also buffers every geometry in a list before the subtraction, so that no garbage
+     * is left while cutting the victim.
+     *
+     * @param victim Geometry to be cut
+     * @param other list of geometries
+     * @return Cut geometry
+     */
     public static Geometry getFeatureCollectionGeometryDifference(
             Geometry victim, List<Geometry> other
     ) {
@@ -194,6 +250,12 @@ public class FeatureGeometryUtils {
     }
 
 
+    /**
+     * Extracts polygons as list from geometry
+     *
+     * @param g Geometry
+     * @return List of polygons; empty list if LineString, Point, MultiLineString, etc.
+     */
     public static List<Polygon> extractPolygonsFromGeometry(Geometry g) {
         if(g instanceof Polygon) {
             if(!g.isEmpty()) return Collections.singletonList((Polygon) g);
@@ -219,6 +281,11 @@ public class FeatureGeometryUtils {
     }
 
 
+    /**
+     * Converts MultiPolygon into List&lt;Polygon&gt;
+     * @param mp MultiPolygon
+     * @return Converted list
+     */
     public static List<Polygon> multiPolygonToList(MultiPolygon mp) {
         List<Polygon> result = new ArrayList<>(mp.getNumGeometries());
         for(int i = 0; i < mp.getNumGeometries(); i++) {
@@ -229,6 +296,15 @@ public class FeatureGeometryUtils {
     }
 
 
+    /**
+     * Subtracts geometry "origin" to geometry "diff" - <br>
+     * "diff" being scissors and "origin" being a paper
+     *
+     * @param origin Paper
+     * @param diff Scissors
+     * @param polygonOnly Whether to only use polygons as scissors
+     * @return Cut geometry
+     */
     private static Geometry getGeometryDifference(Geometry origin, final Geometry diff, boolean polygonOnly) {
         List<Polygon> result = new ArrayList<>();
         if (origin instanceof GeometryCollection || diff instanceof GeometryCollection) {

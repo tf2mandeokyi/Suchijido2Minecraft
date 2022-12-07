@@ -6,7 +6,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class C001Dam extends ScjdElement {
 
-    @Column(osmKeyName = "waterway")
+    @Column(osmName = "waterway")
     public final String waterway = "dam";
 
     public C001Dam(SimpleFeature feature) {

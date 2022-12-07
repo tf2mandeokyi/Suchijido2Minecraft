@@ -7,25 +7,25 @@ import org.opengis.geometry.coordinate.Polygon;
 
 public class A005Safezone extends ScjdElement {
 
-    @Column(shpColumnName = "구조")
+    @Column(key = "STRU", name = "구조")
     public String type;
 
-    @Column(osmKeyName = "area:highway")
+    @Column(osmName = "area:highway")
     public String areaHighway;
 
-    @Column(osmKeyName = "highway")
+    @Column(osmName = "highway")
     public String highway;
 
-    @Column(osmKeyName = "crossing:island")
+    @Column(osmName = "crossing:island")
     public String crossingIsland;
 
-    @Column(osmKeyName = "hazard")
+    @Column(osmName = "hazard")
     public String hazard;
 
     public A005Safezone(SimpleFeature feature) {
         super(feature);
         switch(type) {
-            case "교통섬":
+            case "SZS001": case "교통섬":
                 if(feature.getDefaultGeometry() instanceof Polygon) {
                     areaHighway = "traffic_island";
                 }
@@ -34,7 +34,7 @@ public class A005Safezone extends ScjdElement {
                     crossingIsland = "yes";
                 }
                 break;
-            case "어린이보호구역":
+            case "SZS003": case "어린이보호구역":
                 hazard = "school_zone";
                 break;
         }

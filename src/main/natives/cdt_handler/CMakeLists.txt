@@ -7,7 +7,10 @@ SET(CDT_HOME "./CDT" CACHE STRING "Path to CDT repository")
 
 
 ### initialize library ###
-set(cdt_handler_files main.cpp)
+set(cdt_handler_files
+    triangulation.cpp
+    main.cpp
+)
 add_library(cdt_handler SHARED ${cdt_handler_files})
 
 

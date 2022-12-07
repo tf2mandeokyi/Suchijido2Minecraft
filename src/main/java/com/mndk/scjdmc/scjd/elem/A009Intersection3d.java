@@ -6,23 +6,23 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class A009Intersection3d extends ScjdElement {
 
-    @Column(shpColumnName = "구분")
+    @Column(key = "DIVI", name = "구분")
     public String type;
 
-    @Column(osmKeyName = "tunnel")
+    @Column(osmName = "tunnel")
     public String tunnel;
 
-    @Column(osmKeyName = "man_made")
+    @Column(osmName = "man_made")
     public String manMade;
 
     public A009Intersection3d(SimpleFeature feature) {
         super(feature);
         switch(type) {
-            case "지하차도":
-                this.tunnel = "yes";
-                break;
-            case "고가차도":
+            case "OCD001": case "고가차도":
                 this.manMade = "bridge";
+                break;
+            case "OCD002": case "지하차도":
+                this.tunnel = "yes";
                 break;
         }
     }

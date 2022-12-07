@@ -1,5 +1,5 @@
 package com.mndk.scjdmc.geojson.combiner;
 
-public class DefaultGeoJsonCombiner {
+public class DefaultGJsonDatasetBuilder {
     // TODO
 }

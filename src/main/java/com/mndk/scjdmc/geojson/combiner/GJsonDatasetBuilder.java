@@ -9,14 +9,14 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 
-public abstract class GeoJsonCombiner {
+public abstract class GJsonDatasetBuilder {
 
     protected static final Logger LOGGER = LogManager.getLogger();
 
     @Setter protected LayerFilterFunction layerFilter;
     @Setter protected ConversionCompleteFunction onConversionCompleteFunction;
 
-    public GeoJsonCombiner() {
+    public GJsonDatasetBuilder() {
         this.layerFilter = LayerFilterFunction.DEFAULT_FILTER;
         this.onConversionCompleteFunction = (f, b) -> {};
     }

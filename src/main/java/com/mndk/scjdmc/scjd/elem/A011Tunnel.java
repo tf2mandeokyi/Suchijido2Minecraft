@@ -6,9 +6,8 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class A011Tunnel extends ScjdElement {
 
-    @Column(osmKeyName = "tunnel")
+    @Column(osmName = "tunnel")
     public final String tunnel = "yes";
-
 
     public A011Tunnel(SimpleFeature feature) {
         super(feature);

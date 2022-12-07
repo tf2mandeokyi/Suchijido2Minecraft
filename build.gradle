@@ -19,14 +19,14 @@ repositories {
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.24'
 
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
 
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
     implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
     implementation 'org.apache.commons:commons-compress:1.21'
 
-    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation 'com.google.code.gson:gson:2.10'
 
     implementation 'org.gdal:gdal:3.5.0'
 
@@ -35,7 +35,7 @@ dependencies {
     implementation 'org.geotools:gt-geojsondatastore:27-SNAPSHOT'
     implementation 'org.geotools:gt-epsg-hsql:27-SNAPSHOT'
 
-    annotationProcessor 'info.picocli:picocli-codegen:4.6.3'
+    annotationProcessor 'info.picocli:picocli-codegen:4.7.0'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
@@ -48,13 +48,20 @@ def nativeLibrariesPath = file("$buildDir/libs/native/")
 compileJava {
     mainClassName = 'com.mndk.scjdmc.Suchijido2Minecraft'
     options.compilerArgs += [ "-Aproject=${project.group}/${project.name}" ]
-    applicationDefaultJvmArgs = [ "-Djava.library.path=\"$nativeLibrariesPath.absolutePath\"" ]
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(JavaExec) {
+    systemProperty 'java.library.path', nativeLibrariesPath.absolutePath
 }
 
 test {
     useJUnitPlatform()
     failFast = true
-    systemProperty 'java.library.path', nativeLibrariesPath.absolutePath
 }
 
 task buildCDTHandler(type: Exec) {

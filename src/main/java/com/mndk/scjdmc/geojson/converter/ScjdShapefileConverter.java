@@ -10,6 +10,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
 
+@Deprecated
 public abstract class ScjdShapefileConverter<ReturnType> {
 
     protected static final Logger LOGGER = LogManager.getLogger();

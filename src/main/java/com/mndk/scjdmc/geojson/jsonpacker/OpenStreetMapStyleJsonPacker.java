@@ -2,7 +2,7 @@ package com.mndk.scjdmc.geojson.jsonpacker;
 
 import com.mndk.scjdmc.geojson.converter.ShapefileConversionResult;
 import com.mndk.scjdmc.scjd.LayerDataType;
-import com.mndk.scjdmc.util.Constants;
+import com.mndk.scjdmc.Constants;
 import com.mndk.scjdmc.util.FeatureGeometryUtils;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -56,7 +56,7 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
 
                     if(boundaryCollection != null) {
                         coastlineGeometry = FeatureGeometryUtils.getFeatureCollectionGeometryDifference(
-                                coastlineGeometry, FeatureGeometryUtils.extractGeometries(boundaryCollection)
+                                coastlineGeometry, FeatureGeometryUtils.extractGeometryAsList(boundaryCollection)
                         );
                     }
 
@@ -65,7 +65,9 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
                     if(first) first = false;
                     else writer.write(",");
 
-                    SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(LayerDataType.해안선.getFeatureType());
+                    SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
+                            LayerDataType.해안선.getOsmFeatureType()
+                    );
                     featureBuilder.set(Constants.GEOMETRY_PROPERTY_NAME, coastlineGeometry);
                     SimpleFeature coastline = featureBuilder.buildFeature(conversion.getIndex() + "-coastline");
                     coastline = LayerDataType.해안선.toOsmStyleFeature(coastline, conversion.getIndex() + "-coastline");
@@ -81,13 +83,13 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
                     subtractGeometries = new ArrayList<>();
 
                     if (conversion.containsKey(LayerDataType.터널)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometries(conversion.get(LayerDataType.터널)));
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(conversion.get(LayerDataType.터널)));
                     }
                     if (conversion.containsKey(LayerDataType.입체교차부)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometries(conversion.get(LayerDataType.입체교차부)));
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(conversion.get(LayerDataType.입체교차부)));
                     }
                     if (conversion.containsKey(LayerDataType.교량)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometries(
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(
                                 conversion.get(LayerDataType.교량),
                                 f -> "road".equals(f.getAttribute("highway"))
                         ));
@@ -105,7 +107,7 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
                     if (conversion.containsKey(LayerDataType.안전지대)) {
                         entry.setValue(FeatureGeometryUtils.getFeatureCollectionGeometryDifference(
                                 type.getOsmFeatureType(), entry.getValue(),
-                                FeatureGeometryUtils.extractGeometries(
+                                FeatureGeometryUtils.extractGeometryAsList(
                                         conversion.get(LayerDataType.안전지대),
                                         f -> "yes".equals(f.getAttribute("crossing:island"))
                                 )
@@ -117,19 +119,19 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
                     subtractGeometries = new ArrayList<>();
 
                     if (conversion.containsKey(LayerDataType.터널)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometries(conversion.get(LayerDataType.터널)));
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(conversion.get(LayerDataType.터널)));
                     }
                     if (conversion.containsKey(LayerDataType.입체교차부)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometries(conversion.get(LayerDataType.입체교차부)));
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(conversion.get(LayerDataType.입체교차부)));
                     }
                     if (conversion.containsKey(LayerDataType.교량)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometries(
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(
                                 conversion.get(LayerDataType.교량),
                                 f -> "road".equals(f.getAttribute("highway"))
                         ));
                     }
                     if (conversion.containsKey(LayerDataType.안전지대)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometries(
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(
                                 conversion.get(LayerDataType.안전지대),
                                 f -> "yes".equals(f.getAttribute("crossing:island"))
                         ));

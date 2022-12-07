@@ -1,4 +1,4 @@
-package com.mndk.scjdmc.scjd;
+package com.mndk.scjdmc.util;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
@@ -11,19 +11,19 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MapIndexManager {
+public class ScjdMapIndexUtils {
 
     private static final CoordinateReferenceSystem EPSG5185;
     private static final CoordinateReferenceSystem EPSG5186;
     private static final CoordinateReferenceSystem EPSG5187;
     private static final CoordinateReferenceSystem EPSG5188;
 
-    private static final Pattern generalMapIdPattern = Pattern.compile("^\\(.{4}\\)수치지도_(\\d+)_");
-    private static final Pattern containsAlphabet = Pattern.compile("[A-Za-z]");
+    private static final Pattern SCJD_INDEX_FILENAME_PATTERN = Pattern.compile("^\\(.{4}\\)수치지도_(\\d+)_");
+    private static final Pattern CONTAINS_ALPHABET = Pattern.compile("[A-Za-z]");
 
 
     public static String getMapIndexFromFileName(String fileName) {
-        Matcher matcher = generalMapIdPattern.matcher(fileName);
+        Matcher matcher = SCJD_INDEX_FILENAME_PATTERN.matcher(fileName);
         if(matcher.find()) {
             return matcher.group(1);
         }
@@ -86,12 +86,12 @@ public class MapIndexManager {
         int[] pos = indexToPosition(index);
         double[] longLatMin, longLatMax;
         if(aBitLarger) {
-            longLatMin = MapIndexManager.positionToLongLat(new int[] { pos[0] - 1, pos[1] - 1 }, scale, true);
-            longLatMax = MapIndexManager.positionToLongLat(new int[] { pos[0] + 1, pos[1] + 1 }, scale, true);
+            longLatMin = ScjdMapIndexUtils.positionToLongLat(new int[] { pos[0] - 1, pos[1] - 1 }, scale, true);
+            longLatMax = ScjdMapIndexUtils.positionToLongLat(new int[] { pos[0] + 1, pos[1] + 1 }, scale, true);
         }
         else {
-            longLatMin = MapIndexManager.positionToLongLat(pos, scale, false);
-            longLatMax = MapIndexManager.positionToLongLat(new int[] { pos[0] + 1, pos[1] + 1 }, scale, false);
+            longLatMin = ScjdMapIndexUtils.positionToLongLat(pos, scale, false);
+            longLatMax = ScjdMapIndexUtils.positionToLongLat(new int[] { pos[0] + 1, pos[1] + 1 }, scale, false);
         }
         return new ReferencedEnvelope(longLatMin[0], longLatMax[0], longLatMin[1], longLatMax[1], null);
     }
@@ -114,7 +114,7 @@ public class MapIndexManager {
             case 5: return 50000;
             case 6: return 25000;
             case 7: return 10000;
-            case 8: if(!containsAlphabet.matcher(index).find()) return 5000;
+            case 8: if(!CONTAINS_ALPHABET.matcher(index).find()) return 5000;
             case 9: return 1000;
             default: throw new IllegalArgumentException("Unsupported index: " + index);
         }

@@ -1,4 +1,4 @@
-package com.mndk.scjdmc.util;
+package com.mndk.scjdmc.gui;
 
 import org.opengis.geometry.BoundingBox;
 

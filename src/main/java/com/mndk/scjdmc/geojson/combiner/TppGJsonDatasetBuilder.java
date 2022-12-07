@@ -2,8 +2,9 @@ package com.mndk.scjdmc.geojson.combiner;
 
 import com.google.gson.*;
 import com.mndk.scjdmc.scjd.LayerDataType;
-import com.mndk.scjdmc.scjd.MapIndexManager;
+import com.mndk.scjdmc.util.ScjdMapIndexUtils;
 import com.mndk.scjdmc.util.GeometryJsonUtils;
+import com.mndk.scjdmc.util.file.DirectoryManager;
 import lombok.Setter;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.geometry.BoundingBox;
@@ -16,14 +17,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class TerraplusplusStyleGeoJsonCombiner extends GeoJsonCombiner {
+public class TppGJsonDatasetBuilder extends GJsonDatasetBuilder {
 
     private static final double SCALE = 64;
 
     private final Gson gson;
     @Setter private boolean separateCoastlines = false;
 
-    public TerraplusplusStyleGeoJsonCombiner() {
+    public TppGJsonDatasetBuilder() {
         super();
         this.gson = new GsonBuilder().create();
     }
@@ -34,17 +35,13 @@ public class TerraplusplusStyleGeoJsonCombiner extends GeoJsonCombiner {
         File tileFolder = new File(destination, "tile");
         File coastlineFolder = new File(destination, "coastline");
 
-        if(!tileFolder.exists() && !tileFolder.mkdir()) {
-            throw new IOException("Failed to create tile folder");
-        }
-        if(separateCoastlines && !coastlineFolder.exists() && !coastlineFolder.mkdir()) {
-            throw new IOException("Failed to create coastline folder");
-        }
+        DirectoryManager.createFolder(tileFolder, "tile");
+        if(separateCoastlines) DirectoryManager.createFolder(tileFolder, "coastline");
 
         File[] indexJsonFiles = source.listFiles(file -> {
             String fileName = file.getName();
             if(!file.isFile() || !fileName.endsWith(".json")) return false;
-            return MapIndexManager.validateIndexName(fileName.substring(0, fileName.lastIndexOf(".")));
+            return ScjdMapIndexUtils.validateIndexName(fileName.substring(0, fileName.lastIndexOf(".")));
         });
         assert indexJsonFiles != null;
         if(indexJsonFiles.length == 0) return;
@@ -59,8 +56,8 @@ public class TerraplusplusStyleGeoJsonCombiner extends GeoJsonCombiner {
         // Calculate total bounding box
         BoundingBox bbox = null;
         for(String index : availableIndexes) {
-            if(bbox == null) bbox = MapIndexManager.getBoudingBox(index, false);
-            else bbox.include(MapIndexManager.getBoudingBox(index, false));
+            if(bbox == null) bbox = ScjdMapIndexUtils.getBoudingBox(index, false);
+            else bbox.include(ScjdMapIndexUtils.getBoudingBox(index, false));
         }
 
         int minX = (int) Math.floor(bbox.getMinX() * SCALE), maxX = (int) Math.ceil(bbox.getMaxX() * SCALE);
@@ -71,7 +68,7 @@ public class TerraplusplusStyleGeoJsonCombiner extends GeoJsonCombiner {
 
             bbox = new ReferencedEnvelope(x / SCALE, (x + 1) / SCALE, y / SCALE, (y + 1) / SCALE, null);
 
-            List<String> indexes = MapIndexManager.getContainingIndexes(bbox, 5000); // Scale specification; Fix this issue
+            List<String> indexes = ScjdMapIndexUtils.getContainingIndexes(bbox, 5000); // Scale specification; Fix this issue
             for (String index : indexes) {
                 if (!availableIndexes.contains(index)) continue;
 
@@ -136,10 +133,8 @@ public class TerraplusplusStyleGeoJsonCombiner extends GeoJsonCombiner {
             featureCollection.add("features", featureList);
 
             File file = new File(tileFolder, x + "/" + y + ".json");
-            if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
-                new IOException("Failed to create folder").printStackTrace();
-                continue;
-            }
+            DirectoryManager.createParentFolders(file);
+
             try (FileWriter writer = new FileWriter(file)) {
                 this.gson.toJson(featureCollection, writer);
                 writer.flush();

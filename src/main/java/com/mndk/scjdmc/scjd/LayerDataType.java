@@ -141,7 +141,7 @@ public enum LayerDataType {
 	private final @Getter String layerNameHeader;
 	private final @Getter Class<? extends ScjdElement> elementClass;
 	private final @Getter Constructor<? extends ScjdElement> elementConstructor;
-	private final @Getter SimpleFeatureType featureType, osmFeatureType;
+	private final @Getter SimpleFeatureType keyFeatureType, nameFeatureType, osmFeatureType;
 
 	LayerDataType(
 			String englishName, String layerNameHeader, Class<? extends ScjdElement> elementClass
@@ -152,12 +152,14 @@ public enum LayerDataType {
 			this.elementClass = elementClass;
 			if(elementClass != null) {
 				this.elementConstructor = elementClass.getConstructor(SimpleFeature.class);
-				this.featureType = ScjdElement.getSimpleFeatureType(elementClass, englishName);
+				this.keyFeatureType = ScjdElement.getSimpleFeatureType(elementClass, englishName, ColumnStoredType.KEY);
+				this.nameFeatureType = ScjdElement.getSimpleFeatureType(elementClass, englishName, ColumnStoredType.NAME);
 				this.osmFeatureType = ScjdElement.getOsmSimpleFeatureType(elementClass, englishName);
 			}
 			else {
 				this.elementConstructor = null;
-				this.featureType = null;
+				this.keyFeatureType = null;
+				this.nameFeatureType = null;
 				this.osmFeatureType = null;
 			}
 		} catch (NoSuchMethodException e) {
@@ -167,6 +169,10 @@ public enum LayerDataType {
 
 	LayerDataType(String englishName, String layerNameHeader) {
 		this(englishName, layerNameHeader, null);
+	}
+
+	public SimpleFeatureType getScjdFeatureType(ColumnStoredType type) {
+		return type == ColumnStoredType.KEY ? keyFeatureType : nameFeatureType;
 	}
 
 	public SimpleFeature toOsmStyleFeature(SimpleFeature feature, String id) {
@@ -181,11 +187,11 @@ public enum LayerDataType {
 		return Category.valueOf(layerNameHeader.charAt(0));
 	}
 
-	private static final Pattern layerTypePattern = Pattern.compile("([A-H]\\d{3})\\d{4}");
+	private static final Pattern LAYER_TYPE_PATTERN = Pattern.compile("([A-H]\\d{3})\\d{4}");
 
 	public static String findLayerTypeString(String name) {
 		if(name == null) return null;
-		Matcher matcher = layerTypePattern.matcher(name);
+		Matcher matcher = LAYER_TYPE_PATTERN.matcher(name);
 		if(matcher.find()) {
 			return matcher.group();
 		}
@@ -194,7 +200,7 @@ public enum LayerDataType {
 
 	public static LayerDataType fromLayerName(String layerName) {
 		if(layerName == null) return null;
-		Matcher matcher = layerTypePattern.matcher(layerName);
+		Matcher matcher = LAYER_TYPE_PATTERN.matcher(layerName);
 		if(!matcher.find()) return null;
 		String match = matcher.group(1);
 		for (LayerDataType t : values()) {

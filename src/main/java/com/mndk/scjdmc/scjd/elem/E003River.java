@@ -6,10 +6,10 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class E003River extends ScjdElement {
 
-    @Column(osmKeyName = "natural")
+    @Column(osmName = "natural")
     public final String natural = "water";
 
-    @Column(osmKeyName = "water")
+    @Column(osmName = "water")
     public final String water = "river";
 
     public E003River(SimpleFeature feature) {

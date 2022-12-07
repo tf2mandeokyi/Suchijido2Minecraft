@@ -1,7 +1,7 @@
 package com.mndk.scjdmc.geojson.converter;
 
 import com.mndk.scjdmc.scjd.LayerDataType;
-import com.mndk.scjdmc.scjd.MapIndexManager;
+import com.mndk.scjdmc.util.ScjdMapIndexUtils;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.collection.ListFeatureCollection;
@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Deprecated
 public class Scjd2OsmStyleFeatureConverter extends ScjdShapefileConverter<SimpleFeatureCollection> implements FileReader {
 
     public Scjd2OsmStyleFeatureConverter() {
@@ -40,7 +41,7 @@ public class Scjd2OsmStyleFeatureConverter extends ScjdShapefileConverter<Simple
     @Override
     public SimpleFeatureCollection convert(File source, String charset) throws Exception {
         String parentFileName = source.getParentFile().getName();
-        String mapIndex = MapIndexManager.getMapIndexFromFileName(parentFileName);
+        String mapIndex = ScjdMapIndexUtils.getMapIndexFromFileName(parentFileName);
         return this.convert(mapIndex, source, charset);
     }
 
@@ -116,12 +117,12 @@ public class Scjd2OsmStyleFeatureConverter extends ScjdShapefileConverter<Simple
         SimpleFeatureCollection result;
 
         // CRS
-        CoordinateReferenceSystem indexCrs = MapIndexManager.getCoordinateReferenceSystemFromIndex(mapIndex);
+        CoordinateReferenceSystem indexCrs = ScjdMapIndexUtils.getCoordinateReferenceSystemFromIndex(mapIndex);
         CoordinateReferenceSystem sourceCrs = featureCollection.getSchema().getGeometryDescriptor()
                 .getCoordinateReferenceSystem();
 
         // Expected bounding box
-        BoundingBox bbox = MapIndexManager.getBoudingBox(mapIndex, true);
+        BoundingBox bbox = ScjdMapIndexUtils.getBoudingBox(mapIndex, true);
 
         // Try #1: Apply with .prj file
         if(sourceCrs != null) {

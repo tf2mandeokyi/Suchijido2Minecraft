@@ -5,7 +5,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class A006PedestrianOverpass extends A007Bridge {
 
-    @Column(osmKeyName = "highway")
+    @Column(osmName = "highway")
     public final String highway = "footway";
 
     public A006PedestrianOverpass(SimpleFeature feature) {

@@ -6,7 +6,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class E008Coastline extends ScjdElement {
 
-    @Column(osmKeyName = "natural")
+    @Column(osmName = "natural")
     public final String natural = "coastline";
 
     public E008Coastline(SimpleFeature feature) {

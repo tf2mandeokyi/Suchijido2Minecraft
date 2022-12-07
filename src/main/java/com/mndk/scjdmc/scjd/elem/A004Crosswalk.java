@@ -6,7 +6,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class A004Crosswalk extends ScjdElement {
 
-    @Column(osmKeyName = "highway")
+    @Column(osmName = "highway")
     public final String highway = "crossing";
 
     public A004Crosswalk(SimpleFeature feature) {

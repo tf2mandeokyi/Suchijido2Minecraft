@@ -6,7 +6,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class A019RailwayPlatform extends ScjdElement {
 
-    @Column(osmKeyName = "railway")
+    @Column(osmName = "railway")
     public final String railway = "platform";
 
     public A019RailwayPlatform(SimpleFeature feature) {

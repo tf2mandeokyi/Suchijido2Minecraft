@@ -6,7 +6,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class F002ElevationPoint extends ScjdElement {
 
-    @Column(shpColumnName = "수치", osmKeyName = "elevation")
+    @Column(key = "NUME", name = "수치", osmName = "elevation")
     public double elevation;
 
     public F002ElevationPoint(SimpleFeature feature) {

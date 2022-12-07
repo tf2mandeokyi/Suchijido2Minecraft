@@ -6,33 +6,33 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class B001Building extends ScjdElement {
 
-    @Column(shpColumnName = "종류", osmKeyName = "building")
+    @Column(key = "KIND", name = "종류", osmName = "building")
     public String buildingType;
 
-    @Column(shpColumnName = "명칭")
+    @Column(key = "NAME", name = "명칭")
     public String name1;
 
-    @Column(shpColumnName = "주기")
+    @Column(key = "ANNO", name = "주기")
     public String name2;
 
-    @Column(osmKeyName = "name")
+    @Column(osmName = "name")
     public String name;
 
-    @Column(shpColumnName = "층수", osmKeyName = "building:levels")
+    @Column(key = "NMLY", name = "층수", osmName = "building:levels")
     public long buildingLevels;
 
     public B001Building(SimpleFeature feature) {
         super(feature);
         switch (buildingType) {
-            case "일반주택":
-            case "연립주택": buildingType = "residential"; break;
-            case "아파트": buildingType = "apartments"; break;
-            case "주택외건물":
-            case "무벽건물":
-            case "온실":
-            case "공사중건물":
-            case "가건물":
-            case "미분류":
+            case "BDK001": case "일반주택":
+            case "BDK002": case "연립주택": buildingType = "residential"; break;
+            case "BDK003": case "아파트": buildingType = "apartments"; break;
+            case "BDK004": case "주택외건물":
+            case "BDK005": case "무벽건물":
+            case "BDK006": case "온실":
+            case "BDK007": case "공사중건물":
+            case "BDK008": case "가건물":
+            case "BDK000": case "미분류":
             default: buildingType = "yes";
         }
         if(name1 != null && name1.length() != 0) {

@@ -6,6 +6,7 @@ import com.mndk.scjdmc.util.file.ZipManager;
 import java.io.File;
 import java.io.IOException;
 
+@Deprecated
 public class ZippedScjd2OsmStyleFeatureMap extends Scjd2OsmStyleFeatureMapConverter {
 
     public ZippedScjd2OsmStyleFeatureMap() {

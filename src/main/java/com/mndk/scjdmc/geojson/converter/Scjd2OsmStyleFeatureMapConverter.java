@@ -1,7 +1,7 @@
 package com.mndk.scjdmc.geojson.converter;
 
 import com.mndk.scjdmc.scjd.LayerDataType;
-import com.mndk.scjdmc.scjd.MapIndexManager;
+import com.mndk.scjdmc.util.ScjdMapIndexUtils;
 import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -9,6 +9,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import java.io.File;
 import java.io.IOException;
 
+@Deprecated
 public class Scjd2OsmStyleFeatureMapConverter extends ScjdShapefileConverter<ShapefileConversionResult> {
 
     private final Scjd2OsmStyleFeatureConverter converter;
@@ -31,7 +32,7 @@ public class Scjd2OsmStyleFeatureMapConverter extends ScjdShapefileConverter<Sha
             LOGGER.warn("No .shp file found in " + directory.getName());
         }
 
-        String mapIndex = MapIndexManager.getMapIndexFromFileName(directory.getName());
+        String mapIndex = ScjdMapIndexUtils.getMapIndexFromFileName(directory.getName());
         ShapefileConversionResult result = new ShapefileConversionResult(mapIndex);
 
         for(File shpFile : shapeFiles) {
@@ -41,7 +42,7 @@ public class Scjd2OsmStyleFeatureMapConverter extends ScjdShapefileConverter<Sha
                 SimpleFeatureCollection featureCollection = converter.convert(mapIndex, shpFile, charset);
                 if(featureCollection != null) {
                     if (result.containsKey(layerDataType)) {
-                        ListFeatureCollection newFeatureCollection = new ListFeatureCollection(layerDataType.getFeatureType());
+                        ListFeatureCollection newFeatureCollection = new ListFeatureCollection(layerDataType.getNameFeatureType());
                         SimpleFeatureIterator featureIterator = result.get(layerDataType).features();
                         while(featureIterator.hasNext()) {
                             newFeatureCollection.add(featureIterator.next());

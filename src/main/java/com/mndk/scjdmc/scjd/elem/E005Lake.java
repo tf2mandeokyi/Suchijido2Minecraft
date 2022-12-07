@@ -6,13 +6,13 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public class E005Lake extends ScjdElement {
 
-    @Column(osmKeyName = "natural")
+    @Column(osmName = "natural")
     public final String natural = "water";
 
-    @Column(osmKeyName = "water")
+    @Column(osmName = "water")
     public final String water = "lake";
 
-    @Column(shpColumnName = "명칭", osmKeyName = "name")
+    @Column(key = "NAME", name = "명칭", osmName = "name")
     public String name;
 
     public E005Lake(SimpleFeature feature) {

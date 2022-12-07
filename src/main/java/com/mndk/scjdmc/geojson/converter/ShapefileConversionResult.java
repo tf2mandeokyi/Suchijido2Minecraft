@@ -6,6 +6,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 
 import java.util.HashMap;
 
+@Deprecated
 public class ShapefileConversionResult extends HashMap<LayerDataType, SimpleFeatureCollection> {
 
     @Getter
