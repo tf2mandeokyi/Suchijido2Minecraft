@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Deprecated
 public class TppGJsonDatasetBuilder extends GJsonDatasetBuilder {
 
     private static final double SCALE = 64;

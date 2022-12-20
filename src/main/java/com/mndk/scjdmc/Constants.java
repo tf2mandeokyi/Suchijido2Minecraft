@@ -6,14 +6,21 @@ import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import java.nio.charset.Charset;
+
 public class Constants {
 
     public static final CoordinateReferenceSystem EPSG4326;
     public static final CoordinateReferenceSystem CRS84;
 
-    public static final double POLYGON_BUFFER_EPSILON = 0.000001;
+    public static final Charset CP949 = Charset.forName("CP949");
+
+    public static final double POLYGON_BUFFER_EPSILON = 0.0000005;
 
     public static final String GEOMETRY_PROPERTY_NAME = "geometry";
+
+    public static final String GEOJSON_BEGINNING = "{\"type\":\"FeatureCollection\",\"features\":[";
+    public static final String GEOJSON_END = "]}";
 
     public static final FeatureJSON FEATURE_JSON = new FeatureJSON(new GeometryJSON(7));
 

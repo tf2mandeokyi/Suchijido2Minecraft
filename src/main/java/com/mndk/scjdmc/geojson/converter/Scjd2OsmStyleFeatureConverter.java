@@ -39,13 +39,13 @@ public class Scjd2OsmStyleFeatureConverter extends ScjdShapefileConverter<Simple
     }
 
     @Override
-    public SimpleFeatureCollection convert(File source, String charset) throws Exception {
+    public SimpleFeatureCollection convert(File source, Charset charset) throws Exception {
         String parentFileName = source.getParentFile().getName();
         String mapIndex = ScjdMapIndexUtils.getMapIndexFromFileName(parentFileName);
         return this.convert(mapIndex, source, charset);
     }
 
-    public SimpleFeatureCollection convert(String mapIndex, File source, String charset) throws Exception {
+    public SimpleFeatureCollection convert(String mapIndex, File source, Charset charset) throws Exception {
 
         String layerName = LayerDataType.findLayerTypeString(source.getName());
         LayerDataType layerDataType = LayerDataType.fromLayerName(source.getName());
@@ -66,7 +66,7 @@ public class Scjd2OsmStyleFeatureConverter extends ScjdShapefileConverter<Simple
 
         Map<String, String> params = new HashMap<>();
         params.put("url", source.toURI().toString());
-        params.put("charset", charset);
+        params.put("charset", charset.name());
         DataStore dataStore = DataStoreFinder.getDataStore(params);
 
         String[] typeNames = dataStore.getTypeNames();
@@ -100,10 +100,10 @@ public class Scjd2OsmStyleFeatureConverter extends ScjdShapefileConverter<Simple
     }
 
 
-    private boolean checkIfDbfReadable(File shpSource, String charset) throws IOException {
+    private boolean checkIfDbfReadable(File shpSource, Charset charset) throws IOException {
         ShpFiles shpFiles = new ShpFiles(shpSource);
         try(ReadableByteChannel dbfChannel = shpFiles.getReadChannel(ShpFileType.DBF, this)) {
-            DbaseFileHeader dbfHeader = new DbaseFileHeader(Charset.forName(charset));
+            DbaseFileHeader dbfHeader = new DbaseFileHeader(charset);
             dbfHeader.readHeader(dbfChannel);
         } catch(IllegalArgumentException e) {
             return false;

@@ -35,6 +35,19 @@ public class Suchijido2Minecraft {
     // 2. Find every index map not prefectly filled. Include them if it exists in another folder, else notify
     // 3. Move every element in area file into its according T++ index geojson file
 
+//    public static void main(String[] args) {
+//        try {
+//            System.out.println(Arrays.toString("(주)대성산기".getBytes("euc-kr")));
+//            String text = "\u0028\u00C1\u00D6\u0029\u00B4\u00EB\u00BC\u00BA\u00BB\u00EA\u00B1\u00E2";
+//            byte[] a = text.getBytes(StandardCharsets.UTF_8);
+//            System.out.println(Arrays.toString(a));
+//            String b = java.nio.charset.Charset.forName("EUC-KR").decode(ByteBuffer.wrap(a)).toString();
+//            System.out.println(new String(a, "EUC-KR"));
+//        } catch(UnsupportedEncodingException e) {
+//
+//        }
+//    }
+
     public static void main(String[] args) throws IOException {
 
         // Test
@@ -44,6 +57,8 @@ public class Suchijido2Minecraft {
                 new File("D:\\gis\\gradle_scjd2tpp_test")
         );
         workingDirectory.setDebug(true);
-        workingDirectory.convertAllIndexes();
+        workingDirectory.setStopIfError(true);
+//        workingDirectory.convertAllAreas();
+        workingDirectory.relocateAllAreas();
     }
 }

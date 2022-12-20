@@ -9,6 +9,7 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.File;
+import java.nio.charset.Charset;
 
 @Deprecated
 public abstract class ScjdShapefileConverter<ReturnType> {
@@ -24,7 +25,7 @@ public abstract class ScjdShapefileConverter<ReturnType> {
         this.layerFilter = LayerFilterFunction.DEFAULT_FILTER;
     }
 
-    public abstract ReturnType convert(File source, String charset) throws Exception;
+    public abstract ReturnType convert(File source, Charset charset) throws Exception;
 
     static {
         try {

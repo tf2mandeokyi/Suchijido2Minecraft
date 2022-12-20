@@ -138,6 +138,7 @@ public enum LayerDataType {
 
 
 	private final @Getter String englishName;
+	private final @Getter String layerName;
 	private final @Getter String layerNameHeader;
 	private final @Getter Class<? extends ScjdElement> elementClass;
 	private final @Getter Constructor<? extends ScjdElement> elementConstructor;
@@ -148,6 +149,7 @@ public enum LayerDataType {
 	) {
 		try {
 			this.englishName = englishName;
+			this.layerName = layerNameHeader + "0000";
 			this.layerNameHeader = layerNameHeader;
 			this.elementClass = elementClass;
 			if(elementClass != null) {
@@ -169,6 +171,10 @@ public enum LayerDataType {
 
 	LayerDataType(String englishName, String layerNameHeader) {
 		this(englishName, layerNameHeader, null);
+	}
+
+	public boolean hasElementClass() {
+		return this.elementClass != null;
 	}
 
 	public SimpleFeatureType getScjdFeatureType(ColumnStoredType type) {

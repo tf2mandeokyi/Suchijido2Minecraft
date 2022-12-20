@@ -8,6 +8,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 @Deprecated
 public class Scjd2OsmStyleFeatureMapConverter extends ScjdShapefileConverter<ShapefileConversionResult> {
@@ -20,7 +21,7 @@ public class Scjd2OsmStyleFeatureMapConverter extends ScjdShapefileConverter<Sha
     }
 
     @Override
-    public ShapefileConversionResult convert(File directory, String charset) throws Exception {
+    public ShapefileConversionResult convert(File directory, Charset charset) throws Exception {
         if(!directory.isDirectory()) {
             throw new IOException("Path should be directory");
         }

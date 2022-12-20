@@ -5,6 +5,7 @@ import com.mndk.scjdmc.util.file.ZipManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 @Deprecated
 public class ZippedScjd2OsmStyleFeatureMap extends Scjd2OsmStyleFeatureMapConverter {
@@ -14,7 +15,7 @@ public class ZippedScjd2OsmStyleFeatureMap extends Scjd2OsmStyleFeatureMapConver
     }
 
     @Override
-    public ShapefileConversionResult convert(File source, String charset) throws Exception {
+    public ShapefileConversionResult convert(File source, Charset charset) throws Exception {
 
         File zipDestination = new File(
                 source.getParent(),

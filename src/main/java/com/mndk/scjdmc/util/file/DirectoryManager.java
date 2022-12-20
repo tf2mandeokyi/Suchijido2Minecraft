@@ -5,10 +5,12 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 public class DirectoryManager {
 
 	private static final Logger LOGGER = LogManager.getLogger();
+
 
 	public static void createParentFolders(File file, boolean throwIfFail) throws IOException {
 		File parent = file.getParentFile();
@@ -20,12 +22,14 @@ public class DirectoryManager {
 		}
 	}
 
+
 	public static void createParentFolders(File file) throws IOException {
 		createParentFolders(file, false);
 	}
 
+
 	public static File createFolder(File folder, String folderNameIfError) throws IOException {
-		if(!folder.exists() && !folder.mkdir()) {
+		if(!folder.exists() && !folder.mkdirs()) {
 			if(folderNameIfError != null)
 				throw new IOException("Failed to create " + folderNameIfError + " folder");
 			else
@@ -33,6 +37,7 @@ public class DirectoryManager {
 		}
 		return folder;
 	}
+
 
 	/**
 	 * Creates folder if not exists, and then returns it
@@ -43,6 +48,21 @@ public class DirectoryManager {
 	public static File createFolder(File folder) throws IOException {
 		return createFolder(folder, null);
 	}
+
+
+	public static void moveDirectoryContents(File sourceDir, File destinationDir) throws IOException {
+		if(!sourceDir.isDirectory()) return;
+
+		File[] sourceContents = sourceDir.listFiles();
+		assert sourceContents != null;
+
+		for(File sourceContent : sourceContents) {
+			String fileName = sourceContent.getName();
+			File newContentPath = new File(destinationDir, fileName);
+			Files.move(sourceContent.toPath(), newContentPath.toPath());
+		}
+	}
+
 
 	public static void deleteDirectory(File file) {
 		File[] files = file.listFiles();

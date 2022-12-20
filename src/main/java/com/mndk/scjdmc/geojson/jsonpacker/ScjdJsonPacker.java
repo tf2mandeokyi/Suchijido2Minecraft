@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.function.Function;
 
+@Deprecated
 public abstract class ScjdJsonPacker {
 
     protected static final Logger LOGGER = LogManager.getLogger();

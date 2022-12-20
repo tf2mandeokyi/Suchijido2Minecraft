@@ -57,13 +57,21 @@ public class FeatureGeometryUtils {
 
 
     /**
-     * Extracts feature's geometry list from FeatureCollection, without any filters
+     * Extracts feature's geometry list from FeatureCollections, without any filters
      *
-     * @param featureCollection FeatureCollection
+     * @param featureCollections List of featureCollection
      * @return List of geometries
      */
-    public static List<Geometry> extractGeometryAsList(SimpleFeatureCollection featureCollection) {
-        return extractGeometryAsList(featureCollection, f -> true);
+    public static List<Geometry> extractGeometryAsList(
+            List<SimpleFeatureCollection> featureCollections, FeatureFilter featureFilter
+    ) {
+        if(featureCollections == null) return Collections.emptyList();
+
+        List<Geometry> result = new ArrayList<>();
+        for(SimpleFeatureCollection featureCollection : featureCollections) {
+            result.addAll(extractGeometryAsList(featureCollection, f -> true));
+        }
+        return result;
     }
 
 

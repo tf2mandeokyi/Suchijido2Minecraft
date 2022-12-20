@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Deprecated
 public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
 
     public OpenStreetMapStyleJsonPacker(FeatureJSON featureJSON) {
@@ -56,7 +57,7 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
 
                     if(boundaryCollection != null) {
                         coastlineGeometry = FeatureGeometryUtils.getFeatureCollectionGeometryDifference(
-                                coastlineGeometry, FeatureGeometryUtils.extractGeometryAsList(boundaryCollection)
+                                coastlineGeometry, FeatureGeometryUtils.extractGeometryAsList(boundaryCollection, f -> true)
                         );
                     }
 
@@ -83,10 +84,10 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
                     subtractGeometries = new ArrayList<>();
 
                     if (conversion.containsKey(LayerDataType.터널)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(conversion.get(LayerDataType.터널)));
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(conversion.get(LayerDataType.터널), f -> true));
                     }
                     if (conversion.containsKey(LayerDataType.입체교차부)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(conversion.get(LayerDataType.입체교차부)));
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(conversion.get(LayerDataType.입체교차부), f -> true));
                     }
                     if (conversion.containsKey(LayerDataType.교량)) {
                         subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(
@@ -119,10 +120,10 @@ public class OpenStreetMapStyleJsonPacker extends ScjdJsonPacker {
                     subtractGeometries = new ArrayList<>();
 
                     if (conversion.containsKey(LayerDataType.터널)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(conversion.get(LayerDataType.터널)));
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(conversion.get(LayerDataType.터널), f -> true));
                     }
                     if (conversion.containsKey(LayerDataType.입체교차부)) {
-                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(conversion.get(LayerDataType.입체교차부)));
+                        subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(conversion.get(LayerDataType.입체교차부), f -> true));
                     }
                     if (conversion.containsKey(LayerDataType.교량)) {
                         subtractGeometries.addAll(FeatureGeometryUtils.extractGeometryAsList(

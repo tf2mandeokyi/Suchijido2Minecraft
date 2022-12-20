@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 
+@Deprecated
 public abstract class GJsonDatasetBuilder {
 
     protected static final Logger LOGGER = LogManager.getLogger();
