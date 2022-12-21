@@ -2,6 +2,7 @@ package com.mndk.scjdmc;
 
 import com.mndk.scjdmc.reader.ScjdDatasetReader;
 import com.mndk.scjdmc.relocator.Scjd2TppDatasetRelocator;
+import com.mndk.scjdmc.relocator.ScjdCoastlineRelocator;
 import com.mndk.scjdmc.scissor.ScjdOsmFeatureScissor;
 import com.mndk.scjdmc.scjd.LayerDataType;
 import com.mndk.scjdmc.typeconverter.Scjd2OsmFeature;
@@ -32,7 +33,7 @@ public class ScjdConversionWorkingDirectory {
     private final File indexFolder, areaFolder, scjdGeojsonFolder, tppGeoJsonFolder, tiffFolder;
 
     @Setter
-    private boolean debug = false, stopIfError = false;
+    private boolean debug = false;
 
 
     public ScjdConversionWorkingDirectory(File masterDirectory) throws IOException {
@@ -70,16 +71,15 @@ public class ScjdConversionWorkingDirectory {
         for(File sourceFile : sourceFiles) {
             if(debug) System.out.println("Relocating " + sourceFile.getName() + "...");
 
-            try {
-                ScjdDatasetReader reader = ScjdDatasetReader.getShpReader(sourceFile);
-                reader.setLayerFilter(ScjdConversionWorkingDirectory::relocationLayerFilter);
-                Scjd2TppDatasetRelocator.relocate(sourceFile, Constants.CP949, parsedType, reader, this.tppGeoJsonFolder);
-
-            } catch(IOException e) {
-                if(stopIfError) throw e;
-                LOGGER.error("IOException thrown while converting: " + sourceFile, e);
-            }
+            ScjdDatasetReader reader = ScjdDatasetReader.getShpReader(sourceFile);
+            reader.setLayerFilter(ScjdConversionWorkingDirectory::relocationLayerFilter);
+            Scjd2TppDatasetRelocator.relocate(sourceFile, Constants.CP949, parsedType, reader, this.tppGeoJsonFolder);
         }
+    }
+
+
+    public void doCoastlineRelocation() throws IOException {
+        ScjdCoastlineRelocator.relocate(this.areaFolder, Constants.CP949, this.tppGeoJsonFolder);
     }
 
 
@@ -98,16 +98,11 @@ public class ScjdConversionWorkingDirectory {
         for(File sourceFile : sourceFiles) {
             if(debug) LOGGER.info("Converting {}...", sourceFile.getName());
 
-            try {
-                ScjdDirectoryParsedMap<SimpleFeatureCollection> featureMap =
-                        Scjd2OsmFeature.parseAsOsmFeature(sourceFile, Constants.CP949, parsedType);
-                featureMap = ScjdOsmFeatureScissor.apply(featureMap);
+            ScjdDirectoryParsedMap<SimpleFeatureCollection> featureMap =
+                    Scjd2OsmFeature.parseAsOsmFeature(sourceFile, Constants.CP949, parsedType);
+            featureMap = ScjdOsmFeatureScissor.apply(featureMap);
 
-                ScjdGeoJsonWriter.writeFeatureMapFolder(featureMap, this.scjdGeojsonFolder);
-            } catch(IOException e) {
-                if(stopIfError) throw e;
-                LOGGER.error("IOException thrown while converting: " + sourceFile, e);
-            }
+            ScjdGeoJsonWriter.writeFeatureMapFolder(featureMap, this.scjdGeojsonFolder);
         }
     }
 

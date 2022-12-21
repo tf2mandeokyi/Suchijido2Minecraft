@@ -2,7 +2,9 @@ package com.mndk.scjdmc;
 
 import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.geojson.geom.GeometryJSON;
+import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.CRS;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -22,7 +24,10 @@ public class Constants {
     public static final String GEOJSON_BEGINNING = "{\"type\":\"FeatureCollection\",\"features\":[";
     public static final String GEOJSON_END = "]}";
 
-    public static final FeatureJSON FEATURE_JSON = new FeatureJSON(new GeometryJSON(7));
+    public static final GeometryFactory GEOMETRY_FACTORY = JTSFactoryFinder.getGeometryFactory();
+
+    public static final GeometryJSON GEOMETRY_JSON = new GeometryJSON(7);
+    public static final FeatureJSON FEATURE_JSON = new FeatureJSON(GEOMETRY_JSON);
 
     static {
         try {

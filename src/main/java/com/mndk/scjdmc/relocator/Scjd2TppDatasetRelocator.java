@@ -3,12 +3,8 @@ package com.mndk.scjdmc.relocator;
 import com.mndk.scjdmc.Constants;
 import com.mndk.scjdmc.reader.ScjdDatasetReader;
 import com.mndk.scjdmc.scjd.LayerDataType;
-import com.mndk.scjdmc.util.IntegerMapUtils;
-import com.mndk.scjdmc.util.ScjdFileInformation;
-import com.mndk.scjdmc.util.ScjdParsedType;
-import com.mndk.scjdmc.util.TppTileCoordinate;
+import com.mndk.scjdmc.util.*;
 import me.tongfei.progressbar.ProgressBar;
-import me.tongfei.progressbar.ProgressBarBuilder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
@@ -29,14 +25,14 @@ public class Scjd2TppDatasetRelocator {
 
 
     public static void relocate(
-            File directory, Charset charset, ScjdParsedType parsedType,
-            ScjdDatasetReader reader, File destinationFolder
+            File sourceFile, Charset charset, ScjdParsedType parsedType,
+            ScjdDatasetReader reader, File tppDatasetFolder
     ) throws IOException {
 
         Map<Pair<TppTileCoordinate, LayerDataType>, Integer> countMap = new HashMap<>();
-        ScjdFileInformation fileInformation = new ScjdFileInformation(directory, parsedType);
+        ScjdFileInformation fileInformation = new ScjdFileInformation(sourceFile, parsedType);
 
-        reader.read(directory, charset, parsedType, (featureCollection, layerDataType) -> {
+        reader.read(sourceFile, charset, parsedType, (featureCollection, layerDataType) -> {
             SimpleFeatureIterator featureIterator = featureCollection.features();
             Map<TppTileCoordinate, Writer> writerMap = new HashMap<>();
 
@@ -46,7 +42,7 @@ public class Scjd2TppDatasetRelocator {
                     String json = Constants.FEATURE_JSON.toString(feature);
 
                     BoundingBox featureBoundingBox = feature.getBounds();
-                    Set<TppTileCoordinate> tileCoordinates = TppTileCoordinate.getBBoxContainingCoordinates(featureBoundingBox);
+                    Set<TppTileCoordinate> tileCoordinates = TppTileCoordinate.getBoundingBoxIntersections(featureBoundingBox);
 
                     for(TppTileCoordinate coordinate : tileCoordinates) {
                         Pair<TppTileCoordinate, LayerDataType> pair = Pair.of(coordinate, layerDataType);
@@ -55,7 +51,7 @@ public class Scjd2TppDatasetRelocator {
                         if(!writerMap.containsKey(coordinate)) {
                             int count = IntegerMapUtils.increment(countMap, pair, 0);
                             writer = createWriterForCoordinate(
-                                    fileInformation, layerDataType, coordinate, count, destinationFolder
+                                    fileInformation, layerDataType, coordinate, count, tppDatasetFolder
                             );
                             writerMap.put(coordinate, writer);
                             writer.write(Constants.GEOJSON_BEGINNING);
@@ -98,15 +94,9 @@ public class Scjd2TppDatasetRelocator {
 
 
     private static ProgressBar createProgressBar(ScjdFileInformation fileInformation, LayerDataType layerDataType, int size) {
-        String title = String.format("Relocating: %s_%s", fileInformation.getNameForFile(), layerDataType);
-        return new ProgressBarBuilder()
-                .setTaskName(title)
-                .setInitialMax(size)
-                .setUpdateIntervalMillis(100)
-                .setMaxRenderedLength(150)
-                .continuousUpdate()
-                .clearDisplayOnFinish()
-                .build();
+        return ProgressBarUtils.createProgressBar(
+                String.format("Relocating: %s_%s", fileInformation.getNameForFile(), layerDataType), size
+        );
     }
 
 }

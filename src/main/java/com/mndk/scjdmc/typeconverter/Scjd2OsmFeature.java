@@ -6,7 +6,6 @@ import com.mndk.scjdmc.util.ScjdDirectoryParsedMap;
 import com.mndk.scjdmc.util.ScjdFileInformation;
 import com.mndk.scjdmc.util.ScjdParsedType;
 import com.mndk.scjdmc.util.function.LayerFilterFunction;
-import com.mndk.scjdmc.util.function.ScjdFeatureCollectionFunction;
 import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -27,14 +26,15 @@ public class Scjd2OsmFeature {
             File file, Charset charset, ScjdParsedType parsedType, LayerFilterFunction layerFilter
     ) throws IOException {
         ScjdFileInformation fileInformation = new ScjdFileInformation(file, parsedType);
-        ScjdFeatureCollectionFunction<SimpleFeatureCollection> featureCollectionFunction = (sfc, layerDataType) ->
+        ScjdDatasetReader reader = ScjdDatasetReader.getShpReader(file);
+        reader.setLayerFilter(layerFilter);
+
+        return reader.read(file, charset, parsedType, (sfc, layerDataType) ->
                 toOsmStyleFeatureCollection(
                         sfc, layerDataType,
                         i -> fileInformation.getNameOrIndex() + "-" + layerDataType.getLayerName() + "-" + i
-                );
-
-        ScjdDatasetReader reader = ScjdDatasetReader.getShpReader(file);
-        return reader.read(file, charset, parsedType, featureCollectionFunction);
+                )
+        );
     }
 
 

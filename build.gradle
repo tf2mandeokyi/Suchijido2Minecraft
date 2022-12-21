@@ -36,7 +36,7 @@ dependencies {
     implementation 'org.geotools:gt-geojsondatastore:27-SNAPSHOT'
     implementation 'org.geotools:gt-epsg-hsql:27-SNAPSHOT'
 
-    implementation 'me.tongfei:progressbar:0.9.4'
+    implementation 'me.tongfei:progressbar:0.9.5'
 
     annotationProcessor 'info.picocli:picocli-codegen:4.7.0'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
