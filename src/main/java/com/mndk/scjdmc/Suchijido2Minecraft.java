@@ -3,7 +3,6 @@ package com.mndk.scjdmc;
 import com.mndk.scjdmc.cdtlib.Triangulation;
 
 import java.io.File;
-import java.io.IOException;
 
 public class Suchijido2Minecraft {
 
@@ -35,7 +34,7 @@ public class Suchijido2Minecraft {
     // 2. Find every index map not prefectly filled. Include them if it exists in another folder, else notify
     // 3. Move every element in area file into its according T++ index geojson file
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Throwable {
 
         // Test
         Triangulation triangulation = new Triangulation();
@@ -44,8 +43,8 @@ public class Suchijido2Minecraft {
                 new File("D:\\gis\\gradle_scjd2tpp_test")
         );
         workingDirectory.setDebug(true);
-        workingDirectory.convertAllAreas();
-        workingDirectory.relocateAllAreas();
-        workingDirectory.doCoastlineRelocation();
+//        workingDirectory.relocateAllAreas();
+//        workingDirectory.doCoastlineRelocation();
+        workingDirectory.combineGeoJsonFiles();
     }
 }

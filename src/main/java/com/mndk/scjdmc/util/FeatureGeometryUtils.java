@@ -3,13 +3,13 @@ package com.mndk.scjdmc.util;
 import com.mndk.scjdmc.Constants;
 import com.mndk.scjdmc.util.function.FeatureFilter;
 import lombok.AllArgsConstructor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.geometry.jts.JTS;
 import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.util.GeometryFixer;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -22,8 +22,6 @@ public class FeatureGeometryUtils {
 
 
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
-
-    private static final Logger LOGGER = LogManager.getLogger();
 
 
     /**
@@ -69,7 +67,7 @@ public class FeatureGeometryUtils {
 
         List<Geometry> result = new ArrayList<>();
         for(SimpleFeatureCollection featureCollection : featureCollections) {
-            result.addAll(extractGeometryAsList(featureCollection, f -> true));
+            result.addAll(extractGeometryAsList(featureCollection, featureFilter));
         }
         return result;
     }
@@ -98,6 +96,23 @@ public class FeatureGeometryUtils {
     }
 
 
+    public static SimpleFeatureCollection getFeatureCollectionGeometryIntersection(
+            SimpleFeatureType victimType, SimpleFeatureCollection victim, Geometry boundary
+    ) {
+        SimpleFeatureIterator victimFeatureIterator = victim.features();
+        ListFeatureCollection listFeatureCollection = new ListFeatureCollection(victimType);
+
+        while (victimFeatureIterator.hasNext()) {
+            SimpleFeature feature = victimFeatureIterator.next();
+            Geometry featureGeometry = GeometryFixer.fix((Geometry) feature.getDefaultGeometry());
+            Geometry newGeometry = featureGeometry.intersection(boundary);
+            if(newGeometry.isEmpty()) continue;
+            listFeatureCollection.add(replaceFeatureGeometry(feature, newGeometry, feature.getID()));
+        }
+        return listFeatureCollection;
+    }
+
+
     /**
      * Applies Geometry#difference() to every feature in a featureCollection, while featureCollection
      * being a victim and list of geometries being subtractions.
@@ -105,19 +120,20 @@ public class FeatureGeometryUtils {
      * This method also buffers every geometry in a list before the subtraction, so that no garbage
      * is left while cutting the victim.
      *
-     * @param victimType Type of victim
-     * @param victim FeatureCollection
-     * @param other list of geometries
+     * @param victimType           Type of victim
+     * @param victim               FeatureCollection
+     * @param diff                 list of geometries
      * @return Geometry#difference() applied feature collection
      */
     public static SimpleFeatureCollection getFeatureCollectionGeometryDifference(
-            SimpleFeatureType victimType, SimpleFeatureCollection victim, List<Geometry> other
+            SimpleFeatureType victimType, SimpleFeatureCollection victim, List<Geometry> diff,
+            double diffBuffer
     ) {
         SimpleFeatureIterator victimFeatureIterator = victim.features();
         ListFeatureCollection listFeatureCollection = new ListFeatureCollection(victimType);
 
         while (victimFeatureIterator.hasNext()) {
-            SimpleFeature feature = getFeatureCollectionGeometryDifference(victimFeatureIterator.next(), other);
+            SimpleFeature feature = getFeatureCollectionGeometryDifference(victimFeatureIterator.next(), diff, diffBuffer);
             if(feature == null) continue;
             listFeatureCollection.add(feature);
         }
@@ -132,15 +148,15 @@ public class FeatureGeometryUtils {
      * is left while cutting the victim.
      *
      * @param victim Feature
-     * @param other list of geometries
+     * @param diff list of geometries
      * @return Geometry#difference() applied feature
      */
     public static SimpleFeature getFeatureCollectionGeometryDifference(
-            SimpleFeature victim, List<Geometry> other
+            SimpleFeature victim, List<Geometry> diff, double diffBuffer
     ) {
-        Geometry geometry = ((Geometry) victim.getDefaultGeometry());
+        Geometry geometry = (Geometry) victim.getDefaultGeometry();
         if(geometry == null) return null;
-        geometry = getFeatureCollectionGeometryDifference(geometry, other);
+        geometry = getFeatureCollectionGeometryDifference(geometry, diff, diffBuffer);
         return geometry == null ? null : replaceFeatureGeometry(victim, geometry, null);
     }
 
@@ -156,18 +172,19 @@ public class FeatureGeometryUtils {
      * @return Cut geometry
      */
     public static Geometry getFeatureCollectionGeometryDifference(
-            Geometry victim, List<Geometry> other
+            Geometry victim, List<Geometry> other, double diffBuffer
     ) {
         for (Geometry geometry : other) {
             if(geometry == null) continue;
-            victim = getGeometryDifference(victim, geometry.buffer(Constants.POLYGON_BUFFER_EPSILON), false);
+            victim = getGeometryDifference(victim, geometry.buffer(diffBuffer), false);
         }
         return victim.isEmpty() ? null : victim;
     }
 
 
     public static SimpleFeatureCollection subtractPolygonsToPolygonCollection(
-            SimpleFeatureType victimType, SimpleFeatureCollection victim, List<Geometry> subtract, Function<Integer, String> idFunction
+            SimpleFeatureType victimType, SimpleFeatureCollection victim, List<Geometry> subtract, double diffBuffer,
+            Function<Integer, String> idFunction
     ) {
         @AllArgsConstructor class Entry {
             final SimpleFeature origin;
@@ -177,7 +194,7 @@ public class FeatureGeometryUtils {
 
         List<Geometry> newSubtractList = subtract.stream()
                 .filter(g -> g instanceof Polygon || g instanceof MultiPolygon)
-                .map(g -> g.buffer(Constants.POLYGON_BUFFER_EPSILON))
+                .map(g -> g.buffer(diffBuffer))
                 .collect(Collectors.toList());
 
         Map<Integer, List<Integer>> intersectingEntries = new HashMap<>();
@@ -218,14 +235,10 @@ public class FeatureGeometryUtils {
 
             for (Integer index : intersectingIndexes) {
                 Geometry subtractGeometry = newSubtractList.get(subtractIndex);
-                if (subtractGeometry == null) {
-                    break;
-                }
+                if (subtractGeometry == null) break;
 
                 Entry entry = entryList.get(index);
-                if (entry.geometry == null) {
-                    continue;
-                }
+                if (entry.geometry == null) continue;
 
                 Geometry newEntryGeometry = getGeometryDifference(entry.geometry, subtractGeometry, true);
                 Geometry newSubtractGeometry = getGeometryDifference(subtractGeometry, entry.geometry, true);
@@ -327,12 +340,13 @@ public class FeatureGeometryUtils {
 
                     try {
                         originGeometry.difference(subtractGeometry).apply((GeometryFilter) difference -> {
-                            if (difference instanceof Polygon && !difference.isEmpty()) {
-                                result.add((Polygon) difference);
+                            if ((!(originGeometry instanceof Polygon) || difference instanceof Polygon) && !difference.isEmpty()) {
+                                List<Polygon> polygons = JTS.makeValid((Polygon) difference, false);
+                                result.addAll(polygons);
                             }
                         });
                     } catch(TopologyException e) {
-                        LOGGER.warn(e);
+                        Constants.STACKED_THROWABLES.add(e);
                         result.add((Polygon) originGeometry);
                     }
                 }
@@ -343,11 +357,12 @@ public class FeatureGeometryUtils {
             try {
                 origin.difference(diff).apply((GeometryFilter) difference -> {
                     if (difference instanceof Polygon) {
-                        result.add((Polygon) difference);
+                        List<Polygon> polygons = JTS.makeValid((Polygon) difference, false);
+                        result.addAll(polygons);
                     }
                 });
             } catch(TopologyException e) {
-                LOGGER.warn(e);
+                Constants.STACKED_THROWABLES.add(e);
                 result.add((Polygon) origin);
             }
         }

@@ -3,13 +3,12 @@ package com.mndk.scjdmc.relocator;
 import com.mndk.scjdmc.Constants;
 import com.mndk.scjdmc.reader.ScjdDatasetReader;
 import com.mndk.scjdmc.reader.ShpDirScjdReader;
-import com.mndk.scjdmc.scjd.LayerDataType;
+import com.mndk.scjdmc.column.LayerDataType;
 import com.mndk.scjdmc.util.ProgressBarUtils;
 import com.mndk.scjdmc.util.ScjdParsedType;
 import com.mndk.scjdmc.util.TppTileCoordinate;
 import me.tongfei.progressbar.ProgressBar;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -39,7 +38,7 @@ public class ScjdCoastlineRelocator {
 
         ProgressBar progressBar = createCoastlineWritingProgressBar(boundaryWritedCoordinates.size());
         for(TppTileCoordinate coordinate : boundaryWritedCoordinates) {
-            Geometry coastlineGeometry = coordinate.getTileGeometry();
+            Geometry coastlineGeometry = coordinate.getTileGeometry(0.1);
 
             File folderLocation = coordinate.getFolderLocation(destinationFolder, true);
             File[] boundaryFiles = folderLocation.listFiles(f -> f.getName().matches("boundary_(.+)\\.json$"));
@@ -52,16 +51,10 @@ public class ScjdCoastlineRelocator {
 
             if(coastlineGeometry.isEmpty()) continue;
 
-            SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
-                    LayerDataType.해안선.getOsmFeatureType()
-            );
-            featureBuilder.set(Constants.GEOMETRY_PROPERTY_NAME, coastlineGeometry);
-            SimpleFeature coastline = featureBuilder.buildFeature("coastline");
-            coastline = LayerDataType.해안선.toOsmStyleFeature(coastline, "coastline");
-
-            try(Writer writer = new FileWriter(new File(folderLocation, "coastline.json"))) {
-                writer.write(Constants.FEATURE_JSON.toString(coastline));
+            try(Writer writer = new FileWriter(new File(folderLocation, Constants.COASTLINE_GEOMETRY_FILE_NAME))) {
+                writer.write(Constants.GEOMETRY_JSON.toString(coastlineGeometry));
             }
+
             progressBar.step();
         }
         progressBar.close();
@@ -89,7 +82,7 @@ public class ScjdCoastlineRelocator {
                 for(int i = 0; boundaryFeatures.hasNext(); i++) {
                     SimpleFeature feature = boundaryFeatures.next();
                     Map<TppTileCoordinate, Geometry> divisionMap =
-                            TppTileCoordinate.divideFeatureGeometryToTiles(feature, true);
+                            TppTileCoordinate.divideFeatureGeometryToTiles(feature, true, 0.11);
                     result.addAll(divisionMap.keySet());
                     writeCoordinateGeometryMap(areaShpFolder, divisionMap, i, featureCollection.size(), destinationFolder);
                 }
@@ -136,7 +129,7 @@ public class ScjdCoastlineRelocator {
             File areaShpFolder, int featureIndex, int featureCount, int size
     ) {
         return ProgressBarUtils.createProgressBar(
-                String.format("Writing feature %d/%d of \"%s\"", featureIndex, featureCount, areaShpFolder.getName()),
+                String.format("Writing boundary feature %d/%d of \"%s\"", featureIndex, featureCount, areaShpFolder.getName()),
                 size
         );
     }

@@ -1,7 +1,10 @@
 package com.mndk.scjdmc.util;
 
-import com.mndk.scjdmc.scjd.LayerDataType;
+import com.mndk.scjdmc.column.LayerDataType;
+import com.mndk.scjdmc.util.file.ScjdFileInformation;
 import lombok.Getter;
+import lombok.Setter;
+import org.locationtech.jts.geom.Geometry;
 
 import java.util.*;
 
@@ -9,6 +12,7 @@ public class ScjdDirectoryParsedMap<T> {
 
     @Getter private final ScjdFileInformation fileInformation;
     private final Map<LayerDataType, List<T>> map;
+    @Getter @Setter private Geometry coastlineGeometry;
 
     public ScjdDirectoryParsedMap(ScjdFileInformation fileInformation) {
         this.fileInformation = fileInformation;

@@ -1,6 +1,6 @@
 package com.mndk.scjdmc.util.function;
 
-import com.mndk.scjdmc.scjd.LayerDataType;
+import com.mndk.scjdmc.column.LayerDataType;
 import org.geotools.data.simple.SimpleFeatureCollection;
 
 import java.io.IOException;

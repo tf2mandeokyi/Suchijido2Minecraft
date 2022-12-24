@@ -9,6 +9,8 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Constants {
 
@@ -17,17 +19,18 @@ public class Constants {
 
     public static final Charset CP949 = Charset.forName("CP949");
 
-    public static final double POLYGON_BUFFER_EPSILON = 0.0000005;
+    public static final double POLYGON_BUFFER_EPSILON = 0.00000005;
+
+    public static final String COASTLINE_GEOMETRY_FILE_NAME = "coastline_geometry.json";
 
     public static final String GEOMETRY_PROPERTY_NAME = "geometry";
 
-    public static final String GEOJSON_BEGINNING = "{\"type\":\"FeatureCollection\",\"features\":[";
-    public static final String GEOJSON_END = "]}";
-
     public static final GeometryFactory GEOMETRY_FACTORY = JTSFactoryFinder.getGeometryFactory();
 
-    public static final GeometryJSON GEOMETRY_JSON = new GeometryJSON(7);
+    public static final GeometryJSON GEOMETRY_JSON = new GeometryJSON(8);
     public static final FeatureJSON FEATURE_JSON = new FeatureJSON(GEOMETRY_JSON);
+
+    public static final List<Throwable> STACKED_THROWABLES = new ArrayList<>();
 
     static {
         try {

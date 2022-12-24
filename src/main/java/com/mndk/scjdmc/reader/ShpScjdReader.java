@@ -1,8 +1,8 @@
 package com.mndk.scjdmc.reader;
 
 import com.mndk.scjdmc.Constants;
-import com.mndk.scjdmc.scjd.LayerDataType;
-import com.mndk.scjdmc.util.ScjdFileInformation;
+import com.mndk.scjdmc.column.LayerDataType;
+import com.mndk.scjdmc.util.file.ScjdFileInformation;
 import com.mndk.scjdmc.util.ScjdMapIndexUtils;
 import com.mndk.scjdmc.util.ScjdParsedType;
 import com.mndk.scjdmc.util.function.ThrowableRunner;
