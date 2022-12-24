@@ -40,7 +40,7 @@ public class ZipScjdReader extends ShpDirScjdReader {
 
             return super.read(zipDestination, charset, parsedType, featureCollectionFunction);
         } catch(Throwable t) {
-            throw (t instanceof IOException) ? (IOException) t : new IOException(t);
+            throw (t instanceof IOException iot) ? iot : new IOException(t);
         } finally {
             DirectoryManager.deleteDirectory(zipDestination);
         }

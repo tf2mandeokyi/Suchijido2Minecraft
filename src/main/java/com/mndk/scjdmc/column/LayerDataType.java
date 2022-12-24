@@ -181,12 +181,17 @@ public enum LayerDataType {
 		return type == ColumnStoredType.KEY ? keyFeatureType : nameFeatureType;
 	}
 
-	public SimpleFeature toOsmStyleFeature(SimpleFeature feature, String id) {
+	@SuppressWarnings("unchecked")
+	public <E extends ScjdElement> E toElementObject(SimpleFeature feature) {
 		try {
-			return this.elementConstructor.newInstance(feature).toOsmStyleFeature(this.osmFeatureType, id);
+			return (E) this.elementConstructor.newInstance(feature);
 		} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public SimpleFeature toOsmStyleFeature(SimpleFeature feature, String id) {
+		return toElementObject(feature).toOsmStyleFeature(this.osmFeatureType, id);
 	}
 
 	public Category getCategory() {

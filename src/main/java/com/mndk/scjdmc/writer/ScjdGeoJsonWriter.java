@@ -56,6 +56,7 @@ public class ScjdGeoJsonWriter {
             while (featureIterator.hasNext()) {
                 writer.write(featureIterator.next());
             }
+            featureIterator.close();
         }
 
     }

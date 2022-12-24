@@ -30,10 +30,13 @@ public class Scjd2TppDatasetRelocator {
         ScjdFileInformation fileInformation = new ScjdFileInformation(sourceFile, parsedType);
 
         reader.read(sourceFile, charset, parsedType, (featureCollection, layerDataType) -> {
-            SimpleFeatureIterator featureIterator = featureCollection.features();
             Map<TppTileCoordinate, SimpleFeatureJsonWriter> writerMap = new HashMap<>();
 
-            try (ProgressBar progressBar = createProgressBar(fileInformation, layerDataType, featureCollection.size() + 1)) {
+            try (
+                    SimpleFeatureIterator featureIterator = featureCollection.features();
+                    ProgressBar progressBar =
+                            createProgressBar(fileInformation, layerDataType, featureCollection.size() + 1)
+            ) {
                 while(featureIterator.hasNext()) {
                     SimpleFeature feature = featureIterator.next();
 

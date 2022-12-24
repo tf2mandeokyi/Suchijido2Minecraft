@@ -1,17 +1,19 @@
 package com.mndk.scjdmc;
 
+import com.mndk.scjdmc.column.LayerDataType;
 import com.mndk.scjdmc.reader.GeoJsonDirScjdReader;
 import com.mndk.scjdmc.reader.ScjdDatasetReader;
 import com.mndk.scjdmc.relocator.Scjd2TppDatasetRelocator;
 import com.mndk.scjdmc.relocator.ScjdCoastlineRelocator;
 import com.mndk.scjdmc.scissor.ScjdOsmFeatureScissor;
-import com.mndk.scjdmc.column.LayerDataType;
+import com.mndk.scjdmc.terrain.ScjdContour2RasterConverter;
 import com.mndk.scjdmc.typeconverter.Scjd2OsmFeatureConverter;
 import com.mndk.scjdmc.util.ProgressBarUtils;
 import com.mndk.scjdmc.util.ScjdDirectoryParsedMap;
 import com.mndk.scjdmc.util.ScjdParsedType;
 import com.mndk.scjdmc.util.TppTileCoordinate;
 import com.mndk.scjdmc.util.file.DirectoryManager;
+import com.mndk.scjdmc.util.math.Vector2DH;
 import com.mndk.scjdmc.writer.ScjdGeoJsonWriter;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +24,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -35,7 +38,7 @@ public class ScjdConversionWorkingDirectory {
     private final File masterDirectory;
 
     @Getter
-    private final File indexFolder, areaFolder, scjdGeojsonFolder, tppGeoJsonFolder, tiffFolder;
+    private final File indexDirectory, areaDirectory, scjdGeojsonFolder, tppGeoJsonFolder, tiffDirectory;
 
     @Setter
     private boolean debug = false;
@@ -44,19 +47,29 @@ public class ScjdConversionWorkingDirectory {
     public ScjdConversionWorkingDirectory(File masterDirectory) throws IOException {
         this.masterDirectory = masterDirectory;
 
-        this.indexFolder = DirectoryManager.createFolder(new File(masterDirectory, "indexes"));
-        this.areaFolder = DirectoryManager.createFolder(new File(masterDirectory, "areas"));
+        this.indexDirectory = DirectoryManager.createFolder(new File(masterDirectory, "indexes"));
+        this.areaDirectory = DirectoryManager.createFolder(new File(masterDirectory, "areas"));
         this.scjdGeojsonFolder = DirectoryManager.createFolder(new File(masterDirectory, "geojson_scjd"));
         this.tppGeoJsonFolder = DirectoryManager.createFolder(new File(masterDirectory, "geojson_tpp"));
-        this.tiffFolder = DirectoryManager.createFolder(new File(masterDirectory, "tiff"));
+        this.tiffDirectory = DirectoryManager.createFolder(new File(masterDirectory, "tiff"));
     }
 
 
-    public void relocateAllIndexes() throws IOException {
-        this.doSimpleRelocation(this.indexFolder, ScjdParsedType.INDEX);
-    }
-    public void relocateAllAreas() throws IOException {
-        this.doSimpleRelocation(this.areaFolder, ScjdParsedType.AREA);
+    public void terrainTest() throws IOException {
+        File[] areaFolders = this.areaDirectory.listFiles(File::isDirectory);
+        assert areaFolders != null;
+
+        for(File areaFolder : areaFolders) {
+            ScjdDatasetReader reader = ScjdDatasetReader.getShpReader(areaFolder);
+            reader.setLayerFilter(type -> type == LayerDataType.등고선 || type == LayerDataType.표고점);
+            reader.read(areaFolder, Constants.CP949, ScjdParsedType.AREA, (featureCollection, layerDataType) -> {
+                List<Vector2DH[]> vectors = ScjdContour2RasterConverter.elevationObjectToVectors(
+                        featureCollection, layerDataType
+                );
+                // TODO do something here
+                return null;
+            });
+        }
     }
 
 
@@ -67,13 +80,9 @@ public class ScjdConversionWorkingDirectory {
 
         ProgressBar progressBar = ProgressBarUtils.createProgressBar("Combining geojson files", coordinates.size());
 
-//        int i = 0;
         for(TppTileCoordinate coordinate : coordinates) {
             progressBar.step();
 
-//            i++;
-//            if(i < 20607) continue;
-//            if(!new TppTileCoordinate(8131, 2400).equals(coordinate)) continue;
             Constants.STACKED_THROWABLES.clear();
 
             File coordinateFolder = coordinate.getFolderLocation(this.tppGeoJsonFolder, false);
@@ -97,6 +106,17 @@ public class ScjdConversionWorkingDirectory {
     }
 
 
+    public void doCoastlineRelocation() throws IOException {
+        ScjdCoastlineRelocator.relocate(this.areaDirectory, Constants.CP949, this.tppGeoJsonFolder);
+    }
+
+
+    public void relocateAllIndexes() throws IOException {
+        this.doSimpleRelocation(this.indexDirectory, ScjdParsedType.INDEX);
+    }
+    public void relocateAllAreas() throws IOException {
+        this.doSimpleRelocation(this.areaDirectory, ScjdParsedType.AREA);
+    }
     public void doSimpleRelocation(File sourceDir, ScjdParsedType parsedType) throws IOException {
         File[] sourceFiles = sourceDir.listFiles();
         assert sourceFiles != null;
@@ -111,19 +131,15 @@ public class ScjdConversionWorkingDirectory {
     }
 
 
-    public void doCoastlineRelocation() throws IOException {
-        ScjdCoastlineRelocator.relocate(this.areaFolder, Constants.CP949, this.tppGeoJsonFolder);
-    }
-
-
+    @Deprecated
     public void convertAllIndexes() throws IOException {
-        this.doSimpleConversion(this.indexFolder, ScjdParsedType.INDEX);
+        this.doSimpleConversion(this.indexDirectory, ScjdParsedType.INDEX);
     }
+    @Deprecated
     public void convertAllAreas() throws IOException {
-        this.doSimpleConversion(this.areaFolder, ScjdParsedType.AREA);
+        this.doSimpleConversion(this.areaDirectory, ScjdParsedType.AREA);
     }
-
-
+    @Deprecated
     private void doSimpleConversion(File sourceDir, ScjdParsedType parsedType) throws IOException {
         File[] sourceFiles = sourceDir.listFiles();
         assert sourceFiles != null;

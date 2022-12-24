@@ -2,6 +2,7 @@ package com.mndk.scjdmc.util;
 
 import com.mndk.scjdmc.Constants;
 import com.mndk.scjdmc.util.function.FeatureFilter;
+import com.mndk.scjdmc.util.math.Vector2DH;
 import lombok.AllArgsConstructor;
 import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -92,6 +93,7 @@ public class FeatureGeometryUtils {
             if(!featureFilter.apply(f)) continue;
             result.add((Geometry) f.getDefaultGeometry());
         }
+        featureIterator.close();
         return result;
     }
 
@@ -109,6 +111,8 @@ public class FeatureGeometryUtils {
             if(newGeometry.isEmpty()) continue;
             listFeatureCollection.add(replaceFeatureGeometry(feature, newGeometry, feature.getID()));
         }
+
+        victimFeatureIterator.close();
         return listFeatureCollection;
     }
 
@@ -137,6 +141,8 @@ public class FeatureGeometryUtils {
             if(feature == null) continue;
             listFeatureCollection.add(feature);
         }
+
+        victimFeatureIterator.close();
         return listFeatureCollection;
     }
 
@@ -227,6 +233,7 @@ public class FeatureGeometryUtils {
                 }
             }
         }
+        victimFeatureIterator.close();
 
         // Calculate subtractions
         for (Map.Entry<Integer, List<Integer>> mapEntry : intersectingEntries.entrySet()) {
@@ -278,22 +285,21 @@ public class FeatureGeometryUtils {
      * @return List of polygons; empty list if LineString, Point, MultiLineString, etc.
      */
     public static List<Polygon> extractPolygonsFromGeometry(Geometry g) {
-        if(g instanceof Polygon) {
-            if(!g.isEmpty()) return Collections.singletonList((Polygon) g);
+        if(g instanceof Polygon polygon) {
+            if(!g.isEmpty()) return Collections.singletonList(polygon);
         }
-        else if(g instanceof MultiPolygon) {
-            return multiPolygonToList((MultiPolygon) g);
+        else if(g instanceof MultiPolygon multiPolygon) {
+            return multiPolygonToList(multiPolygon);
         }
-        else if(g instanceof GeometryCollection) {
+        else if(g instanceof GeometryCollection geometryCollection) {
             List<Polygon> polygons = new ArrayList<>();
-            GeometryCollection geometryCollection = (GeometryCollection) g;
             for(int i = 0; i < geometryCollection.getNumGeometries(); i++) {
                 Geometry tempGeometry = geometryCollection.getGeometryN(i);
-                if(tempGeometry instanceof Polygon) {
-                    if(!tempGeometry.isEmpty()) polygons.add((Polygon) tempGeometry);
+                if(tempGeometry instanceof Polygon tempPolygon) {
+                    if(!tempGeometry.isEmpty()) polygons.add(tempPolygon);
                 }
-                else if(tempGeometry instanceof MultiPolygon) {
-                    polygons.addAll(multiPolygonToList((MultiPolygon) tempGeometry));
+                else if(tempGeometry instanceof MultiPolygon tempMultiPolygon) {
+                    polygons.addAll(multiPolygonToList(tempMultiPolygon));
                 }
             }
             return polygons;
@@ -353,17 +359,17 @@ public class FeatureGeometryUtils {
                 origin = polygonListToGeometry(result);
             }
         }
-        else if(origin instanceof Polygon && diff instanceof Polygon) {
+        else if(origin instanceof Polygon polygonOrigin && diff instanceof Polygon) {
             try {
                 origin.difference(diff).apply((GeometryFilter) difference -> {
-                    if (difference instanceof Polygon) {
-                        List<Polygon> polygons = JTS.makeValid((Polygon) difference, false);
+                    if (difference instanceof Polygon polygonDifference) {
+                        List<Polygon> polygons = JTS.makeValid(polygonDifference, false);
                         result.addAll(polygons);
                     }
                 });
             } catch(TopologyException e) {
                 Constants.STACKED_THROWABLES.add(e);
-                result.add((Polygon) origin);
+                result.add(polygonOrigin);
             }
         }
 
@@ -387,4 +393,29 @@ public class FeatureGeometryUtils {
         return featureBuilder.buildFeature(newId == null ? feature.getID() : newId);
     }
 
+
+    public static List<Vector2DH[]> geometryToVector2DH(Geometry geometry, double height) {
+
+        List<Vector2DH[]> result = new ArrayList<>();
+
+        if(geometry instanceof Point point) {
+            result.add(new Vector2DH[] {new Vector2DH(point.getCoordinate(), height) });
+        }
+        else if(geometry instanceof LineString lineString) {
+            Coordinate[] coordinates = lineString.getCoordinates();
+            Vector2DH[] vectors = new Vector2DH[coordinates.length];
+            for(int i = 0; i < coordinates.length; i++) {
+                vectors[i] = new Vector2DH(coordinates[i], height);
+            }
+            result.add(vectors);
+        }
+        else if(geometry instanceof MultiPoint || geometry instanceof MultiLineString) {
+            for(int i = 0; i < geometry.getNumGeometries(); i++) {
+                result.addAll(geometryToVector2DH(geometry.getGeometryN(i), height));
+            }
+        }
+
+        return result;
+
+    }
 }

@@ -4,6 +4,7 @@ import com.mndk.scjdmc.Constants;
 import com.mndk.scjdmc.util.ReflectionUtil;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -56,6 +57,7 @@ public class ScjdElement {
     ) {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName(layerName);
+        builder.add(Constants.GEOMETRY_PROPERTY_NAME, Geometry.class);
         for(Field f : ReflectionUtil.getAllFields(clazz, ScjdElement.class)) {
             Column column = f.getAnnotation(Column.class);
             if(column == null) continue;
@@ -74,6 +76,7 @@ public class ScjdElement {
     public static <T extends ScjdElement> SimpleFeatureType getOsmSimpleFeatureType(Class<T> clazz, String layerName) {
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName(layerName);
+        builder.add(Constants.GEOMETRY_PROPERTY_NAME, Geometry.class);
         for(Field f : ReflectionUtil.getAllFields(clazz, ScjdElement.class)) {
             Column column = f.getAnnotation(Column.class);
             if(column != null && !"".equals(column.osmName())) {
