@@ -24,7 +24,7 @@ public class ScjdOsmFeatureScissor {
             return type != LayerDataType.도로경계 && type != LayerDataType.도로중심선;
         }).forEach(entry -> {
             List<SimpleFeatureCollection> featureCollections = entry.getValue();
-            if(boundary != null) {
+            if(boundary != null && entry.getKey().isCuttable()) {
                 featureCollections = featureCollections.stream()
                         .map(featureCollection -> FeatureGeometryUtils.getFeatureCollectionGeometryIntersection(
                                 featureCollection.getSchema(), featureCollection, boundary
@@ -46,17 +46,12 @@ public class ScjdOsmFeatureScissor {
                         featureCollection.getSchema(), featureCollection, boundary
                 )).collect(Collectors.toList());
 
-        List<Geometry> subtractGeometries = new ArrayList<Geometry>() {{
+        List<Geometry> subtractGeometries = new ArrayList<>() {{
             addAll(FeatureGeometryUtils.extractGeometryAsList(result.get(LayerDataType.터널), f -> true));
             addAll(FeatureGeometryUtils.extractGeometryAsList(result.get(LayerDataType.입체교차부), f -> true));
             addAll(FeatureGeometryUtils.extractGeometryAsList(result.get(LayerDataType.교량),
                     f -> "road".equals(f.getAttribute("highway"))
             ));
-//            addAll(FeatureGeometryUtils.extractGeometryAsList(victim.get(LayerDataType.안전지대),
-//                    f -> "yes".equals(f.getAttribute("crossing:island"))
-//            ));
-            // Since geotools is being too buggy to cut polygons, I've decided not to include crossing islands
-            // so that it produces much less error and take much less time
         }};
 
         List<SimpleFeatureCollection> tempList = new ArrayList<>();

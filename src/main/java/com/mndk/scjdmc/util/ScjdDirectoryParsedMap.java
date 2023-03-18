@@ -24,10 +24,7 @@ public class ScjdDirectoryParsedMap<T> {
     }
 
     public void put(LayerDataType layerDataType, T element) {
-        if(!this.map.containsKey(layerDataType)) {
-            map.put(layerDataType, new ArrayList<>());
-        }
-        map.get(layerDataType).add(element);
+        map.computeIfAbsent(layerDataType, t -> new ArrayList<>()).add(element);
     }
 
     public List<T> get(LayerDataType layerDataType) {

@@ -3,6 +3,7 @@ package com.mndk.scjdmc.writer;
 import com.mndk.scjdmc.column.LayerDataType;
 import com.mndk.scjdmc.util.ScjdDirectoryParsedMap;
 import com.mndk.scjdmc.util.file.DirectoryManager;
+import com.mndk.scjdmc.util.io.SimpleFeatureJsonWriter;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 
@@ -19,7 +20,7 @@ public class ScjdGeoJsonWriter {
     ) throws IOException {
 
         DirectoryManager.createParentFolders(destinationFile);
-        try (SimpleFeatureJsonWriter writer = SimpleFeatureJsonWriter.newFeatureCollectionWriter(destinationFile)) {
+        try (SimpleFeatureJsonWriter writer = new SimpleFeatureJsonWriter(destinationFile)) {
             for(Map.Entry<LayerDataType, List<SimpleFeatureCollection>> entry : featureMap.entrySet()) {
                 List<SimpleFeatureCollection> featureCollection = entry.getValue();
                 if(featureCollection != null) writeCollectionList(entry.getValue(), writer);
@@ -39,7 +40,7 @@ public class ScjdGeoJsonWriter {
             File destinationFile = new File(destinationFolder, jsonFileName);
             DirectoryManager.createParentFolders(destinationFile);
 
-            try (SimpleFeatureJsonWriter writer = SimpleFeatureJsonWriter.newFeatureCollectionWriter(destinationFile)) {
+            try (SimpleFeatureJsonWriter writer = new SimpleFeatureJsonWriter(destinationFile)) {
                 writeCollectionList(entry.getValue(), writer);
             }
         }

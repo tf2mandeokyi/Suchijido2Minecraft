@@ -18,7 +18,7 @@ JNIEXPORT void JNICALL Java_com_mndk_scjdmc_cdtlib_Triangulation_construct__
 /*
  * Class:     com_mndk_scjdmc_cdtlib_Triangulation
  * Method:    construct
- * Signature: (Lcom/mndk/scjdtpp/cdtlib/VertexInsertionOrder;)V
+ * Signature: (Lcom/mndk/scjdmc/cdtlib/VertexInsertionOrder;)V
  */
 JNIEXPORT void JNICALL Java_com_mndk_scjdmc_cdtlib_Triangulation_construct__Lcom_mndk_scjdmc_cdtlib_VertexInsertionOrder_2
   (JNIEnv *, jobject, jobject);
@@ -26,10 +26,18 @@ JNIEXPORT void JNICALL Java_com_mndk_scjdmc_cdtlib_Triangulation_construct__Lcom
 /*
  * Class:     com_mndk_scjdmc_cdtlib_Triangulation
  * Method:    construct
- * Signature: (Lcom/mndk/scjdtpp/cdtlib/VertexInsertionOrder;Lcom/mndk/scjdtpp/cdtlib/IntersectingConstraintEdges;D)V
+ * Signature: (Lcom/mndk/scjdmc/cdtlib/VertexInsertionOrder;Lcom/mndk/scjdmc/cdtlib/IntersectingConstraintEdges;D)V
  */
 JNIEXPORT void JNICALL Java_com_mndk_scjdmc_cdtlib_Triangulation_construct__Lcom_mndk_scjdmc_cdtlib_VertexInsertionOrder_2Lcom_mndk_scjdmc_cdtlib_IntersectingConstraintEdges_2D
   (JNIEnv *, jobject, jobject, jobject, jdouble);
+
+/*
+ * Class:     com_mndk_scjdmc_cdtlib_Triangulation
+ * Method:    destruct
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_mndk_scjdmc_cdtlib_Triangulation_destruct
+  (JNIEnv *, jobject);
 
 /*
  * Class:     com_mndk_scjdmc_cdtlib_Triangulation
@@ -41,10 +49,26 @@ JNIEXPORT jobject JNICALL Java_com_mndk_scjdmc_cdtlib_Triangulation_getVertices
 
 /*
  * Class:     com_mndk_scjdmc_cdtlib_Triangulation
- * Method:    getTriangles
+ * Method:    getVerticesCount
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_mndk_scjdmc_cdtlib_Triangulation_getVerticesCount
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_mndk_scjdmc_cdtlib_Triangulation
+ * Method:    getIndexedTriangles
  * Signature: ()Ljava/util/List;
  */
-JNIEXPORT jobject JNICALL Java_com_mndk_scjdmc_cdtlib_Triangulation_getTriangles
+JNIEXPORT jobject JNICALL Java_com_mndk_scjdmc_cdtlib_Triangulation_getIndexedTriangles
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_mndk_scjdmc_cdtlib_Triangulation
+ * Method:    getTrianglesCount
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_mndk_scjdmc_cdtlib_Triangulation_getTrianglesCount
   (JNIEnv *, jobject);
 
 /*

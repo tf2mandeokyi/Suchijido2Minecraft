@@ -1,5 +1,6 @@
 package com.mndk.scjdmc;
 
+import com.mndk.scjdmc.util.StackedThrowables;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.geometry.jts.JTSFactoryFinder;
@@ -9,8 +10,6 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Constants {
 
@@ -30,7 +29,7 @@ public class Constants {
     public static final GeometryJSON GEOMETRY_JSON = new GeometryJSON(8);
     public static final FeatureJSON FEATURE_JSON = new FeatureJSON(GEOMETRY_JSON);
 
-    public static final List<Throwable> STACKED_THROWABLES = new ArrayList<>();
+    public static final StackedThrowables STACKED_THROWABLES = new StackedThrowables();
 
     static {
         try {

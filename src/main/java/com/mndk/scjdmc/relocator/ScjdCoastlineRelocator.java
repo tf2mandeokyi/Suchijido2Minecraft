@@ -82,7 +82,7 @@ public class ScjdCoastlineRelocator {
                 for(int i = 0; boundaryFeatures.hasNext(); i++) {
                     SimpleFeature feature = boundaryFeatures.next();
                     Map<TppTileCoordinate, Geometry> divisionMap =
-                            TppTileCoordinate.divideFeatureGeometryToTiles(feature, true, 0.11);
+                            TppTileCoordinate.divideFeatureGeometryToTiles(feature, Constants.POLYGON_BUFFER_EPSILON, 0.11);
                     result.addAll(divisionMap.keySet());
                     writeCoordinateGeometryMap(areaShpFolder, divisionMap, i, featureCollection.size(), destinationFolder);
                 }

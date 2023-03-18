@@ -1,19 +1,18 @@
 package com.mndk.scjdmc;
 
 import com.mndk.scjdmc.column.LayerDataType;
+import com.mndk.scjdmc.combiner.ScjdGeoJsonTileCombiner;
 import com.mndk.scjdmc.reader.GeoJsonDirScjdReader;
 import com.mndk.scjdmc.reader.ScjdDatasetReader;
 import com.mndk.scjdmc.relocator.Scjd2TppDatasetRelocator;
 import com.mndk.scjdmc.relocator.ScjdCoastlineRelocator;
 import com.mndk.scjdmc.scissor.ScjdOsmFeatureScissor;
-import com.mndk.scjdmc.terrain.ScjdContour2RasterConverter;
 import com.mndk.scjdmc.typeconverter.Scjd2OsmFeatureConverter;
 import com.mndk.scjdmc.util.ProgressBarUtils;
 import com.mndk.scjdmc.util.ScjdDirectoryParsedMap;
 import com.mndk.scjdmc.util.ScjdParsedType;
 import com.mndk.scjdmc.util.TppTileCoordinate;
 import com.mndk.scjdmc.util.file.DirectoryManager;
-import com.mndk.scjdmc.util.math.Vector2DH;
 import com.mndk.scjdmc.writer.ScjdGeoJsonWriter;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +23,6 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -59,55 +57,39 @@ public class ScjdConversionWorkingDirectory {
         File[] areaFolders = this.areaDirectory.listFiles(File::isDirectory);
         assert areaFolders != null;
 
+        if(debug) LOGGER.info("Relocating contours & elevation points...");
         for(File areaFolder : areaFolders) {
+            if(!"gyeongbuk".equals(areaFolder.getName())) continue;
             ScjdDatasetReader reader = ScjdDatasetReader.getShpReader(areaFolder);
             reader.setLayerFilter(type -> type == LayerDataType.등고선 || type == LayerDataType.표고점);
-            reader.read(areaFolder, Constants.CP949, ScjdParsedType.AREA, (featureCollection, layerDataType) -> {
-                List<Vector2DH[]> vectors = ScjdContour2RasterConverter.elevationObjectToVectors(
-                        featureCollection, layerDataType
-                );
-                // TODO do something here
-                return null;
-            });
+
+            Scjd2TppDatasetRelocator.relocate(
+                    areaFolder, Constants.CP949, ScjdParsedType.AREA,
+                    reader, this.scjdGeojsonFolder,
+                    0.1, true
+            );
         }
     }
 
 
     public void combineGeoJsonFiles() throws IOException {
-        Set<TppTileCoordinate> coordinates = TppTileCoordinate.getAvailableFolderCoordinates(this.tppGeoJsonFolder);
-        ScjdDatasetReader reader = new GeoJsonDirScjdReader();
+        Set<TppTileCoordinate> coordinates = TppTileCoordinate.getAvailableFolderCoordinates(this.scjdGeojsonFolder);
+        GeoJsonDirScjdReader reader = new GeoJsonDirScjdReader();
         reader.setLayerFilter(ScjdConversionWorkingDirectory::relocationLayerFilter);
 
         ProgressBar progressBar = ProgressBarUtils.createProgressBar("Combining geojson files", coordinates.size());
-
         for(TppTileCoordinate coordinate : coordinates) {
             progressBar.step();
 
-            Constants.STACKED_THROWABLES.clear();
-
-            File coordinateFolder = coordinate.getFolderLocation(this.tppGeoJsonFolder, false);
-            ScjdDirectoryParsedMap<SimpleFeatureCollection> featureMap = Scjd2OsmFeatureConverter.parseAsOsmFeature(
-                    coordinateFolder, Constants.CP949, ScjdParsedType.TILE, reader, feature -> true
-            );
-            featureMap = ScjdOsmFeatureScissor.apply(featureMap, coordinate.getTileGeometry(0.1));
-
-            ScjdGeoJsonWriter.writeAsSingleJsonFile(
-                    featureMap,
-                    coordinate.getJsonLocation(this.tppGeoJsonFolder, true)
-            );
-
-            if(!Constants.STACKED_THROWABLES.isEmpty()) {
-                for(Throwable e : Constants.STACKED_THROWABLES) {
-                    LOGGER.error("Error caught while parsing " + coordinate, e);
-                }
-            }
+            ScjdGeoJsonTileCombiner.combine(this.scjdGeojsonFolder, this.tppGeoJsonFolder, coordinate, reader);
+            Constants.STACKED_THROWABLES.popAllToLogger(LOGGER, "Error caught while parsing " + coordinate);
         }
         progressBar.close();
     }
 
 
     public void doCoastlineRelocation() throws IOException {
-        ScjdCoastlineRelocator.relocate(this.areaDirectory, Constants.CP949, this.tppGeoJsonFolder);
+        ScjdCoastlineRelocator.relocate(this.areaDirectory, Constants.CP949, this.scjdGeojsonFolder);
     }
 
 
@@ -122,11 +104,15 @@ public class ScjdConversionWorkingDirectory {
         assert sourceFiles != null;
 
         for(File sourceFile : sourceFiles) {
-            if(debug) System.out.println("Relocating " + sourceFile.getName() + "...");
+            if(debug) LOGGER.info("Relocating {}...", sourceFile.getName());
 
             ScjdDatasetReader reader = ScjdDatasetReader.getShpReader(sourceFile);
             reader.setLayerFilter(ScjdConversionWorkingDirectory::relocationLayerFilter);
-            Scjd2TppDatasetRelocator.relocate(sourceFile, Constants.CP949, parsedType, reader, this.tppGeoJsonFolder);
+            Scjd2TppDatasetRelocator.relocate(
+                    sourceFile, Constants.CP949, parsedType,
+                    reader, this.scjdGeojsonFolder,
+                    0, false
+            );
         }
     }
 
@@ -160,8 +146,7 @@ public class ScjdConversionWorkingDirectory {
 
     private static boolean relocationLayerFilter(LayerDataType layerDataType) {
         LayerDataType.Category c = layerDataType.getCategory();
-        return
-                layerDataType.hasElementClass() &&
+        return layerDataType.hasElementClass() &&
                 layerDataType != LayerDataType.도로중심선 && // Why need center lines when we have road areas?
                 layerDataType != LayerDataType.해안선 &&
                 c != LayerDataType.Category.지형 &&

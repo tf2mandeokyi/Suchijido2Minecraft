@@ -13,35 +13,35 @@ import java.util.regex.Pattern;
 public enum LayerDataType {
 
 	// A타입 - 교통
-	도로경계("road_boundary", "A001", A001RoadBoundary.class),
-	도로중심선("road_centerline", "A002", A002RoadCenterline.class),
-	보도("sidewalk", "A003", A003Sidewalk.class),
-	횡단보도("crosswalk", "A004", A004Crosswalk.class),
-	안전지대("safe_zone", "A005", A005Safezone.class),
-	육교("pedestrian_overpass", "A006", A006PedestrianOverpass.class),
-	교량("bridge", "A007", A007Bridge.class),
+	도로경계("road_boundary", "A001", A001RoadBoundary.class, true),
+	도로중심선("road_centerline", "A002", A002RoadCenterline.class, true),
+	보도("sidewalk", "A003", A003Sidewalk.class, true),
+	횡단보도("crosswalk", "A004", A004Crosswalk.class, true),
+	안전지대("safe_zone", "A005", A005Safezone.class, true),
+	육교("pedestrian_overpass", "A006", A006PedestrianOverpass.class, false),
+	교량("bridge", "A007", A007Bridge.class, false),
 	교차로("crossroad", "A008"),
-	입체교차부("intersection_3d", "A009", A009Intersection3d.class),
+	입체교차부("intersection_3d", "A009", A009Intersection3d.class, false),
 	인터체인지("interchange", "A010"),
-	터널("tunnel", "A011", A011Tunnel.class),
+	터널("tunnel", "A011", A011Tunnel.class, true),
 	터널입구("tunnel_entrance", "A012"),
 	정거장("bus_station", "A013"),
 	정류장("train_station", "A014"),
-	철도("railway", "A015"),
-	철도경계("railway_boundary", "A016", A016RailwayBoundary.class),
+	철도("railway", "A015", true),
+	철도경계("railway_boundary", "A016", A016RailwayBoundary.class, true),
 	철도중심선("railway_centerline", "A017"),
 	철도전차대("railway_turntable", "A018"),
-	승강장("railway_platform", "A019", A019RailwayPlatform.class),
+	승강장("railway_platform", "A019", A019RailwayPlatform.class, true),
 	승강장_지붕("railway_platform_roof", "A020"),
 	나루("river_port", "A021"),
 	나루노선("ferry_route", "A022"),
 
 	// B타입 - 건물
-	건물("building", "B001", B001Building.class),
-	담장("wall", "B002", B002Wall.class),
+	건물("building", "B001", B001Building.class, false),
+	담장("wall", "B002", B002Wall.class, true),
 
 	// C타입 - 시설
-	댐("dam", "C001", C001Dam.class),
+	댐("dam", "C001", C001Dam.class, true),
 	부두("wharf", "C002"),
 	선착장("dock", "C003"),
 	선거("boat_stop", "C004"),
@@ -104,32 +104,32 @@ public enum LayerDataType {
 	목장("pasture", "D004"),
 
 	// E타입 - 수계
-	하천경계("river_boundary", "E001"),
-	하천중심선("river_centerline", "E002"),
-	실폭하천("river", "E003", E003River.class),
-	유수방향("flow_direction", "E004"),
-	호수("lake", "E005", E005Lake.class),
-	용수로("aqueduct", "E006"),
-	폭포("waterfall", "E007"),
-	해안선("coastline", "E008", E008Coastline.class),
-	등심선("water_contour_line", "E009"),
+	하천경계("river_boundary", "E001", true),
+	하천중심선("river_centerline", "E002", true),
+	실폭하천("river", "E003", E003River.class, true),
+	유수방향("flow_direction", "E004", true),
+	호수("lake", "E005", E005Lake.class, true),
+	용수로("aqueduct", "E006", true),
+	폭포("waterfall", "E007", true),
+	해안선("coastline", "E008", E008Coastline.class, true),
+	등심선("water_contour_line", "E009", true),
 
 	// F타입 - 지형
-	등고선("contour_line", "F001", F001Contour.class),
-	표고점("elevation_point", "F002", F002ElevationPoint.class),
+	등고선("contour_line", "F001", F001Contour.class, true),
+	표고점("elevation_point", "F002", F002ElevationPoint.class, true),
 	절토("scarp", "F003"),
 	옹벽("retaining_wall", "F004"),
 	동굴입구("cave_entrance", "F005"),
 
 	// G타입 - 경계
-	시도_행정경계("province_administrative_boundary", "G001", G001AdministrativeBoundary.class),
+	시도_행정경계("province_administrative_boundary", "G001", G001AdministrativeBoundary.class, true),
 	시군구_행정경계("district_administrative_boundary", "G010"),
 	읍면동_행정경계("eup_myeon_dong_administrative_boundary", "G011"),
 	수부지형경계("watery_boundary", "G002"),
 	기타경계("other_boundaries", "G003"),
 
 	// H타입 - 주기
-	도곽선("map_boundary", "H001", H001MapBoundary.class),
+	도곽선("map_boundary", "H001", H001MapBoundary.class, true),
 	기준점("datum_point", "H002"),
 	격자("grid", "H003"),
 	지명("place_name", "H004"),
@@ -140,17 +140,20 @@ public enum LayerDataType {
 	private final @Getter String englishName;
 	private final @Getter String layerName;
 	private final @Getter String layerNameHeader;
+	private final @Getter boolean cuttable;
 	private final @Getter Class<? extends ScjdElement> elementClass;
 	private final @Getter Constructor<? extends ScjdElement> elementConstructor;
 	private final @Getter SimpleFeatureType keyFeatureType, nameFeatureType, osmFeatureType;
 
 	LayerDataType(
-			String englishName, String layerNameHeader, Class<? extends ScjdElement> elementClass
+			String englishName, String layerNameHeader, Class<? extends ScjdElement> elementClass,
+			boolean cuttable
 	) {
 		try {
 			this.englishName = englishName;
 			this.layerName = layerNameHeader + "0000";
 			this.layerNameHeader = layerNameHeader;
+			this.cuttable = cuttable;
 			this.elementClass = elementClass;
 			if(elementClass != null) {
 				this.elementConstructor = elementClass.getConstructor(SimpleFeature.class);
@@ -169,16 +172,19 @@ public enum LayerDataType {
 		}
 	}
 
+	LayerDataType(String englishName, String layerNameHeader, boolean cuttable) {
+		this(englishName, layerNameHeader, null, cuttable);
+	}
 	LayerDataType(String englishName, String layerNameHeader) {
-		this(englishName, layerNameHeader, null);
+		this(englishName, layerNameHeader, null, false);
 	}
 
 	public boolean hasElementClass() {
 		return this.elementClass != null;
 	}
 
-	public SimpleFeatureType getScjdFeatureType(ColumnStoredType type) {
-		return type == ColumnStoredType.KEY ? keyFeatureType : nameFeatureType;
+	public boolean isElementClassInstanceOf(Class<?> clazz) {
+		return clazz.isAssignableFrom(this.elementClass);
 	}
 
 	@SuppressWarnings("unchecked")

@@ -1,10 +1,10 @@
 package com.mndk.scjdmc.relocator;
 
-import com.mndk.scjdmc.reader.ScjdDatasetReader;
 import com.mndk.scjdmc.column.LayerDataType;
+import com.mndk.scjdmc.reader.ScjdDatasetReader;
 import com.mndk.scjdmc.util.*;
 import com.mndk.scjdmc.util.file.ScjdFileInformation;
-import com.mndk.scjdmc.writer.SimpleFeatureJsonWriter;
+import com.mndk.scjdmc.util.io.SimpleFeatureJsonWriter;
 import me.tongfei.progressbar.ProgressBar;
 import org.apache.commons.lang3.tuple.Pair;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -23,51 +23,61 @@ public class Scjd2TppDatasetRelocator {
 
     public static void relocate(
             File sourceFile, Charset charset, ScjdParsedType parsedType,
-            ScjdDatasetReader reader, File tppDatasetFolder
+            ScjdDatasetReader reader, File tppDatasetFolder, double buffer, boolean cutFeatures
     ) throws IOException {
 
-        Map<Pair<TppTileCoordinate, LayerDataType>, Integer> countMap = new HashMap<>();
+        Map<Pair<TppTileCoordinate, LayerDataType>, Integer> coordinateTypeCountMap = new HashMap<>();
+        Map<LayerDataType, Integer> typeCountMap = new HashMap<>();
         ScjdFileInformation fileInformation = new ScjdFileInformation(sourceFile, parsedType);
 
         reader.read(sourceFile, charset, parsedType, (featureCollection, layerDataType) -> {
             Map<TppTileCoordinate, SimpleFeatureJsonWriter> writerMap = new HashMap<>();
 
-            try (
-                    SimpleFeatureIterator featureIterator = featureCollection.features();
-                    ProgressBar progressBar =
-                            createProgressBar(fileInformation, layerDataType, featureCollection.size() + 1)
-            ) {
-                while(featureIterator.hasNext()) {
-                    SimpleFeature feature = featureIterator.next();
+            SimpleFeatureIterator featureIterator = featureCollection.features();
 
-                    BoundingBox featureBoundingBox = feature.getBounds();
-                    Set<TppTileCoordinate> tileCoordinates = TppTileCoordinate.getBoundingBoxIntersections(featureBoundingBox);
+            int typeCount = IntegerMapUtils.increment(typeCountMap, layerDataType, 1);
+            ProgressBar progressBar = ProgressBarUtils.createProgressBar(
+                    String.format("Relocating: %s_%s (#%d)",
+                            fileInformation.getNameForFile(), layerDataType, typeCount
+                    ), featureCollection.size()
+            );
 
-                    for(TppTileCoordinate coordinate : tileCoordinates) {
-                        Pair<TppTileCoordinate, LayerDataType> pair = Pair.of(coordinate, layerDataType);
-                        SimpleFeatureJsonWriter writer;
+            while(featureIterator.hasNext()) {
+                SimpleFeature feature = featureIterator.next();
 
-                        if(!writerMap.containsKey(coordinate)) {
-                            int count = IntegerMapUtils.increment(countMap, pair, 0);
-                            writer = createWriterForCoordinate(
-                                    fileInformation, layerDataType, coordinate, count, tppDatasetFolder
-                            );
-                            writerMap.put(coordinate, writer);
-                        } else {
-                            writer = writerMap.get(coordinate);
-                        }
-                        writer.write(feature);
+                BoundingBox featureBoundingBox = feature.getBounds();
+                Set<TppTileCoordinate> tileCoordinates =
+                        TppTileCoordinate.getBoundingBoxIntersections(featureBoundingBox, buffer);
+
+                for(TppTileCoordinate coordinate : tileCoordinates) {
+                    Pair<TppTileCoordinate, LayerDataType> pair = Pair.of(coordinate, layerDataType);
+                    SimpleFeatureJsonWriter writer = writerMap.computeIfAbsent(coordinate, c -> {
+                        int coordinateTypeCount = IntegerMapUtils.increment(coordinateTypeCountMap, pair, 0);
+                        return createWriterForCoordinate(
+                                fileInformation, layerDataType, c, coordinateTypeCount, tppDatasetFolder
+                        );
+                    });
+
+                    SimpleFeature newFeature = feature;
+                    if(cutFeatures) {
+                        newFeature = FeatureGeometryUtils.getFeatureGeometryIntersection(
+                                feature, coordinate.getTileGeometry(buffer)
+                        );
                     }
-                    progressBar.step();
-                }
-                featureIterator.close();
-
-                progressBar.setExtraMessage("Writing...");
-                for(Map.Entry<TppTileCoordinate, SimpleFeatureJsonWriter> entry : writerMap.entrySet()) {
-                    entry.getValue().close();
+                    if(newFeature != null) {
+                        writer.write(newFeature);
+                        writer.flush();
+                    }
                 }
                 progressBar.step();
             }
+            featureIterator.close();
+
+            progressBar.setExtraMessage("Writing...");
+            for(Map.Entry<TppTileCoordinate, SimpleFeatureJsonWriter> entry : writerMap.entrySet()) {
+                entry.getValue().close();
+            }
+            progressBar.close();
 
             return null;
         });
@@ -77,21 +87,16 @@ public class Scjd2TppDatasetRelocator {
     private static SimpleFeatureJsonWriter createWriterForCoordinate(
             ScjdFileInformation fileInformation, LayerDataType layerDataType, TppTileCoordinate tileCoordinate,
             int count, File datasetFolder
-    ) throws IOException {
-        File coordinateFolder = tileCoordinate.getFolderLocation(datasetFolder, true);
-        String fileName = String.format(
-                "%s_%s_%d.json", fileInformation.getNameForFile(), layerDataType.getLayerName(), count
-        );
-        return SimpleFeatureJsonWriter.newFeatureCollectionWriter(new File(coordinateFolder, fileName));
-    }
-
-
-    private static ProgressBar createProgressBar(
-            ScjdFileInformation fileInformation, LayerDataType layerDataType, int size
     ) {
-        return ProgressBarUtils.createProgressBar(
-                String.format("Relocating: %s_%s", fileInformation.getNameForFile(), layerDataType), size
-        );
+        try {
+            File coordinateFolder = tileCoordinate.getFolderLocation(datasetFolder, true);
+            String fileName = String.format(
+                    "%s_%s_%d.json", fileInformation.getNameForFile(), layerDataType.getLayerName(), count
+            );
+            return new SimpleFeatureJsonWriter(new File(coordinateFolder, fileName));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

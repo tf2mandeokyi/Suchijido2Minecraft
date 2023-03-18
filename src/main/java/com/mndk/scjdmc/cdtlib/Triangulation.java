@@ -1,11 +1,13 @@
 package com.mndk.scjdmc.cdtlib;
 
 import com.mndk.scjdmc.util.math.Vector2DH;
+import com.mndk.scjdmc.util.shape.Triangle;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-public class Triangulation {
+public class Triangulation implements AutoCloseable {
 
     @SuppressWarnings("unused")
     private long triangulationPointer;
@@ -51,6 +53,16 @@ public class Triangulation {
             double minDistToConstraintEdge
     );
 
+    public native void destruct();
+
+    @Override
+    public void close() {
+        if(this.triangulationPointer == 0) {
+            throw new UnsupportedOperationException("Triangulation object already closed");
+        }
+        this.destruct();
+    }
+
 
     // ### Getters ###
 
@@ -61,18 +73,47 @@ public class Triangulation {
     public native List<Vector2DH> getVertices();
 
     /**
-     * @return triangulation's triangles
+     * This method is faster than <code>getVerticesCount().size()</code>, <br>
+     * since this one directly gets the size of the vertices, while the other one converts
+     * C++'s <code>std::vector</code> into Java's <code>ArrayList</code> first and then
+     * gets the size of that <code>ArrayList</code>.
+     * @return triangulation's vertices count.
      */
-    public native List<IndexedTriangle> getTriangles();
+    public native int getVerticesCount();
+
+    /**
+     * @return triangulation's indexed triangles
+     */
+    public native List<IndexedTriangle> getIndexedTriangles();
+
+    /**
+     * @return triangulation's triangles with coordinates
+     */
+    public List<Triangle> getTriangles() {
+        List<IndexedTriangle> indexedTriangles = this.getIndexedTriangles();
+        List<Vector2DH> vertices = this.getVertices();
+
+        return indexedTriangles.stream().map(iT -> iT.toTriangle(vertices)).collect(Collectors.toList());
+    }
+
+    /**
+     * This method is faster than <code>getTrianglesCount().size()</code>, <br>
+     * since this one directly gets the size of the vertices, while the other one converts
+     * C++'s <code>std::vector</code> into Java's <code>ArrayList</code> first and then
+     * gets the size of that <code>ArrayList</code>.
+     * @return triangulation's triangles count.
+     */
+    public native int getTrianglesCount();
 
     /**
      * @return triangulation's constraints (fixed edges)
      */
     public native Set<IndexedEdge> getFixedEdges();
 
-    // vertTris
-    // overlapCount
-    // pieceToOriginals
+
+    // TODO: implement vertTris()
+    // TODO: implement overlapCount()
+    // TODO: implement pieceToOriginals()
 
 
     // ### Methods ###

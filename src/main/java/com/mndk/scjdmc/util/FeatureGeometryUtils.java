@@ -106,14 +106,20 @@ public class FeatureGeometryUtils {
 
         while (victimFeatureIterator.hasNext()) {
             SimpleFeature feature = victimFeatureIterator.next();
-            Geometry featureGeometry = GeometryFixer.fix((Geometry) feature.getDefaultGeometry());
-            Geometry newGeometry = featureGeometry.intersection(boundary);
-            if(newGeometry.isEmpty()) continue;
-            listFeatureCollection.add(replaceFeatureGeometry(feature, newGeometry, feature.getID()));
+            SimpleFeature newFeature = getFeatureGeometryIntersection(feature, boundary);
+            if(newFeature != null) listFeatureCollection.add(newFeature);
         }
 
         victimFeatureIterator.close();
         return listFeatureCollection;
+    }
+
+
+    public static SimpleFeature getFeatureGeometryIntersection(SimpleFeature victim, Geometry boundary) {
+        Geometry featureGeometry = GeometryFixer.fix((Geometry) victim.getDefaultGeometry());
+        Geometry newGeometry = featureGeometry.intersection(boundary);
+        if(newGeometry.isEmpty()) return null;
+        else return replaceFeatureGeometry(victim, newGeometry, victim.getID());
     }
 
 
@@ -385,9 +391,10 @@ public class FeatureGeometryUtils {
 
     public static SimpleFeature replaceFeatureGeometry(SimpleFeature feature, Geometry newGeometry, String newId) {
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(feature.getFeatureType());
-        featureBuilder.set(Constants.GEOMETRY_PROPERTY_NAME, newGeometry);
+        String geometryPropertyName = feature.getFeatureType().getGeometryDescriptor().getLocalName();
+        featureBuilder.set(geometryPropertyName, newGeometry);
         for(Property property : feature.getProperties()) {
-            if(property.getName().toString().equals(Constants.GEOMETRY_PROPERTY_NAME)) continue;
+            if(property.getName().toString().equals(geometryPropertyName)) continue;
             featureBuilder.set(property.getName(), property.getValue());
         }
         return featureBuilder.buildFeature(newId == null ? feature.getID() : newId);
@@ -399,7 +406,7 @@ public class FeatureGeometryUtils {
         List<Vector2DH[]> result = new ArrayList<>();
 
         if(geometry instanceof Point point) {
-            result.add(new Vector2DH[] {new Vector2DH(point.getCoordinate(), height) });
+            result.add(new Vector2DH[] { new Vector2DH(point.getCoordinate(), height) });
         }
         else if(geometry instanceof LineString lineString) {
             Coordinate[] coordinates = lineString.getCoordinates();

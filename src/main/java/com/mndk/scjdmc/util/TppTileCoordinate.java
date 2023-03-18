@@ -5,6 +5,7 @@ import com.mndk.scjdmc.util.file.DirectoryManager;
 import lombok.RequiredArgsConstructor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.util.GeometryFixer;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.geometry.BoundingBox;
 
@@ -14,13 +15,11 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
-public class TppTileCoordinate {
+public record TppTileCoordinate(int x, int y) {
+
 
     private static final int SCALE = 64;
     private static final double INV_SCALE = 1 / (double) SCALE;
-
-    public final int x, y;
 
 
     public BoundingBox getBoundingBox() {
@@ -35,9 +34,9 @@ public class TppTileCoordinate {
 
 
     private static Geometry getTileGeometry(int tileMinX, int tileMinY, int tileMaxX, int tileMaxY, double tileBuffer) {
-        double minX = (tileMinX-tileBuffer)   * INV_SCALE, minY = (tileMinY-tileBuffer)   * INV_SCALE;
-        double maxX = (tileMaxX+tileBuffer+1) * INV_SCALE, maxY = (tileMaxY+tileBuffer+1) * INV_SCALE;
-        Coordinate[] coordinates = new Coordinate[] {
+        double minX = (tileMinX - tileBuffer) * INV_SCALE, minY = (tileMinY - tileBuffer) * INV_SCALE;
+        double maxX = (tileMaxX + tileBuffer + 1) * INV_SCALE, maxY = (tileMaxY + tileBuffer + 1) * INV_SCALE;
+        Coordinate[] coordinates = new Coordinate[]{
                 new Coordinate(minX, minY), new Coordinate(maxX, minY),
                 new Coordinate(maxX, maxY), new Coordinate(minX, maxY),
                 new Coordinate(minX, minY)
@@ -52,14 +51,14 @@ public class TppTileCoordinate {
 
     public File getJsonLocation(File tppDatasetFolder, boolean createParents) throws IOException {
         File result = Paths.get(tppDatasetFolder.getAbsolutePath(), "tile", x + "", y + ".json").toFile();
-        if(createParents) DirectoryManager.createFolder(result.getParentFile());
+        if (createParents) DirectoryManager.createFolder(result.getParentFile());
         return result;
     }
 
 
     public File getFolderLocation(File tppDatasetFolder, boolean createFolder) throws IOException {
         File result = Paths.get(tppDatasetFolder.getAbsolutePath(), "tile", x + "", y + "").toFile();
-        if(createFolder) DirectoryManager.createFolder(result);
+        if (createFolder) DirectoryManager.createFolder(result);
         return result;
     }
 
@@ -74,32 +73,27 @@ public class TppTileCoordinate {
 
 
     @Override
-    public int hashCode() {
-        return Objects.hash(x, y);
-    }
-
-
-    @Override
     public String toString() {
         return "(" + x + ", " + y + ")";
     }
 
-    public static TppTileCoordinateMinMax getTileCoordinateMinMax(BoundingBox boundingBox) {
+
+    public static TppTileCoordinateMinMax getTileCoordinateMinMax(BoundingBox boundingBox, double buffer) {
         double minX = boundingBox.getMinX(), maxX = boundingBox.getMaxX();
         double minY = boundingBox.getMinY(), maxY = boundingBox.getMaxY();
 
         return new TppTileCoordinateMinMax(
-                new TppTileCoordinate((int) Math.floor(minX * SCALE), (int) Math.floor(minY * SCALE)),
-                new TppTileCoordinate((int) Math.floor(maxX * SCALE), (int) Math.floor(maxY * SCALE))
+                new TppTileCoordinate((int) Math.floor(minX * SCALE - buffer), (int) Math.floor(minY * SCALE - buffer)),
+                new TppTileCoordinate((int) Math.floor(maxX * SCALE + buffer), (int) Math.floor(maxY * SCALE + buffer))
         );
     }
 
 
-    public static Set<TppTileCoordinate> getBoundingBoxIntersections(BoundingBox boundingBox) {
-        TppTileCoordinateMinMax minMax = getTileCoordinateMinMax(boundingBox);
+    public static Set<TppTileCoordinate> getBoundingBoxIntersections(BoundingBox boundingBox, double buffer) {
+        TppTileCoordinateMinMax minMax = getTileCoordinateMinMax(boundingBox, buffer);
         Set<TppTileCoordinate> result = new HashSet<>();
-        for(int y = minMax.getMinY(); y <= minMax.getMaxY(); y++) {
-            for(int x = minMax.getMinX(); x <= minMax.getMaxX(); x++) {
+        for (int y = minMax.getMinY(); y <= minMax.getMaxY(); y++) {
+            for (int x = minMax.getMinX(); x <= minMax.getMaxX(); x++) {
                 result.add(new TppTileCoordinate(x, y));
             }
         }
@@ -108,20 +102,20 @@ public class TppTileCoordinate {
     }
 
 
-    public static Set<TppTileCoordinate> getFeatureGeometryIntersections(SimpleFeature feature) {
+    public static Set<TppTileCoordinate> getFeatureGeometryIntersections(SimpleFeature feature, double buffer) {
         Geometry geometry = (Geometry) feature.getDefaultGeometry();
-        return getBoundingBoxIntersections(feature.getBounds()).stream()
-                .filter(coord -> geometry.intersects(coord.getTileGeometry(0)))
+        return getBoundingBoxIntersections(feature.getBounds(), buffer).stream()
+                .filter(coord -> geometry.intersects(coord.getTileGeometry(buffer)))
                 .collect(Collectors.toSet());
     }
 
 
     public static Map<TppTileCoordinate, Geometry> divideFeatureGeometryToTiles(
-            SimpleFeature feature, boolean bufferFeatureGeometry, double tileBuffer
+            SimpleFeature feature, double featureBuffer, double tileBuffer
     ) {
-        TppTileCoordinateMinMax minMax = getTileCoordinateMinMax(feature.getBounds());
+        TppTileCoordinateMinMax minMax = getTileCoordinateMinMax(feature.getBounds(), tileBuffer);
         Geometry featureGeometry = (Geometry) feature.getDefaultGeometry();
-        if(bufferFeatureGeometry) featureGeometry.buffer(Constants.POLYGON_BUFFER_EPSILON);
+        if (featureBuffer != 0) featureGeometry.buffer(Constants.POLYGON_BUFFER_EPSILON);
 
         Map<TppTileCoordinate, Geometry> result = new HashMap<>();
         divideGeometryToTiles(
@@ -137,20 +131,19 @@ public class TppTileCoordinate {
             Map<TppTileCoordinate, Geometry> result, Geometry victim,
             int tileMinX, int tileMinY, int tileMaxX, int tileMaxY, double tileBuffer
     ) {
-        if(!victim.isValid()) victim = victim.buffer(0);
+        if (!victim.isValid()) GeometryFixer.fix(victim);
 
         Geometry tileGeometry = getTileGeometry(tileMinX, tileMinY, tileMaxX, tileMaxY, tileBuffer)
                 .buffer(Constants.POLYGON_BUFFER_EPSILON);
         Geometry intersection = victim.intersection(tileGeometry);
-        if(intersection.isEmpty()) return;
+        if (intersection.isEmpty()) return;
 
         int xCount = tileMaxX - tileMinX + 1, yCount = tileMaxY - tileMinY + 1;
         int X2 = xCount / 2, Y2 = yCount / 2;
 
-        if(xCount == 1 && yCount == 1) {
+        if (xCount == 1 && yCount == 1) {
             result.put(new TppTileCoordinate(tileMinX, tileMinY), intersection);
-        }
-        else if(xCount == 1) {
+        } else if (xCount == 1) {
             divideGeometryToTiles(result, intersection,
                     tileMinX, tileMinY, tileMaxX, tileMinY + Y2 - 1,
                     tileBuffer
@@ -159,8 +152,7 @@ public class TppTileCoordinate {
                     tileMinX, tileMinY + Y2, tileMaxX, tileMaxY,
                     tileBuffer
             );
-        }
-        else if(yCount == 1) {
+        } else if (yCount == 1) {
             divideGeometryToTiles(result, intersection,
                     tileMinX, tileMinY, tileMinX + X2 - 1, tileMaxY,
                     tileBuffer
@@ -169,8 +161,7 @@ public class TppTileCoordinate {
                     tileMinX + X2, tileMinY, tileMaxX, tileMaxY,
                     tileBuffer
             );
-        }
-        else {
+        } else {
             divideGeometryToTiles(result, intersection,
                     tileMinX, tileMinY, tileMinX + X2 - 1, tileMinY + Y2 - 1,
                     tileBuffer
@@ -197,12 +188,12 @@ public class TppTileCoordinate {
 
         File[] xFolders = new File(tppDatasetFolder, "tile").listFiles(File::isDirectory);
         assert xFolders != null;
-        for(File xFolder : xFolders) {
+        for (File xFolder : xFolders) {
             int x = Integer.parseInt(xFolder.getName());
 
             File[] yFolders = xFolder.listFiles(File::isDirectory);
             assert yFolders != null;
-            for(File yFolder : yFolders) {
+            for (File yFolder : yFolders) {
                 int y = Integer.parseInt(yFolder.getName());
                 result.add(new TppTileCoordinate(x, y));
             }
@@ -214,10 +205,22 @@ public class TppTileCoordinate {
     @RequiredArgsConstructor
     public static class TppTileCoordinateMinMax {
         public final TppTileCoordinate min, max;
-        public int getMinX() { return min.x; }
-        public int getMinY() { return min.y; }
-        public int getMaxX() { return max.x; }
-        public int getMaxY() { return max.y; }
+
+        public int getMinX() {
+            return min.x;
+        }
+
+        public int getMinY() {
+            return min.y;
+        }
+
+        public int getMaxX() {
+            return max.x;
+        }
+
+        public int getMaxY() {
+            return max.y;
+        }
     }
 
 }
