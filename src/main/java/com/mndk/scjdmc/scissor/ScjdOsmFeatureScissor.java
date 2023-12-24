@@ -40,11 +40,11 @@ public class ScjdOsmFeatureScissor {
         if(roadBoundaryCollections != null) roadBoundaryCollections = roadBoundaryCollections.stream()
                 .map(featureCollection -> FeatureGeometryUtils.getFeatureCollectionGeometryIntersection(
                         featureCollection.getSchema(), featureCollection, boundary
-                )).collect(Collectors.toList());
+                )).toList();
         if(roadCenterlineCollections != null) roadCenterlineCollections = roadCenterlineCollections.stream()
                 .map(featureCollection -> FeatureGeometryUtils.getFeatureCollectionGeometryIntersection(
                         featureCollection.getSchema(), featureCollection, boundary
-                )).collect(Collectors.toList());
+                )).toList();
 
         List<Geometry> subtractGeometries = new ArrayList<>() {{
             addAll(FeatureGeometryUtils.extractGeometryAsList(result.get(LayerDataType.터널), f -> true));
@@ -55,7 +55,7 @@ public class ScjdOsmFeatureScissor {
         }};
 
         List<SimpleFeatureCollection> tempList = new ArrayList<>();
-        if (subtractGeometries.size() != 0 && roadBoundaryCollections != null) {
+        if (!subtractGeometries.isEmpty() && roadBoundaryCollections != null) {
             AtomicInteger j = new AtomicInteger(0);
             for (SimpleFeatureCollection roadBoundary : roadBoundaryCollections) {
                 tempList.add(FeatureGeometryUtils.subtractPolygonsToPolygonCollection(

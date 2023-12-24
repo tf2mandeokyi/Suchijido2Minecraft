@@ -6,7 +6,7 @@ plugins {
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
@@ -27,7 +27,7 @@ dependencies {
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'org.apache.commons:commons-compress:1.21'
 
-    String log4jVersion = '2.19.0'
+    var log4jVersion = '2.19.0'
     implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
     implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
     implementation "org.apache.logging.log4j:log4j-iostreams:$log4jVersion"
@@ -36,13 +36,15 @@ dependencies {
 
     implementation 'org.gdal:gdal:3.5.0'
 
-    String gtVersion = '27-SNAPSHOT'
+    var gtVersion = '27-SNAPSHOT'
     implementation "org.geotools:gt-shapefile:$gtVersion"
     implementation "org.geotools:gt-geojson:$gtVersion"
     implementation "org.geotools:gt-geojsondatastore:$gtVersion"
     implementation "org.geotools:gt-epsg-hsql:$gtVersion"
 
     implementation 'me.tongfei:progressbar:0.9.5'
+
+    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
 
     annotationProcessor 'info.picocli:picocli-codegen:4.7.0'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
@@ -60,11 +62,11 @@ compileJava {
     options.encoding = 'UTF-8'
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-tasks.withType(JavaExec) {
+tasks.withType(JavaExec).configureEach {
     systemProperty 'java.library.path', nativeLibrariesPath.absolutePath
     standardInput = System.in
 }
@@ -74,7 +76,7 @@ test {
     failFast = true
 }
 
-task buildCDTHandler(type: Exec) {
+tasks.register('buildCDTHandler', Exec) {
     commandLine "cmake"
     args "--build", file("$buildDir/cmake/cdt_handler")
     standardOutput System.out
@@ -91,7 +93,7 @@ configure(buildCDTHandler) {
     description = 'Build cdt handler with cmake'
 }
 
-task makeCDTHandler(type: Exec) {
+tasks.register('makeCDTHandler', Exec) {
     commandLine "cmake"
     args = [
             "-S", file('src/main/natives/cdt_handler').toString(),
@@ -106,12 +108,12 @@ configure(makeCDTHandler) {
     description = 'Make cdt handler with cmake'
 }
 
-task generateNativeHeaders {
+tasks.register('generateNativeHeaders') {
     def nativesTempDir = file('src/main/natives/temp')
-    if(!nativesTempDir.isDirectory()) nativesTempDir.mkdir()
+    if (!nativesTempDir.isDirectory()) nativesTempDir.mkdir()
 
     compileJava {
-        options.compilerArgs += [ '-h', nativesTempDir ]
+        options.compilerArgs += ['-h', nativesTempDir]
     }
 }
 generateNativeHeaders.dependsOn compileJava

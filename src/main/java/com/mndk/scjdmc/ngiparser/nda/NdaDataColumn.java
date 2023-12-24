@@ -3,12 +3,12 @@ package com.mndk.scjdmc.ngiparser.nda;
 public class NdaDataColumn {
 	
 	
-	public String name;
-	public String type; 
+	public final String name;
+	public final String type;
 	@Deprecated
-	public int size; // Why do you even need this lmao
-	public int unknownInt; // TODO figure out what this variable is
-	public boolean unknownBoolean; // TODO figure out what this variable is
+	public final int size; // Why do you even need this lmao
+	public final int unknownInt;
+	public final boolean unknownBoolean;
 	
 	
 	public NdaDataColumn(Object[] args) {

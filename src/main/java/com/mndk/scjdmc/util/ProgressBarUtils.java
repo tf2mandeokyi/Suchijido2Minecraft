@@ -2,6 +2,7 @@ package com.mndk.scjdmc.util;
 
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
+import me.tongfei.progressbar.ProgressBarStyle;
 
 public class ProgressBarUtils {
 
@@ -13,6 +14,7 @@ public class ProgressBarUtils {
                 .setMaxRenderedLength(150)
                 .continuousUpdate()
                 .clearDisplayOnFinish()
+                .setStyle(ProgressBarStyle.ASCII)
                 .build();
     }
 

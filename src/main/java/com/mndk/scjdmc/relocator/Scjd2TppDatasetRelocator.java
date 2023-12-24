@@ -37,19 +37,19 @@ public class Scjd2TppDatasetRelocator {
 
             int typeCount = IntegerMapUtils.increment(typeCountMap, layerDataType, 1);
             ProgressBar progressBar = ProgressBarUtils.createProgressBar(
-                    String.format("Relocating: %s_%s (#%d)",
-                            fileInformation.getNameForFile(), layerDataType, typeCount
+                    String.format("Relocating: %s - %s#%d",
+                            fileInformation.getNameForFile(), layerDataType.getEnglishName(), typeCount
                     ), featureCollection.size()
             );
 
-            while(featureIterator.hasNext()) {
+            while (featureIterator.hasNext()) {
                 SimpleFeature feature = featureIterator.next();
 
                 BoundingBox featureBoundingBox = feature.getBounds();
                 Set<TppTileCoordinate> tileCoordinates =
                         TppTileCoordinate.getBoundingBoxIntersections(featureBoundingBox, buffer);
 
-                for(TppTileCoordinate coordinate : tileCoordinates) {
+                for (TppTileCoordinate coordinate : tileCoordinates) {
                     Pair<TppTileCoordinate, LayerDataType> pair = Pair.of(coordinate, layerDataType);
                     SimpleFeatureJsonWriter writer = writerMap.computeIfAbsent(coordinate, c -> {
                         int coordinateTypeCount = IntegerMapUtils.increment(coordinateTypeCountMap, pair, 0);
@@ -59,12 +59,12 @@ public class Scjd2TppDatasetRelocator {
                     });
 
                     SimpleFeature newFeature = feature;
-                    if(cutFeatures) {
+                    if (cutFeatures) {
                         newFeature = FeatureGeometryUtils.getFeatureGeometryIntersection(
                                 feature, coordinate.getTileGeometry(buffer)
                         );
                     }
-                    if(newFeature != null) {
+                    if (newFeature != null) {
                         writer.write(newFeature);
                         writer.flush();
                     }
@@ -74,7 +74,7 @@ public class Scjd2TppDatasetRelocator {
             featureIterator.close();
 
             progressBar.setExtraMessage("Writing...");
-            for(Map.Entry<TppTileCoordinate, SimpleFeatureJsonWriter> entry : writerMap.entrySet()) {
+            for (Map.Entry<TppTileCoordinate, SimpleFeatureJsonWriter> entry : writerMap.entrySet()) {
                 entry.getValue().close();
             }
             progressBar.close();

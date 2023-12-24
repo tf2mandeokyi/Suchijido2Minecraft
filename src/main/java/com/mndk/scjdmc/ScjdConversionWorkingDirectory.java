@@ -2,6 +2,7 @@ package com.mndk.scjdmc;
 
 import com.mndk.scjdmc.column.LayerDataType;
 import com.mndk.scjdmc.combiner.ScjdGeoJsonTileCombiner;
+import com.mndk.scjdmc.gui.ProgressGui;
 import com.mndk.scjdmc.reader.GeoJsonDirScjdReader;
 import com.mndk.scjdmc.reader.ScjdDatasetReader;
 import com.mndk.scjdmc.relocator.Scjd2TppDatasetRelocator;
@@ -21,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.geotools.data.simple.SimpleFeatureCollection;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
@@ -76,12 +78,20 @@ public class ScjdConversionWorkingDirectory {
         Set<TppTileCoordinate> coordinates = TppTileCoordinate.getAvailableFolderCoordinates(this.scjdGeojsonFolder);
         GeoJsonDirScjdReader reader = new GeoJsonDirScjdReader();
         reader.setLayerFilter(ScjdConversionWorkingDirectory::relocationLayerFilter);
+        ProgressGui gui = new ProgressGui(1000, 1000);
 
         ProgressBar progressBar = ProgressBarUtils.createProgressBar("Combining geojson files", coordinates.size());
         for(TppTileCoordinate coordinate : coordinates) {
             progressBar.step();
 
-            ScjdGeoJsonTileCombiner.combine(this.scjdGeojsonFolder, this.tppGeoJsonFolder, coordinate, reader);
+            int count = ScjdGeoJsonTileCombiner.combine(this.scjdGeojsonFolder, this.tppGeoJsonFolder, coordinate, reader);
+            if(!Constants.STACKED_THROWABLES.isEmpty()) {
+                gui.addStatus(coordinate.getBoundingBox(), Color.RED);
+            } else if(count == 0) {
+                gui.addStatus(coordinate.getBoundingBox(), Color.YELLOW);
+            } else {
+                gui.addStatus(coordinate.getBoundingBox(), Color.GREEN);
+            }
             Constants.STACKED_THROWABLES.popAllToLogger(LOGGER, "Error caught while parsing " + coordinate);
         }
         progressBar.close();
@@ -107,6 +117,11 @@ public class ScjdConversionWorkingDirectory {
             if(debug) LOGGER.info("Relocating {}...", sourceFile.getName());
 
             ScjdDatasetReader reader = ScjdDatasetReader.getShpReader(sourceFile);
+            if(reader == null) {
+                LOGGER.warn("Could not find suitable reader for " + sourceFile.getName());
+                continue;
+            }
+
             reader.setLayerFilter(ScjdConversionWorkingDirectory::relocationLayerFilter);
             Scjd2TppDatasetRelocator.relocate(
                     sourceFile, Constants.CP949, parsedType,

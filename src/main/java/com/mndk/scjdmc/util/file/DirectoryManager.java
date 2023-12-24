@@ -18,7 +18,7 @@ public class DirectoryManager {
 			IOException exception = new IOException("Failed to create folder");
 
 			if(throwIfFail) throw exception;
-			else exception.printStackTrace();
+			else LOGGER.error(exception);
 		}
 	}
 
@@ -43,8 +43,7 @@ public class DirectoryManager {
 	 * Creates folder if not exists, and then returns it
 	 * @param folder The folder
 	 * @return The folder given as parameter
-	 * @throws IOException
-	 */
+     */
 	public static File createFolder(File folder) throws IOException {
 		return createFolder(folder, null);
 	}

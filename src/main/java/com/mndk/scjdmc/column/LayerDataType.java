@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Getter
 public enum LayerDataType {
 
 	// A타입 - 교통
@@ -29,7 +30,7 @@ public enum LayerDataType {
 	정류장("train_station", "A014"),
 	철도("railway", "A015", true),
 	철도경계("railway_boundary", "A016", A016RailwayBoundary.class, true),
-	철도중심선("railway_centerline", "A017"),
+	철도중심선("railway_centerline", "A017", A017RailwayCenterLine.class, true),
 	철도전차대("railway_turntable", "A018"),
 	승강장("railway_platform", "A019", A019RailwayPlatform.class, true),
 	승강장_지붕("railway_platform_roof", "A020"),
@@ -137,13 +138,13 @@ public enum LayerDataType {
 
 
 
-	private final @Getter String englishName;
-	private final @Getter String layerName;
-	private final @Getter String layerNameHeader;
-	private final @Getter boolean cuttable;
-	private final @Getter Class<? extends ScjdElement> elementClass;
-	private final @Getter Constructor<? extends ScjdElement> elementConstructor;
-	private final @Getter SimpleFeatureType keyFeatureType, nameFeatureType, osmFeatureType;
+	private final String englishName;
+	private final String layerName;
+	private final String layerNameHeader;
+	private final boolean cuttable;
+	private final Class<? extends ScjdElement> elementClass;
+	private final Constructor<? extends ScjdElement> elementConstructor;
+	private final SimpleFeatureType keyFeatureType, nameFeatureType, osmFeatureType;
 
 	LayerDataType(
 			String englishName, String layerNameHeader, Class<? extends ScjdElement> elementClass,

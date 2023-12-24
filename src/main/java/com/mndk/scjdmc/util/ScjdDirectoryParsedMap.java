@@ -35,4 +35,8 @@ public class ScjdDirectoryParsedMap<T> {
         return this.map.entrySet();
     }
 
+    public int size() {
+        return this.map.size();
+    }
+
 }

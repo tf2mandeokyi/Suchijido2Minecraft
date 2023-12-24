@@ -15,7 +15,7 @@ import java.io.IOException;
 
 public class ScjdGeoJsonTileCombiner {
 
-    public static void combine(
+    public static int combine(
             File sourceFolder, File destinationFolder, TppTileCoordinate coordinate, GeoJsonDirScjdReader reader
     ) throws IOException {
 
@@ -30,6 +30,7 @@ public class ScjdGeoJsonTileCombiner {
                 coordinate.getJsonLocation(destinationFolder, true)
         );
 
+        return featureMap.size();
     }
 
 }

@@ -36,10 +36,10 @@ public class B001Building extends ScjdElement {
             case "BDK000": case "미분류":
             default: buildingType = "yes";
         }
-        if(name1 != null && name1.length() != 0) {
-            if(name2 == null || name2.length() == 0) name = name1;
+        if(name1 != null && !name1.isEmpty()) {
+            if(name2 == null || name2.isEmpty()) name = name1;
             else name = name1 + "-" + name2;
         }
-        else if(name2 != null && name2.length() != 0) name = name2;
+        else if(name2 != null && !name2.isEmpty()) name = name2;
     }
 }
