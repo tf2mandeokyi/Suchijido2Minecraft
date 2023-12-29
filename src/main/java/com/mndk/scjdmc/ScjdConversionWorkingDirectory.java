@@ -7,20 +7,15 @@ import com.mndk.scjdmc.reader.GeoJsonDirScjdReader;
 import com.mndk.scjdmc.reader.ScjdDatasetReader;
 import com.mndk.scjdmc.relocator.Scjd2TppDatasetRelocator;
 import com.mndk.scjdmc.relocator.ScjdCoastlineRelocator;
-import com.mndk.scjdmc.scissor.ScjdOsmFeatureScissor;
-import com.mndk.scjdmc.typeconverter.Scjd2OsmFeatureConverter;
 import com.mndk.scjdmc.util.ProgressBarUtils;
-import com.mndk.scjdmc.util.ScjdDirectoryParsedMap;
 import com.mndk.scjdmc.util.ScjdParsedType;
 import com.mndk.scjdmc.util.TppTileCoordinate;
 import com.mndk.scjdmc.util.file.DirectoryManager;
-import com.mndk.scjdmc.writer.ScjdGeoJsonWriter;
 import lombok.Getter;
 import lombok.Setter;
 import me.tongfei.progressbar.ProgressBar;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.geotools.data.simple.SimpleFeatureCollection;
 
 import java.awt.*;
 import java.io.File;
@@ -79,6 +74,9 @@ public class ScjdConversionWorkingDirectory {
         GeoJsonDirScjdReader reader = new GeoJsonDirScjdReader();
         reader.setLayerFilter(ScjdConversionWorkingDirectory::relocationLayerFilter);
         ProgressGui gui = new ProgressGui(1000, 1000);
+        for(TppTileCoordinate coordinate : coordinates) {
+            gui.setStatus(coordinate.getBoundingBox(), Color.WHITE);
+        }
 
         ProgressBar progressBar = ProgressBarUtils.createProgressBar("Combining geojson files", coordinates.size());
         for(TppTileCoordinate coordinate : coordinates) {
@@ -86,11 +84,11 @@ public class ScjdConversionWorkingDirectory {
 
             int count = ScjdGeoJsonTileCombiner.combine(this.scjdGeojsonFolder, this.tppGeoJsonFolder, coordinate, reader);
             if(!Constants.STACKED_THROWABLES.isEmpty()) {
-                gui.addStatus(coordinate.getBoundingBox(), Color.RED);
+                gui.setStatus(coordinate.getBoundingBox(), Color.RED);
             } else if(count == 0) {
-                gui.addStatus(coordinate.getBoundingBox(), Color.YELLOW);
+                gui.setStatus(coordinate.getBoundingBox(), Color.YELLOW);
             } else {
-                gui.addStatus(coordinate.getBoundingBox(), Color.GREEN);
+                gui.setStatus(coordinate.getBoundingBox(), Color.GREEN);
             }
             Constants.STACKED_THROWABLES.popAllToLogger(LOGGER, "Error caught while parsing " + coordinate);
         }
@@ -103,9 +101,6 @@ public class ScjdConversionWorkingDirectory {
     }
 
 
-    public void relocateAllIndexes() throws IOException {
-        this.doSimpleRelocation(this.indexDirectory, ScjdParsedType.INDEX);
-    }
     public void relocateAllAreas() throws IOException {
         this.doSimpleRelocation(this.areaDirectory, ScjdParsedType.AREA);
     }
@@ -128,33 +123,6 @@ public class ScjdConversionWorkingDirectory {
                     reader, this.scjdGeojsonFolder,
                     0, false
             );
-        }
-    }
-
-
-    @Deprecated
-    public void convertAllIndexes() throws IOException {
-        this.doSimpleConversion(this.indexDirectory, ScjdParsedType.INDEX);
-    }
-    @Deprecated
-    public void convertAllAreas() throws IOException {
-        this.doSimpleConversion(this.areaDirectory, ScjdParsedType.AREA);
-    }
-    @Deprecated
-    private void doSimpleConversion(File sourceDir, ScjdParsedType parsedType) throws IOException {
-        File[] sourceFiles = sourceDir.listFiles();
-        assert sourceFiles != null;
-
-        for(File sourceFile : sourceFiles) {
-            if(debug) LOGGER.info("Converting {}...", sourceFile.getName());
-
-            ScjdDirectoryParsedMap<SimpleFeatureCollection> featureMap =
-                    Scjd2OsmFeatureConverter.parseShpAsOsmFeature(sourceFile, Constants.CP949, parsedType);
-            featureMap = ScjdOsmFeatureScissor.apply(featureMap, null);
-
-            String featureMapName = featureMap.getFileInformation().getNameForFile();
-            File destinationFolder = new File(this.scjdGeojsonFolder, featureMapName);
-            ScjdGeoJsonWriter.writeAsFolder(featureMap, destinationFolder);
         }
     }
 

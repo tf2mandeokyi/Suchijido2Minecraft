@@ -6,19 +6,17 @@ import org.opengis.geometry.BoundingBox;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ProgressGui extends JFrame {
 
     private BoundingBox boundingBox = null;
-    private final List<Map.Entry<BoundingBox, Color>> list;
+    private final Map<BoundingBox, Color> map;
     private boolean closed = false;
 
     public ProgressGui(int xSize, int ySize) {
-        this.list = new ArrayList<>();
+        this.map = new HashMap<>();
 
         this.setSize(xSize, ySize);
         this.setTitle("Progress");
@@ -29,12 +27,12 @@ public class ProgressGui extends JFrame {
         this.setVisible(true);
     }
 
-    public void addStatus(BoundingBox bbox, Color color) {
+    public void setStatus(BoundingBox bbox, Color color) {
         if (closed) return;
-        synchronized (list) {
+        synchronized (map) {
             if(boundingBox == null) boundingBox = new ReferencedEnvelope(bbox);
             else boundingBox.include(bbox);
-            list.add(new AbstractMap.SimpleEntry<>(bbox, color));
+            map.put(bbox, color);
         }
     }
 
@@ -58,14 +56,14 @@ public class ProgressGui extends JFrame {
             Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            synchronized (list) {
+            synchronized (map) {
 
                 double bigger = Math.max(boundingBox.getWidth(), boundingBox.getHeight());
                 double xScale = dimension.width  / bigger;
                 double yScale = dimension.height / bigger;
 
-                g2d.setStroke(new BasicStroke(1.0f));
-                for (Map.Entry<BoundingBox, Color> entry : list) {
+                g2d.setStroke(new BasicStroke(0.3f));
+                for (Map.Entry<BoundingBox, Color> entry : map.entrySet()) {
                     BoundingBox bbox = entry.getKey();
                     g2d.setColor(entry.getValue());
                     g2d.fillRect(

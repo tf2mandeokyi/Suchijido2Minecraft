@@ -6,7 +6,6 @@ import com.mndk.scjdmc.util.file.ScjdFileInformation;
 import com.mndk.scjdmc.util.ScjdMapIndexUtils;
 import com.mndk.scjdmc.util.ScjdParsedType;
 import com.mndk.scjdmc.util.function.ThrowableRunner;
-import com.mndk.scjdmc.util.function.ScjdFeatureCollectionFunction;
 import org.apache.commons.io.FilenameUtils;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
@@ -39,7 +38,7 @@ public class ShpScjdReader {
 
     public static <T> T read(
             File shpFile, ScjdFileInformation fileInformation, Charset charset,
-            ScjdFeatureCollectionFunction<T> featureCollectionFunction
+            ScjdDatasetReader.FCFunction<T> featureCollectionFunction
     ) throws IOException {
 
         AtomicReference<DataStore> dataStore = new AtomicReference<>();

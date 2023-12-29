@@ -1,9 +1,9 @@
 package com.mndk.scjdmc.relocator;
 
 import com.mndk.scjdmc.Constants;
+import com.mndk.scjdmc.column.LayerDataType;
 import com.mndk.scjdmc.reader.ScjdDatasetReader;
 import com.mndk.scjdmc.reader.ShpDirScjdReader;
-import com.mndk.scjdmc.column.LayerDataType;
 import com.mndk.scjdmc.util.ProgressBarUtils;
 import com.mndk.scjdmc.util.ScjdParsedType;
 import com.mndk.scjdmc.util.TppTileCoordinate;
@@ -22,13 +22,9 @@ import java.util.Set;
 
 public class ScjdCoastlineRelocator {
 
-    public static void relocate(
-            File areaShpDirectory, Charset charset, File destinationFolder
-    ) throws IOException {
-
-        Set<TppTileCoordinate> boundaryWritedCoordinates =
-                writeTileBoundaryIntersections(areaShpDirectory, charset, destinationFolder);
-        createCoastlineWithBoundary(boundaryWritedCoordinates, destinationFolder);
+    public static void relocate(File areaShpDirectory, Charset charset, File destinationFolder) throws IOException {
+        Set<TppTileCoordinate> boundaryWrittenCoordinates = writeTileBoundaryIntersections(areaShpDirectory, charset, destinationFolder);
+        createCoastlineWithBoundary(boundaryWrittenCoordinates, destinationFolder);
     }
 
 

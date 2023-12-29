@@ -5,7 +5,6 @@ import com.mndk.scjdmc.column.LayerDataType;
 import com.mndk.scjdmc.util.ScjdDirectoryParsedMap;
 import com.mndk.scjdmc.util.file.ScjdFileInformation;
 import com.mndk.scjdmc.util.ScjdParsedType;
-import com.mndk.scjdmc.util.function.ScjdFeatureCollectionFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Geometry;
@@ -25,7 +24,7 @@ public class GeoJsonDirScjdReader extends ScjdDatasetReader {
     @Override
     public <T> ScjdDirectoryParsedMap<T> read(
             File directory, Charset charset, ScjdParsedType parsedType,
-            ScjdFeatureCollectionFunction<T> featureCollectionFunction
+            FCFunction<T> featureCollectionFunction
     ) throws IOException {
         if(!directory.exists()) {
             throw new IOException("Path doesn't exist: " + directory.getPath());

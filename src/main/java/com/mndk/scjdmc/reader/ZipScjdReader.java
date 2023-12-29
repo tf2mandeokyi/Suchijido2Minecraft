@@ -4,7 +4,6 @@ import com.mndk.scjdmc.util.ScjdDirectoryParsedMap;
 import com.mndk.scjdmc.util.ScjdParsedType;
 import com.mndk.scjdmc.util.file.DirectoryManager;
 import com.mndk.scjdmc.util.file.ZipManager;
-import com.mndk.scjdmc.util.function.ScjdFeatureCollectionFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,13 +20,11 @@ public class ZipScjdReader extends ShpDirScjdReader {
     @Override
     public <T> ScjdDirectoryParsedMap<T> read(
             File zipFile, Charset charset, ScjdParsedType parsedType,
-            ScjdFeatureCollectionFunction<T> featureCollectionFunction
+            FCFunction<T> featureCollectionFunction
     ) throws IOException {
 
-        File zipDestination = new File(
-                zipFile.getParent(),
-                zipFile.getName().substring(0, zipFile.getName().lastIndexOf("."))
-        );
+        String extractFolderName = zipFile.getName().substring(0, zipFile.getName().lastIndexOf("."));
+        File zipDestination = new File(zipFile.getParent(), extractFolderName);
         if(zipDestination.exists() && !zipDestination.delete()) {
             LOGGER.warn("Failed to delete directory: " + zipDestination);
         }
