@@ -16,7 +16,6 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Map;
@@ -26,16 +25,17 @@ public class ScjdCoastlineRelocator {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
-    public static void relocate(File areaShpDirectory, Charset charset, File destinationFolder, boolean debug) throws IOException {
-        Set<TppTileCoordinate> boundaryWrittenCoordinates = writeTileBoundaryIntersections(areaShpDirectory, charset, destinationFolder, debug);
+    public static void relocate(File areaShpDirectory, Charset sourceEncoding,
+                                File destinationFolder, Charset destinationEncoding,
+                                boolean debug) throws IOException {
+        Set<TppTileCoordinate> boundaryWrittenCoordinates = writeTileBoundaryIntersections(
+                areaShpDirectory, sourceEncoding, destinationFolder, destinationEncoding, debug);
         createCoastlineWithBoundary(boundaryWrittenCoordinates, destinationFolder, debug);
     }
 
 
-    private static void createCoastlineWithBoundary(
-            Set<TppTileCoordinate> boundaryWrittenCoordinates, File destinationFolder, boolean debug
-    ) throws IOException {
-
+    private static void createCoastlineWithBoundary(Set<TppTileCoordinate> boundaryWrittenCoordinates,
+                                                    File destinationFolder, boolean debug) throws IOException {
         if(debug) LOGGER.info("Writing coastlines...");
 
         ProgressBar progressBar = createCoastlineWritingProgressBar(boundaryWrittenCoordinates.size());
@@ -64,10 +64,9 @@ public class ScjdCoastlineRelocator {
     }
 
 
-    private static Set<TppTileCoordinate> writeTileBoundaryIntersections(
-            File areaShpDirectory, Charset charset, File destinationFolder, boolean debug
-    ) throws IOException {
-
+    private static Set<TppTileCoordinate> writeTileBoundaryIntersections(File areaShpDirectory, Charset sourceEncoding,
+                                                                         File destinationFolder, Charset destinationEncoding,
+                                                                         boolean debug) throws IOException {
         Set<TppTileCoordinate> result = new HashSet<>();
 
         File[] areaShpFolders = areaShpDirectory.listFiles(File::isDirectory);
@@ -80,7 +79,7 @@ public class ScjdCoastlineRelocator {
 
             if(debug) LOGGER.info("Writing boundary features of {}...", areaShpFolder.getName());
 
-            reader.read(areaShpFolder, charset, ScjdParsedType.AREA, (featureCollection, layerDataType) -> {
+            reader.read(areaShpFolder, sourceEncoding, ScjdParsedType.AREA, (featureCollection, layerDataType) -> {
                 SimpleFeatureIterator boundaryFeatures = featureCollection.features();
 
                 for(int i = 0; boundaryFeatures.hasNext(); i++) {
@@ -88,7 +87,7 @@ public class ScjdCoastlineRelocator {
                     Map<TppTileCoordinate, Geometry> divisionMap =
                             TppTileCoordinate.divideFeatureGeometryToTiles(feature, Constants.POLYGON_BUFFER_EPSILON, 0.11);
                     result.addAll(divisionMap.keySet());
-                    writeCoordinateGeometryMap(areaShpFolder, divisionMap, i, featureCollection.size(), destinationFolder);
+                    writeCoordinateGeometryMap(areaShpFolder, divisionMap, i, featureCollection.size(), destinationFolder, destinationEncoding);
                 }
 
                 boundaryFeatures.close();
@@ -100,10 +99,9 @@ public class ScjdCoastlineRelocator {
     }
 
 
-    private static void writeCoordinateGeometryMap(
-            File areaShpFolder, Map<TppTileCoordinate, Geometry> divisionMap,
-            int featureIndex, int featureCollectionSize, File destinationFolder
-    ) throws IOException {
+    private static void writeCoordinateGeometryMap(File areaShpFolder, Map<TppTileCoordinate, Geometry> divisionMap,
+                                                   int featureIndex, int featureCollectionSize,
+                                                   File destinationFolder, Charset destinationEncoding) throws IOException {
         ProgressBar progressBar = createBoundaryWritingProgressBar(
                 areaShpFolder, featureIndex, featureCollectionSize, divisionMap.size()
         );
@@ -112,12 +110,9 @@ public class ScjdCoastlineRelocator {
             TppTileCoordinate coordinate = entry.getKey();
             Geometry intersection = entry.getValue().buffer(0);
 
-            File file = new File(
-                    coordinate.getFolderLocation(destinationFolder, true),
-                    "boundary_" + areaShpFolder.getName() + "_" + featureIndex + ".json"
-            );
-            Writer writer = new OutputStreamWriter(Files.newOutputStream(file.toPath()),
-                    StandardCharsets.UTF_8);
+            String jsonFileName = "boundary_" + areaShpFolder.getName() + "_" + featureIndex + ".json";
+            File file = new File(coordinate.getFolderLocation(destinationFolder, true), jsonFileName);
+            Writer writer = new OutputStreamWriter(Files.newOutputStream(file.toPath()), destinationEncoding);
             writer.write(Constants.GEOMETRY_JSON.toString(intersection));
             writer.close();
             progressBar.step();
@@ -129,13 +124,10 @@ public class ScjdCoastlineRelocator {
     private static ProgressBar createCoastlineWritingProgressBar(int size) {
         return ProgressBarUtils.createProgressBar("Writing coastlines", size);
     }
-    private static ProgressBar createBoundaryWritingProgressBar(
-            File areaShpFolder, int featureIndex, int featureCount, int size
-    ) {
-        return ProgressBarUtils.createProgressBar(
-                String.format("Writing boundary feature %d/%d of \"%s\"", featureIndex, featureCount, areaShpFolder.getName()),
-                size
-        );
+    private static ProgressBar createBoundaryWritingProgressBar(File areaShpFolder,
+                                                                int featureIndex, int featureCount, int size) {
+        String title = String.format("Writing boundary feature %d/%d of \"%s\"", featureIndex, featureCount, areaShpFolder.getName());
+        return ProgressBarUtils.createProgressBar(title, size);
     }
 
 }

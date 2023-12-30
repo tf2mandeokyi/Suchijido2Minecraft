@@ -5,7 +5,7 @@ import lombok.NonNull;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 
 public class SimpleFeatureJsonWriter implements Closeable {
@@ -16,8 +16,8 @@ public class SimpleFeatureJsonWriter implements Closeable {
     private boolean first = true;
     private final Writer writer;
 
-    public SimpleFeatureJsonWriter(File file) throws IOException {
-        this.writer = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8);
+    public SimpleFeatureJsonWriter(File file, Charset encoding) throws IOException {
+        this.writer = new OutputStreamWriter(Files.newOutputStream(file.toPath()), encoding);
         writer.write("{\"type\":\"FeatureCollection\",\"features\":[");
     }
 

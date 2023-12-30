@@ -62,18 +62,10 @@ public class ProgressGui extends JFrame {
                 double xScale = dimension.width  / bigger;
                 double yScale = dimension.height / bigger;
 
-                g2d.setStroke(new BasicStroke(0.3f));
                 for (Map.Entry<BoundingBox, Color> entry : map.entrySet()) {
                     BoundingBox bbox = entry.getKey();
                     g2d.setColor(entry.getValue());
                     g2d.fillRect(
-                            (int) Math.round((bbox.getMinX() - boundingBox.getMinX()) * xScale),
-                            (int) Math.round((boundingBox.getMaxY() - bbox.getMaxY()) * yScale),
-                            (int) Math.round(bbox.getWidth() * xScale),
-                            (int) Math.round(bbox.getHeight() * yScale)
-                    );
-                    g2d.setColor(Color.BLACK);
-                    g2d.drawRect(
                             (int) Math.round((bbox.getMinX() - boundingBox.getMinX()) * xScale),
                             (int) Math.round((boundingBox.getMaxY() - bbox.getMaxY()) * yScale),
                             (int) Math.round(bbox.getWidth() * xScale),

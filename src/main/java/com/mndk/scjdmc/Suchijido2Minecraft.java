@@ -34,7 +34,7 @@ Select operation number(s) [ex: "1", "23" ]:\s""");
 
         if(operations.contains(1)) workingDirectory.relocateAllAreas();
         if(operations.contains(2)) workingDirectory.doCoastlineRelocation();
-        if(operations.contains(3)) workingDirectory.combineGeoJsonFiles();
+        if(operations.contains(3)) workingDirectory.convertScjdGeoJsonToOsmGeoJson();
         if(operations.contains(4)) workingDirectory.terrainTest();
     }
 }

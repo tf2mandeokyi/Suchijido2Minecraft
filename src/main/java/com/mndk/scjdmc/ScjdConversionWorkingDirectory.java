@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 @Getter
@@ -61,15 +62,18 @@ public class ScjdConversionWorkingDirectory {
             reader.setLayerFilter(type -> type == LayerDataType.등고선 || type == LayerDataType.표고점);
 
             Scjd2TppDatasetRelocator.relocate(
-                    areaFolder, Constants.CP949, ScjdParsedType.AREA,
-                    reader, this.scjdGeojsonFolder,
+                    areaFolder, Constants.CP949, ScjdParsedType.AREA, reader,
+                    this.scjdGeojsonFolder, StandardCharsets.UTF_8,
                     0.1, true
             );
         }
     }
 
 
-    public void combineGeoJsonFiles() throws IOException {
+    public void convertScjdGeoJsonToOsmGeoJson() throws IOException {
+
+        if(debug) LOGGER.info("Converting individual scjd geojson fileset into single osm style geojson file...");
+
         Set<TppTileCoordinate> coordinates = TppTileCoordinate.getAvailableFolderCoordinates(this.scjdGeojsonFolder);
         GeoJsonDirScjdReader reader = new GeoJsonDirScjdReader();
         reader.setLayerFilter(ScjdConversionWorkingDirectory::relocationLayerFilter);
@@ -78,11 +82,17 @@ public class ScjdConversionWorkingDirectory {
             gui.setStatus(coordinate.getBoundingBox(), Color.WHITE);
         }
 
+        if(debug) LOGGER.info("Conversion started");
+
         ProgressBar progressBar = ProgressBarUtils.createProgressBar("Combining geojson files", coordinates.size());
         for(TppTileCoordinate coordinate : coordinates) {
             progressBar.step();
 
-            int count = ScjdGeoJsonTileCombiner.combine(this.scjdGeojsonFolder, this.tppGeoJsonFolder, coordinate, reader);
+            int count = ScjdGeoJsonTileCombiner.combine(
+                    this.scjdGeojsonFolder, StandardCharsets.UTF_8,
+                    this.tppGeoJsonFolder, StandardCharsets.UTF_8,
+                    coordinate, reader
+            );
             if(!Constants.STACKED_THROWABLES.isEmpty()) {
                 gui.setStatus(coordinate.getBoundingBox(), Color.RED);
             } else if(count == 0) {
@@ -97,7 +107,7 @@ public class ScjdConversionWorkingDirectory {
 
 
     public void doCoastlineRelocation() throws IOException {
-        ScjdCoastlineRelocator.relocate(this.areaDirectory, Constants.CP949, this.scjdGeojsonFolder, this.debug);
+        ScjdCoastlineRelocator.relocate(this.areaDirectory, Constants.CP949, this.scjdGeojsonFolder, StandardCharsets.UTF_8, this.debug);
     }
 
 
@@ -119,8 +129,8 @@ public class ScjdConversionWorkingDirectory {
 
             reader.setLayerFilter(ScjdConversionWorkingDirectory::relocationLayerFilter);
             Scjd2TppDatasetRelocator.relocate(
-                    sourceFile, Constants.CP949, parsedType,
-                    reader, this.scjdGeojsonFolder,
+                    sourceFile, Constants.CP949, parsedType, reader,
+                    this.scjdGeojsonFolder, StandardCharsets.UTF_8,
                     0, false
             );
         }

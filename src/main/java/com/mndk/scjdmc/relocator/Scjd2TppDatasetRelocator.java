@@ -21,16 +21,16 @@ import java.util.Set;
 public class Scjd2TppDatasetRelocator {
 
 
-    public static void relocate(
-            File sourceFile, Charset charset, ScjdParsedType parsedType,
-            ScjdDatasetReader reader, File tppDatasetFolder, double buffer, boolean cutFeatures
-    ) throws IOException {
+    public static void relocate(File sourceFile, Charset sourceEncoding,
+                                ScjdParsedType parsedType, ScjdDatasetReader reader,
+                                File tppDatasetFolder, Charset destinationEncoding,
+                                double buffer, boolean cutFeatures) throws IOException {
 
         Map<Pair<TppTileCoordinate, LayerDataType>, Integer> coordinateTypeCountMap = new HashMap<>();
         Map<LayerDataType, Integer> typeCountMap = new HashMap<>();
         ScjdFileInformation fileInformation = new ScjdFileInformation(sourceFile, parsedType);
 
-        reader.read(sourceFile, charset, parsedType, (featureCollection, layerDataType) -> {
+        reader.read(sourceFile, sourceEncoding, parsedType, (featureCollection, layerDataType) -> {
             Map<TppTileCoordinate, SimpleFeatureJsonWriter> writerMap = new HashMap<>();
 
             SimpleFeatureIterator featureIterator = featureCollection.features();
@@ -54,7 +54,7 @@ public class Scjd2TppDatasetRelocator {
                     SimpleFeatureJsonWriter writer = writerMap.computeIfAbsent(coordinate, c -> {
                         int coordinateTypeCount = IntegerMapUtils.increment(coordinateTypeCountMap, pair, 0);
                         return createWriterForCoordinate(
-                                fileInformation, layerDataType, c, coordinateTypeCount, tppDatasetFolder
+                                fileInformation, layerDataType, c, coordinateTypeCount, tppDatasetFolder, destinationEncoding
                         );
                     });
 
@@ -84,16 +84,17 @@ public class Scjd2TppDatasetRelocator {
     }
 
 
-    private static SimpleFeatureJsonWriter createWriterForCoordinate(
-            ScjdFileInformation fileInformation, LayerDataType layerDataType, TppTileCoordinate tileCoordinate,
-            int count, File datasetFolder
-    ) {
+    private static SimpleFeatureJsonWriter createWriterForCoordinate(ScjdFileInformation fileInformation,
+                                                                     LayerDataType layerDataType,
+                                                                     TppTileCoordinate tileCoordinate,
+                                                                     int count,
+                                                                     File datasetFolder, Charset encoding) {
         try {
             File coordinateFolder = tileCoordinate.getFolderLocation(datasetFolder, true);
             String fileName = String.format(
                     "%s_%s_%d.json", fileInformation.getNameForFile(), layerDataType.getLayerName(), count
             );
-            return new SimpleFeatureJsonWriter(new File(coordinateFolder, fileName));
+            return new SimpleFeatureJsonWriter(new File(coordinateFolder, fileName), encoding);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

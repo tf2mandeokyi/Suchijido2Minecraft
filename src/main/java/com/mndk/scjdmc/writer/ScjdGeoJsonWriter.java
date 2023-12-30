@@ -9,18 +9,18 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
 public class ScjdGeoJsonWriter {
 
 
-    public static void writeAsSingleJsonFile(
-            ScjdDirectoryParsedMap<SimpleFeatureCollection> featureMap, File destinationFile
-    ) throws IOException {
+    public static void writeAsSingleJsonFile(ScjdDirectoryParsedMap<SimpleFeatureCollection> featureMap,
+                                             File destinationFile, Charset encoding) throws IOException {
 
         DirectoryManager.createParentFolders(destinationFile);
-        try (SimpleFeatureJsonWriter writer = new SimpleFeatureJsonWriter(destinationFile)) {
+        try (SimpleFeatureJsonWriter writer = new SimpleFeatureJsonWriter(destinationFile, encoding)) {
             for(Map.Entry<LayerDataType, List<SimpleFeatureCollection>> entry : featureMap.entrySet()) {
                 List<SimpleFeatureCollection> featureCollection = entry.getValue();
                 if(featureCollection != null) writeCollectionList(entry.getValue(), writer);
@@ -29,9 +29,9 @@ public class ScjdGeoJsonWriter {
     }
 
 
-    public static void writeAsFolder(
-            ScjdDirectoryParsedMap<SimpleFeatureCollection> featureMap, File destinationFolder
-    ) throws IOException {
+    public static void writeAsFolder(ScjdDirectoryParsedMap<SimpleFeatureCollection> featureMap,
+                                     File destinationFolder, Charset destinationEncoding) throws IOException {
+
         for(Map.Entry<LayerDataType, List<SimpleFeatureCollection>> entry : featureMap.entrySet()) {
             String jsonFileName = entry.getKey().getLayerName() + ".json";
             List<SimpleFeatureCollection> featureCollection = entry.getValue();
@@ -40,7 +40,7 @@ public class ScjdGeoJsonWriter {
             File destinationFile = new File(destinationFolder, jsonFileName);
             DirectoryManager.createParentFolders(destinationFile);
 
-            try (SimpleFeatureJsonWriter writer = new SimpleFeatureJsonWriter(destinationFile)) {
+            try (SimpleFeatureJsonWriter writer = new SimpleFeatureJsonWriter(destinationFile, destinationEncoding)) {
                 writeCollectionList(entry.getValue(), writer);
             }
         }

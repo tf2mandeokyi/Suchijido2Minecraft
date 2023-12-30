@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.zip.ZipException;
@@ -33,9 +34,9 @@ public class ZipManager {
 		}
 
 		try(
-				InputStream stream =
-						Files.newInputStream(Paths.get(URLDecoder.decode(sourceZip.getAbsolutePath(), "UTF-8")));
-				ZipArchiveInputStream archive =
+                InputStream stream =
+						Files.newInputStream(Paths.get(URLDecoder.decode(sourceZip.getAbsolutePath(), StandardCharsets.UTF_8)));
+                ZipArchiveInputStream archive =
 						new ZipArchiveInputStream(stream, charset.name(), true, false, true)
 		) {
 			ZipArchiveEntry entry;

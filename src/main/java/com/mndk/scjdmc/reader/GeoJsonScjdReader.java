@@ -5,20 +5,21 @@ import com.mndk.scjdmc.column.LayerDataType;
 import org.geotools.data.simple.SimpleFeatureCollection;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
+import java.io.Reader;
+import java.nio.charset.Charset;
 
 public class GeoJsonScjdReader {
 
     public static <T> T read(
-            File jsonFile, ScjdDatasetReader.FCFunction<T> featureCollectionFunction
+            File jsonFile, Charset charset, ScjdDatasetReader.FCFunction<T> featureCollectionFunction
     ) throws IOException {
 
-        InputStream stream = Files.newInputStream(jsonFile.toPath());
+        Reader reader = new FileReader(jsonFile, charset);
         SimpleFeatureCollection featureCollection =
-                (SimpleFeatureCollection) Constants.FEATURE_JSON.readFeatureCollection(stream);
-        stream.close();
+                (SimpleFeatureCollection) Constants.FEATURE_JSON.readFeatureCollection(reader);
+        reader.close();
 
         LayerDataType layerDataType = LayerDataType.fromLayerName(jsonFile.getName());
         return featureCollectionFunction.apply(featureCollection, layerDataType);

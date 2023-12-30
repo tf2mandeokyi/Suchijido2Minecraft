@@ -46,7 +46,7 @@ public class GeoJsonDirScjdReader extends ScjdDatasetReader {
         for(File geojsonFile : geojsonFiles) {
 
             if(Constants.COASTLINE_GEOMETRY_FILE_NAME.equals(geojsonFile.getName())) {
-                Reader reader = new FileReader(geojsonFile);
+                Reader reader = new FileReader(geojsonFile, charset);
                 Geometry coastlineGeometry = Constants.GEOMETRY_JSON.read(reader);
                 result.setCoastlineGeometry(coastlineGeometry);
                 reader.close();
@@ -58,7 +58,7 @@ public class GeoJsonDirScjdReader extends ScjdDatasetReader {
             LayerDataType layerDataType = LayerDataType.fromLayerName(geojsonFile.getName());
             if(!this.layerFilter.apply(layerDataType)) continue;
 
-            T geojsonReadResult = GeoJsonScjdReader.read(geojsonFile, featureCollectionFunction);
+            T geojsonReadResult = GeoJsonScjdReader.read(geojsonFile, charset, featureCollectionFunction);
             result.put(layerDataType, geojsonReadResult);
         }
 
