@@ -8,6 +8,8 @@ import com.mndk.scjdmc.util.ProgressBarUtils;
 import com.mndk.scjdmc.util.ScjdParsedType;
 import com.mndk.scjdmc.util.TppTileCoordinate;
 import me.tongfei.progressbar.ProgressBar;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
@@ -22,18 +24,22 @@ import java.util.Set;
 
 public class ScjdCoastlineRelocator {
 
-    public static void relocate(File areaShpDirectory, Charset charset, File destinationFolder) throws IOException {
-        Set<TppTileCoordinate> boundaryWrittenCoordinates = writeTileBoundaryIntersections(areaShpDirectory, charset, destinationFolder);
-        createCoastlineWithBoundary(boundaryWrittenCoordinates, destinationFolder);
+    private static final Logger LOGGER = LogManager.getLogger();
+
+    public static void relocate(File areaShpDirectory, Charset charset, File destinationFolder, boolean debug) throws IOException {
+        Set<TppTileCoordinate> boundaryWrittenCoordinates = writeTileBoundaryIntersections(areaShpDirectory, charset, destinationFolder, debug);
+        createCoastlineWithBoundary(boundaryWrittenCoordinates, destinationFolder, debug);
     }
 
 
     private static void createCoastlineWithBoundary(
-            Set<TppTileCoordinate> boundaryWritedCoordinates, File destinationFolder
+            Set<TppTileCoordinate> boundaryWrittenCoordinates, File destinationFolder, boolean debug
     ) throws IOException {
 
-        ProgressBar progressBar = createCoastlineWritingProgressBar(boundaryWritedCoordinates.size());
-        for(TppTileCoordinate coordinate : boundaryWritedCoordinates) {
+        if(debug) LOGGER.info("Writing coastlines...");
+
+        ProgressBar progressBar = createCoastlineWritingProgressBar(boundaryWrittenCoordinates.size());
+        for(TppTileCoordinate coordinate : boundaryWrittenCoordinates) {
             Geometry coastlineGeometry = coordinate.getTileGeometry(0.1);
 
             File folderLocation = coordinate.getFolderLocation(destinationFolder, true);
@@ -59,7 +65,7 @@ public class ScjdCoastlineRelocator {
 
 
     private static Set<TppTileCoordinate> writeTileBoundaryIntersections(
-            File areaShpDirectory, Charset charset, File destinationFolder
+            File areaShpDirectory, Charset charset, File destinationFolder, boolean debug
     ) throws IOException {
 
         Set<TppTileCoordinate> result = new HashSet<>();
@@ -71,6 +77,8 @@ public class ScjdCoastlineRelocator {
         reader.setLayerFilter(layer -> layer == LayerDataType.시도_행정경계);
 
         for(File areaShpFolder : areaShpFolders) {
+
+            if(debug) LOGGER.info("Writing boundary features of {}...", areaShpFolder.getName());
 
             reader.read(areaShpFolder, charset, ScjdParsedType.AREA, (featureCollection, layerDataType) -> {
                 SimpleFeatureIterator boundaryFeatures = featureCollection.features();

@@ -97,7 +97,7 @@ public class ScjdConversionWorkingDirectory {
 
 
     public void doCoastlineRelocation() throws IOException {
-        ScjdCoastlineRelocator.relocate(this.areaDirectory, Constants.CP949, this.scjdGeojsonFolder);
+        ScjdCoastlineRelocator.relocate(this.areaDirectory, Constants.CP949, this.scjdGeojsonFolder, this.debug);
     }
 
 

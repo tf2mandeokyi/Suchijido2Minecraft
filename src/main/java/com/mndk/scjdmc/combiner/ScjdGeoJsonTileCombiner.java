@@ -1,6 +1,5 @@
 package com.mndk.scjdmc.combiner;
 
-import com.mndk.scjdmc.Constants;
 import com.mndk.scjdmc.reader.GeoJsonDirScjdReader;
 import com.mndk.scjdmc.scissor.ScjdOsmFeatureScissor;
 import com.mndk.scjdmc.typeconverter.Scjd2OsmFeatureConverter;
@@ -12,6 +11,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class ScjdGeoJsonTileCombiner {
 
@@ -21,7 +21,7 @@ public class ScjdGeoJsonTileCombiner {
 
         File coordinateFolder = coordinate.getFolderLocation(sourceFolder, false);
         ScjdDirectoryParsedMap<SimpleFeatureCollection> featureMap = Scjd2OsmFeatureConverter.parseAsOsmFeature(
-                coordinateFolder, Constants.CP949, ScjdParsedType.TILE, reader, feature -> true
+                coordinateFolder, StandardCharsets.UTF_8, ScjdParsedType.TILE, reader, feature -> true
         );
         featureMap = ScjdOsmFeatureScissor.apply(featureMap, coordinate.getTileGeometry(0.1));
 
