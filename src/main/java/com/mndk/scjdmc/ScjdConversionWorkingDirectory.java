@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
@@ -112,13 +113,18 @@ public class ScjdConversionWorkingDirectory {
 
 
     public void relocateAllAreas() throws IOException {
-        this.doSimpleRelocation(this.areaDirectory, ScjdParsedType.AREA);
+        this.doSimpleRelocation(this.areaDirectory, Constants.CP949, ScjdParsedType.AREA, this.scjdGeojsonFolder, StandardCharsets.UTF_8);
     }
-    public void doSimpleRelocation(File sourceDir, ScjdParsedType parsedType) throws IOException {
+    public void doSimpleRelocation(File sourceDir, Charset sourceEncoding, ScjdParsedType parsedType,
+                                   File destinationDir, Charset destinationEncoding) throws IOException {
         File[] sourceFiles = sourceDir.listFiles();
         assert sourceFiles != null;
 
+//        boolean start = false;
         for(File sourceFile : sourceFiles) {
+//            if("jeonbuk".equals(sourceFile.getName())) start = true;
+//            if(!start) continue;
+
             if(debug) LOGGER.info("Relocating {}...", sourceFile.getName());
 
             ScjdDatasetReader reader = ScjdDatasetReader.getShpReader(sourceFile);
@@ -129,8 +135,8 @@ public class ScjdConversionWorkingDirectory {
 
             reader.setLayerFilter(ScjdConversionWorkingDirectory::relocationLayerFilter);
             Scjd2TppDatasetRelocator.relocate(
-                    sourceFile, Constants.CP949, parsedType, reader,
-                    this.scjdGeojsonFolder, StandardCharsets.UTF_8,
+                    sourceFile, sourceEncoding, parsedType, reader,
+                    destinationDir, destinationEncoding,
                     0, false
             );
         }

@@ -18,7 +18,7 @@ public class Suchijido2Minecraft {
 Operations
  | 1. Area relocation
  | 2. Area coastline relocation
- | 3. T++ geojson file combination
+ | 3. T++ geojson file combination + conversion
  | 4. Terrain test
 
 Select operation number(s) [ex: "1", "23" ]:\s""");
