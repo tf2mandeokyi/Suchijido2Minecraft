@@ -19,7 +19,7 @@ public class GeometryJsonUtils {
             geometryType = geometryType.substring(5);
             newGeometryArray = newGeometryArray.get(0).getAsJsonArray();
         }
-        if(newGeometryArray.size() == 0) {
+        if(newGeometryArray.isEmpty()) {
             return null;
         }
         JsonObject newGeometryObject = new JsonObject();
@@ -33,7 +33,7 @@ public class GeometryJsonUtils {
 
         JsonArray newGeometry = new JsonArray();
         if(depth == 1) {
-            if (coordinates.size() == 0) return coordinates;
+            if (coordinates.isEmpty()) return coordinates;
 
             JsonArray point = coordinates.get(0).getAsJsonArray();
             while(point.size() > 2) point.remove(2);
@@ -57,7 +57,7 @@ public class GeometryJsonUtils {
         else {
             for (JsonElement element : coordinates) {
                 JsonArray validation = validateJsonCoordinates(element.getAsJsonArray(), depth - 1, minimumLength);
-                if(validation.size() != 0) newGeometry.add(validation);
+                if(!validation.isEmpty()) newGeometry.add(validation);
             }
         }
 
@@ -89,21 +89,21 @@ public class GeometryJsonUtils {
     }
 
     private static int getJsonCoordinatesDepth(String geometryType) {
-        switch(geometryType) {
-            case "Point": return 0;
-            case "LineString": case "MultiPoint": return 1;
-            case "Polygon": case "MultiLineString": return 2;
-            case "MultiPolygon": return 3;
-            default: throw new IllegalArgumentException("Illegal type: " + geometryType);
-        }
+        return switch (geometryType) {
+            case "Point" -> 0;
+            case "LineString", "MultiPoint" -> 1;
+            case "Polygon", "MultiLineString" -> 2;
+            case "MultiPolygon" -> 3;
+            default -> throw new IllegalArgumentException("Illegal type: " + geometryType);
+        };
     }
 
     private static int getMinimumJsonCoordinatesArrayLength(String geometryType) {
-        switch(geometryType) {
-            case "Point": case "MultiPoint": return 0;
-            case "LineString": case "MultiLineString": return 2;
-            case "Polygon": case "MultiPolygon": return 4;
-            default: throw new IllegalArgumentException("Illegal type: " + geometryType);
-        }
+        return switch (geometryType) {
+            case "Point", "MultiPoint" -> 0;
+            case "LineString", "MultiLineString" -> 2;
+            case "Polygon", "MultiPolygon" -> 4;
+            default -> throw new IllegalArgumentException("Illegal type: " + geometryType);
+        };
     }
 }

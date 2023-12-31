@@ -1,8 +1,12 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
-tasks.withType(JavaCompile) {
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
@@ -16,35 +20,104 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
 
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
 
-    implementation 'commons-io:commons-io:2.6'
-    implementation 'org.apache.logging.log4j:log4j-api:2.17.0'
-    implementation 'org.apache.logging.log4j:log4j-core:2.17.0'
+    implementation 'commons-io:commons-io:2.11.0'
     implementation 'org.apache.commons:commons-compress:1.21'
 
-    implementation 'com.google.code.gson:gson:2.8.9'
+    var log4jVersion = '2.19.0'
+    implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
+    implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
+    implementation "org.apache.logging.log4j:log4j-iostreams:$log4jVersion"
 
-    implementation 'org.gdal:gdal:3.3.0'
+    implementation 'com.google.code.gson:gson:2.10'
 
-    implementation 'org.geotools:gt-shapefile:27-SNAPSHOT'
-    implementation 'org.geotools:gt-geojson:27-SNAPSHOT'
-    implementation 'org.geotools:gt-geojsondatastore:27-SNAPSHOT'
-    implementation 'org.geotools:gt-epsg-hsql:27-SNAPSHOT'
+    implementation 'org.gdal:gdal:3.5.0'
 
-    annotationProcessor 'info.picocli:picocli-codegen:4.6.2'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    var gtVersion = '27-SNAPSHOT'
+    implementation "org.geotools:gt-shapefile:$gtVersion"
+    implementation "org.geotools:gt-geojson:$gtVersion"
+    implementation "org.geotools:gt-geojsondatastore:$gtVersion"
+    implementation "org.geotools:gt-epsg-hsql:$gtVersion"
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    implementation 'me.tongfei:progressbar:0.9.5'
+
+    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+
+    annotationProcessor 'info.picocli:picocli-codegen:4.7.0'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
 }
 
+def cdtRepoPath = file('CDT/')
+def nativeLibrariesPath = file("$buildDir/libs/native/")
+
 compileJava {
-    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+    mainClassName = 'com.mndk.scjdmc.Suchijido2Minecraft'
+    options.compilerArgs += [ "-Aproject=${project.group}/${project.name}" ]
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(JavaExec).configureEach {
+    systemProperty 'java.library.path', nativeLibrariesPath.absolutePath
+    standardInput = System.in
 }
 
 test {
     useJUnitPlatform()
+    failFast = true
+}
+
+tasks.register('buildCDTHandler', Exec) {
+    commandLine "cmake"
+    args "--build", file("$buildDir/cmake/cdt_handler")
+    standardOutput System.out
+
+    doLast {
+        copy {
+            from file("$buildDir/cmake/cdt_handler/cdt_handler.dll")
+            into "$buildDir/libs/native/"
+        }
+    }
+}; compileJava.dependsOn buildCDTHandler
+configure(buildCDTHandler) {
+    group = 'native'
+    description = 'Build cdt handler with cmake'
+}
+
+tasks.register('makeCDTHandler', Exec) {
+    commandLine "cmake"
+    args = [
+            "-S", file('src/main/natives/cdt_handler').toString(),
+            "-B", file("$buildDir/cmake/cdt_handler").toString(),
+            "-DCDT_HOME:STRING=" + cdtRepoPath.toString(),
+            "-G", 'MinGW Makefiles'
+    ]
+    standardOutput System.out
+}; buildCDTHandler.dependsOn makeCDTHandler
+configure(makeCDTHandler) {
+    group = 'native'
+    description = 'Make cdt handler with cmake'
+}
+
+tasks.register('generateNativeHeaders') {
+    def nativesTempDir = file('src/main/natives/temp')
+    if (!nativesTempDir.isDirectory()) nativesTempDir.mkdir()
+
+    compileJava {
+        options.compilerArgs += ['-h', nativesTempDir]
+    }
+}
+generateNativeHeaders.dependsOn compileJava
+configure(generateNativeHeaders) {
+    group = 'native'
+    description = 'Generate native method libraries'
 }

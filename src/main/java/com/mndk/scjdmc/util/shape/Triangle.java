@@ -81,8 +81,7 @@ public class Triangle {
 
 	@Override
 	public boolean equals(Object o) {
-		if(!(o instanceof Triangle)) return false;
-		Triangle t = (Triangle) o;
+		if(!(o instanceof Triangle t)) return false;
 		return this.v1.equalsXZ(t.v1) && this.v2.equalsXZ(t.v2) && this.v3.equalsXZ(t.v3);
 	}
 	
