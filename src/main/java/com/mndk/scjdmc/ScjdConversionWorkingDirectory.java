@@ -101,7 +101,7 @@ public class ScjdConversionWorkingDirectory {
             } else {
                 gui.setStatus(coordinate.getBoundingBox(), Color.GREEN);
             }
-            Constants.STACKED_THROWABLES.popAllToLogger(LOGGER, "Error caught while parsing " + coordinate);
+            Constants.STACKED_THROWABLES.popAllToLogger(LOGGER, "Error(s) caught while parsing " + coordinate);
         }
         progressBar.close();
     }

@@ -7,8 +7,9 @@ import java.util.ArrayList;
 public class StackedThrowables extends ArrayList<Throwable> {
 
     public void popAllToLogger(Logger logger, String extraMessage) {
+        logger.error(extraMessage);
         for(Throwable e : this) {
-            logger.error(extraMessage, e);
+            logger.error(e);
         }
         clear();
     }
